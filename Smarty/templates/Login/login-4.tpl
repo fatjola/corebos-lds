@@ -110,14 +110,14 @@ body {
 var width = window.innerWidth,
     height = window.innerHeight;
 
-var nodes = d3.range(200).map(function() { return {radius: Math.random() * 12 + 4}; }),
+var nodes = d3.range(400).map(function() { return {radius: Math.random() * 12 + 4}; }),
     root = nodes[0];
 
 root.radius = 0;
 root.fixed = true;
 
 var force = d3.layout.force()
-    .gravity(0.05)
+    .gravity(0.02)
     .charge(function(d, i) { return i ? 0 : -2000; })
     .nodes(nodes)
     .size([width, height]);
