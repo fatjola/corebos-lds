@@ -103,7 +103,17 @@
 				{/foreach}
 				</select>
 			{/if}
-			{if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+			{if $MASS_EDIT eq '1'}
+			<div class="slds-form-element__control">
+				<div class="slds-checkbox">
+					<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >
+					<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+						<span class="slds-checkbox_faux"></span>
+						<span class="slds-form-element__label"></span>
+					</label>
+				</div>
+			</div>
+			{/if}
 			{$fldhelplink}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
@@ -120,12 +130,13 @@
 						style="border:1px solid #bababa;"
 						value="{$fldvalue.displayvalue}"
 						autocomplete="off"
-						class="autocomplete-input"
+						class="autocomplete-input slds-input"
 						data-autocomp='{$maindata["extendedfieldinfo"]|@json_encode}'>&nbsp;
 				{else}
 					<input
 						id="{$fldname}_display"
 						name="{$fldname}_display"
+						class="slds-input"
 						readonly
 						type="text"
 						style="border:1px solid #bababa;"
@@ -146,7 +157,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 
 		{elseif $uitype eq 2}
 			<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -161,14 +182,14 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 						value="{$fldvalue}"
 						tabindex="{$vt_tab}"
 						autocomplete="off"
-						class="autocomplete-input detailedViewTextBox"
+						class="autocomplete-input detailedViewTextBox slds-input"
 						data-autocomp='{$maindata["extendedfieldinfo"]|@json_encode}' />
 						<div id="listbox-unique-id" role="listbox" class="">
 							<ul class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid relation-autocomplete__target" style="opacity: 0; width: 100%; list-style-type: none; width: 90%; left: 0; transform: translateX(0); max-width: none;" role="presentation"></ul>
 						</div>
 					</div>
 				{else}
-					<input type="text" name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" value="{$fldvalue}" tabindex="{$vt_tab}" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'">
+					<input type="text" name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" value="{$fldvalue}" tabindex="{$vt_tab}" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'">
 				{/if}
 			</td>
 		{elseif $uitype eq 1025}
@@ -179,13 +200,13 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			{assign var="use_parentmodule" value=$fldlabel.options.0}
 			{assign var=vtui10func value=$use_parentmodule|getvtlib_open_popup_window_function:$fldname:$MODULE}
 			{if count($fldlabel.options) eq 1}
-				<input type='hidden' class='small' name="{$fldname}_type" id="{$fldname}_type" value="{$use_parentmodule}">
+				<input type='hidden' class='small slds-input' name="{$fldname}_type" id="{$fldname}_type" value="{$use_parentmodule}">
 			{else}
 				<br>
 				{if $fromlink eq 'qcreate'}
-				<select id="{$fldname}_type" class="small" name="{$fldname}_type" onChange='document.QcEditView.{$fldname}_display.value=""; document.QcEditView.{$fldname}.value="";'>
+				<select id="{$fldname}_type" class="small slds-input" name="{$fldname}_type" onChange='document.QcEditView.{$fldname}_display.value=""; document.QcEditView.{$fldname}.value="";'>
 				{else}
-				<select id="{$fldname}_type" class="small" name="{$fldname}_type" onChange='document.EditView.{$fldname}_display.value=""; document.EditView.{$fldname}.value="";document.getElementById("qcform").innerHTML=""'>
+				<select id="{$fldname}_type" class="small slds-input " name="{$fldname}_type" onChange='document.EditView.{$fldname}_display.value=""; document.EditView.{$fldname}.value="";document.getElementById("qcform").innerHTML=""'>
 				{/if}
 				{foreach item=option from=$fldlabel.options}
 					<option value="{$option}"
@@ -195,7 +216,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 				{/foreach}
 				</select>
 			{/if}
-			{if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+			{if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+			{/if}
 			{$fldhelplink}
 
 			</td>
@@ -212,7 +243,7 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 						style="border:1px solid #bababa;"
 						value="{$fldvalue.displayvalue}"
 						autocomplete="off"
-						class="autocomplete-input"
+						class="autocomplete-input slds-input"
 						data-autocomp='{$maindata["extendedfieldinfo"]|@json_encode}'>&nbsp;
 				{else}
 					<input
@@ -220,6 +251,7 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 						name="{$fldname}_display"
 						type="text"
 						style="border:1px solid #bababa;"
+						class="slds-input"
 						value="{$fldvalue.displayvalue}">&nbsp;
 				{/if}
 				<input type="image" src="{'clear_field.gif'|@vtiger_imageurl:$THEME}"
@@ -232,14 +264,44 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 				</div>
 			</td>
 		{elseif $uitype eq 3 || $uitype eq 4}<!-- Non Editable field, only configured value will be loaded -->
-				<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right><font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">{/if}</td>
-				<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo"><span style='display:none;' id='{$fldname}_hidden'></span><input readonly type="text" tabindex="{$vt_tab}" name="{$fldname}" id ="{$fldname}" {if $MODE eq 'edit'} value="{$fldvalue}" {else} value="{$MOD_SEQ_ID}" {/if} class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'"></td>
+				<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right><font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}</td>
+				<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo"><span style='display:none;' id='{$fldname}_hidden'></span><input readonly type="text" tabindex="{$vt_tab}" name="{$fldname}" id ="{$fldname}" {if $MODE eq 'edit'} value="{$fldvalue}" {else} value="{$MOD_SEQ_ID}" {/if} class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'"></td>
 		{elseif $uitype eq 11 || $uitype eq 1 || $uitype eq 13 || $uitype eq 7}
-			<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right><font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}</td>
-			<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo"><span style='display:none;' id='{$fldname}_hidden'></span><input type="text" tabindex="{$vt_tab}" name="{$fldname}" id ="{$fldname}" value="{$fldvalue}" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'"></td>
+			<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right><font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+			{/if}</td>
+			<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo"><span style='display:none;' id='{$fldname}_hidden'></span><input type="text" tabindex="{$vt_tab}" name="{$fldname}" id ="{$fldname}" value="{$fldvalue}" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'"></td>
 		{elseif $uitype eq 9}
-			<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right><font color="red">{$mandatory_field}</font>{$usefldlabel} {$APP.COVERED_PERCENTAGE} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}</td>
-			<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo"><span style='display:none;' id='{$fldname}_hidden'></span><input type="text" tabindex="{$vt_tab}" name="{$fldname}" id ="{$fldname}" value="{$fldvalue}" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'"></td>
+			<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right><font color="red">{$mandatory_field}</font>{$usefldlabel} {$APP.COVERED_PERCENTAGE} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+			{/if}</td>
+			<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo"><span style='display:none;' id='{$fldname}_hidden'></span><input type="text" tabindex="{$vt_tab}" name="{$fldname}" id ="{$fldname}" value="{$fldvalue}" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'"></td>
 		{elseif $uitype eq 19 || $uitype eq 20}
 			<!-- In Add Comment we should not display anything -->
 			{assign var="i18nAddComment" value='LBL_ADD_COMMENT'|@getTranslatedString:$MODULE}
@@ -252,7 +314,7 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 			<td id="td_val_{$fldname}" colspan=3 class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
-				<textarea class="detailedViewTextBox" tabindex="{$vt_tab}" onFocus="this.className='detailedViewTextBoxOn'" name="{$fldname}" id="{$fldname}" onBlur="this.className='detailedViewTextBox'" cols="90" rows="8">{$fldvalue}</textarea>
+				<textarea class="detailedViewTextBox slds-input" tabindex="{$vt_tab}" onFocus="this.className='detailedViewTextBoxOn slds-input'" name="{$fldname}" id="{$fldname}" onBlur="this.className='detailedViewTextBox slds-input'" cols="90" rows="8">{$fldvalue}</textarea>
 				{assign var="i18nSolution" value='Solution'|@getTranslatedString:$MODULE}
 				{if $fldlabel eq $i18nSolution}
 				<input type="hidden" name="helpdesk_solution" id="helpdesk_solution" value='{$fldvalue}'>
@@ -283,16 +345,36 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 		{elseif $uitype eq 21 || $uitype eq 24}
 			<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 					<font color="red">{$mandatory_field}</font>
-				{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
-				<textarea value="{$fldvalue}" name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'" rows=2>{$fldvalue}</textarea>
+				<textarea value="{$fldvalue}" name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'" rows=2>{$fldvalue}</textarea>
 			</td>
 		{elseif $uitype eq 15 || $uitype eq 16  || $uitype eq '31' || $uitype eq '32' || $uitype eq '1613' || $uitype eq '1614'}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 				<font color="red">{$mandatory_field}</font>
-				{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -312,7 +394,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 		{elseif $uitype eq '1615'}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 				<font color="red">{$mandatory_field}</font>
-				{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -331,7 +423,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 		{elseif $uitype eq '1616'}
 			<td width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 				<font color="red">{$mandatory_field}</font>
-				{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td width="30%" align=left class="dvtCellInfo">
 				<select name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" class="small" style="width:280px;">
@@ -343,7 +445,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 		{elseif $uitype eq 33 || $uitype eq 3313 || $uitype eq 3314 || $uitype eq 1024}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'} 
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				{if (isset($maindata['extendedfieldinfo']) && isset($maindata['extendedfieldinfo']['columns']))}
@@ -366,7 +478,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 
 		{elseif $uitype eq 53}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -423,7 +545,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 		{elseif $uitype eq 52 || $uitype eq 77}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<select name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" class="small">
@@ -441,7 +573,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 				{assign var='popuptype' value = 'specific_contact_account_address'}
 			{/if}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -449,7 +591,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 		{elseif $uitype eq 73}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -458,7 +610,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 		{elseif $uitype eq 57}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -471,7 +633,18 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 
 		{elseif $uitype eq 80}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -480,7 +653,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 
 		{elseif $uitype eq 78}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -489,7 +672,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 
 		{elseif $uitype eq 76}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'} 
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -498,11 +691,21 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 
 		{elseif $uitype eq 17}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 			<span style='display:none;' id='{$fldname}_hidden'></span>
-			<input style="width:74%;" class = 'detailedViewTextBox' type="text" tabindex="{$vt_tab}" name="{$fldname}" style="border:1px solid #bababa;" size="27" onFocus="this.className='detailedViewTextBoxOn'"onBlur="this.className='detailedViewTextBox'" onkeyup="validateUrl('{$fldname}');" value="{$fldvalue}">
+			<input style="width:74%;" class = 'detailedViewTextBox slds-input' type="text" tabindex="{$vt_tab}" name="{$fldname}" style="border:1px solid #bababa;" size="27" onFocus="this.className='detailedViewTextBoxOn slds-input'"onBlur="this.className='detailedViewTextBox slds-input'" onkeyup="validateUrl('{$fldname}');" value="{$fldvalue}">
 			</td>
 
 		{elseif $uitype eq 85}
@@ -510,7 +713,15 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
                 <font color="red">{$mandatory_field}</font>
                 {$usefldlabel}
                 {if $MASS_EDIT eq '1'}
-                	<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >
+					<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
                 {/if}
             </td>
             <td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
@@ -521,13 +732,23 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 
 		{elseif $uitype eq 71 || $uitype eq 72}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
 				{if $fldname eq "unit_price"}
 					<span id="multiple_currencies">
-						<input name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" type="text" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'; updateUnitPrice('unit_price', '{$BASE_CURRENCY}');"  value="{$fldvalue}" style="width:60%;">
+						<input name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" type="text" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'; updateUnitPrice('unit_price', '{$BASE_CURRENCY}');"  value="{$fldvalue}" style="width:60%;">
 					{if $MASS_EDIT neq 1}
 						&nbsp;<a href="javascript:void(0);" onclick="updateUnitPrice('unit_price', '{$BASE_CURRENCY}'); toggleShowHide('currency_class','multiple_currencies');">{$APP.LBL_MORE_CURRENCIES} &raquo;</a>
 					{/if}
@@ -575,17 +796,24 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 								{/if}
 
 								<td align="right" class="dvtCellLabel">
-									{$price.currencylabel|@getTranslatedCurrencyString} ({$price.currencysymbol})
-									<input type="checkbox" name="cur_{$price.curid}_check" id="cur_{$price.curid}_check" class="small" onclick="fnenableDisable(this,'{$price.curid}'); updateCurrencyValue(this,'{$price.curname}','{$BASE_CURRENCY}','{$price.conversionrate}');" {$check_value}>
+									<div class="slds-form-element__control">
+										<div class="slds-checkbox">
+											<input type="checkbox" name="cur_{$price.curid}_check" id="cur_{$price.curid}_check" class="small" onclick="fnenableDisable(this,'{$price.curid}'); updateCurrencyValue(this,'{$price.curname}','{$BASE_CURRENCY}','{$price.conversionrate}');" {$check_value}>											
+											<label class="slds-checkbox__label" for="cur_{$price.curid}_check">
+												<span class="slds-form-element__label">{$price.currencylabel|@getTranslatedCurrencyString} ({$price.currencysymbol})</span>
+												<span class="slds-checkbox_faux"></span>
+											</label>
+										</div>
+									</div>
 								</td>
 								<td class="dvtCellInfo" align="left">
-									<input {$disable_value} type="text" size="10" class="small" name="{$price.curname}" id="{$price.curname}" value="{$price.curvalue}" onBlur="{$call_js_update_func} fnpriceValidation('{$price.curname}');">
+									<input {$disable_value} type="text" size="10" class="small slds-input" name="{$price.curname}" id="{$price.curname}" value="{$price.curvalue}" onBlur="{$call_js_update_func} fnpriceValidation('{$price.curname}');">
 								</td>
 								<td class="dvtCellInfo" align="left">
-									<input disabled=true type="text" size="10" class="small" name="cur_conv_rate{$price.curid}" value="{$price.conversionrate}">
+									<input disabled=true type="text" size="10" class="small slds-input" name="cur_conv_rate{$price.curid}" value="{$price.conversionrate}">
 								</td>
 								<td class="dvtCellInfo" align="center">
-									<input {$disable_value} type="button" class="crmbutton small edit" id="cur_reset{$price.curid}"  onclick="updateCurrencyValue(this,'{$price.curname}','{$BASE_CURRENCY}','{$price.conversionrate}');" value="{$APP.LBL_RESET}"/>
+									<input {$disable_value} type="button" class="crmbutton small edit " id="cur_reset{$price.curid}"  onclick="updateCurrencyValue(this,'{$price.curname}','{$BASE_CURRENCY}','{$price.conversionrate}');" value="{$APP.LBL_RESET}"/>
 								</td>
 								<td class="dvtCellInfo">
 									<input {$disable_value} type="radio" class="detailedViewTextBox" id="base_currency{$price.curid}" name="base_currency_input" value="{$price.curname}" {$base_cur_check} onchange="updateBaseCurrencyValue()" />
@@ -596,41 +824,100 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 					</div>
 					{/if}
 				{else}
-					<input name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" type="text" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'" value="{$fldvalue}">
+					<input name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" type="text" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'" value="{$fldvalue}">
 				{/if}
 			</td>
 
 		{elseif $uitype eq 56}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
+				{/if}
 			</td>
 			<!-- For Portal Information we need a hidden field existing_portal with the current portal value -->
 			{if $fldname eq 'portal'}
 				<td width="30%" align=left class="dvtCellInfo">
 					<input type="hidden" name="existing_portal" value="{$fldvalue}">
-					<input name="{$fldname}" id="{$fldname}" type="checkbox" tabindex="{$vt_tab}" {if $fldvalue eq 1}checked{/if}>
+					<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input name="{$fldname}" id="{$fldname}" type="checkbox" tabindex="{$vt_tab}" {if $fldvalue eq 1}checked{/if}>
+						<label class="slds-checkbox__label" for="{$fldname}">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
 				</td>
 			{else}
 				{if $fldvalue eq 1}
 					<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 						<span style='display:none;' id='{$fldname}_hidden'></span>
-						<input name="{$fldname}" id="{$fldname}" type="checkbox" tabindex="{$vt_tab}" checked>
+						<div class="slds-form-element">
+							<div class="slds-form-element__control">
+								<div class="slds-checkbox">
+									<input name="{$fldname}" id="{$fldname}" type="checkbox" tabindex="{$vt_tab}" checked  />
+									<label class="slds-checkbox__label" for="{$fldname}">
+									<span class="slds-checkbox_faux"></span>
+									<span class="slds-form-element__label"></span>
+									</label>
+								</div>
+							</div>
+						</div>
 					</td>
 				{elseif $fldname eq 'filestatus'&& $MODE eq 'create'}
 					<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 						<span style='display:none;' id='{$fldname}_hidden'></span>
-						<input name="{$fldname}" id="{$fldname}" type="checkbox" tabindex="{$vt_tab}" checked>
+						<div class="slds-form-element">
+							<div class="slds-form-element__control">
+								<div class="slds-checkbox">
+									<input name="{$fldname}" id="{$fldname}" type="checkbox" tabindex="{$vt_tab}" checked>
+									<label class="slds-checkbox__label" for="{$fldname}">
+									<span class="slds-checkbox_faux"></span>
+									<span class="slds-form-element__label"></span>
+									</label>
+								</div>
+							</div>
+						</div>
 					</td>
 				{else}
 					<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 						<span style='display:none;' id='{$fldname}_hidden'></span>
-						<input name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" type="checkbox">
+							<div class="slds-form-element">
+								<div class="slds-form-element__control">
+									<div class="slds-checkbox">
+									<input name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" type="checkbox">
+									<label class="slds-checkbox__label" for="{$fldname}">
+									<span class="slds-checkbox_faux"></span>
+									<span class="slds-form-element__label"></span>
+									</label>
+								</div>
+							</div>
+						</div>
 					</td>
 				{/if}
 			{/if}
 		{elseif $uitype eq 23 || $uitype eq 5 || $uitype eq 6}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element">
+					<div class="slds-form-element__control">
+						<div class="slds-checkbox">
+							<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >
+							<label class="slds-checkbox__label" for="{$fldname}">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+							</label>
+						</div>
+					</div>
+				</div>{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -639,11 +926,11 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 					{assign var=time_val value="$time_value"}
 				{/foreach}
 
-				<input name="{$fldname}" tabindex="{$vt_tab}" id="jscal_field_{$fldname}" type="text" style="border:1px solid #bababa;" size="11" maxlength="10" value="{$date_val}">
+				<input name="{$fldname}" tabindex="{$vt_tab}" id="jscal_field_{$fldname}" type="text" class="slds-input" style="border:1px solid #bababa;" size="11" maxlength="10" value="{$date_val}">
 				<img src="{'btnL3Calendar.gif'|@vtiger_imageurl:$THEME}" id="jscal_trigger_{$fldname}" style="vertical-align:middle">
 
 				{if $uitype eq 6}
-					<input name="time_start" tabindex="{$vt_tab}" style="border:1px solid #bababa;" size="5" maxlength="5" type="text" value="{$time_val}">
+					<input name="time_start" tabindex="{$vt_tab}" style="border:1px solid #bababa;" class="slds-input" size="5" maxlength="5" type="text" value="{$time_val}">
 				{/if}
 
 				{if $uitype eq 6 && isset($QCMODULE) && $QCMODULE eq 'Event'}
@@ -672,7 +959,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 		{elseif $uitype eq 50}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -684,7 +981,7 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 					{assign var=userFormat value="$user_format"}
 					{assign var=fieldFormat value="$date_format"}
 				{/foreach}
-				<input name="{$fldname}" tabindex="{$vt_tab}" id="jscal_field_{$fldname}" type="text" style="border:1px solid #bababa;" size="16" maxlength="16" value="{$date12_val}">
+				<input name="{$fldname}" tabindex="{$vt_tab}" id="jscal_field_{$fldname}" type="text" class="slds-input" style="border:1px solid #bababa;" size="16" maxlength="16" value="{$date12_val}">
 				<input name="timefmt_{$fldname}" id="inputtimefmt_{$fldname}" type="hidden" value="{$fieldFormat}">
 				<img src="{'btnL3Calendar.gif'|@vtiger_imageurl:$THEME}" id="jscal_trigger_{$fldname}" style="vertical-align:middle">
 
@@ -707,11 +1004,21 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 
 		{elseif $uitype eq 63}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'} 
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
-				<input name="{$fldname}" type="text" size="2" value="{$fldvalue}" tabindex="{$vt_tab}" >&nbsp;
+				<input name="{$fldname}" type="text" size="2" value="{$fldvalue}" tabindex="{$vt_tab}" class="slds-input">&nbsp;
 				<select name="duration_minutes" tabindex="{$vt_tab}" class="small">
 					{foreach key=labelval item=selectval from=$secondvalue}
 						<option value="{$labelval}" {$selectval}>{$labelval}</option>
@@ -730,12 +1037,22 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 						<option value="{$fldlabel_combo[combo]}" {$fldlabel_sel[combo]}>{$fldlabel[combo]} </option>
 					{/section}
 				</select>
-				{if $MASS_EDIT eq '1'}<input type="checkbox" name="parent_id_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				{if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="parent_id_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
 				<input name="{$fldname}" type="hidden" value="{$secondvalue}">
-				<input name="parent_name" readonly id = "parentid" type="text" style="border:1px solid #bababa;" value="{$fldvalue}">
+				<input name="parent_name" readonly id = "parentid" type="text" class="slds-input" style="border:1px solid #bababa;" value="{$fldvalue}">
 				&nbsp;
 				{if $fromlink eq 'qcreate'}
 					<img src="{'select.gif'|@vtiger_imageurl:$THEME}" tabindex="{$vt_tab}" alt="{$APP.LBL_SELECT}" title="{$APP.LBL_SELECT}" onclick='return window.open("index.php?module="+ document.QcEditView.parent_type.value +"&action=Popup&html=Popup_picker&form=HelpDeskEditView&fromlink={$fromlink}","test","width=640,height=602,resizable=0,scrollbars=0,top=150,left=200");' align="absmiddle" style='cursor:hand;cursor:pointer'>&nbsp;<input type="image" src="{'clear_field.gif'|@vtiger_imageurl:$THEME}" alt="{$APP.LBL_CLEAR}" title="{$APP.LBL_CLEAR}" onClick="this.form.parent_id.value=''; this.form.parent_name.value=''; return false;" align="absmiddle" style='cursor:hand;cursor:pointer'>
@@ -749,7 +1066,7 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			<td id="td_val_{$fldname}" width="90%" colspan="3">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
 				<input name="{$fldname}" type="hidden" value="{$secondvalue}">
-				<textarea readonly name="parent_name" cols="70" rows="2">{$fldvalue}</textarea>&nbsp;
+				<textarea readonly name="parent_name" cols="70" rows="2" class="slds-input">{$fldvalue}</textarea>&nbsp;
 				<select name="parent_type" class="small">
 					{foreach key=labelval item=selectval from=$fldlabel}
 						<option value="{$labelval}" {$selectval}>{$labelval}</option>
@@ -765,23 +1082,53 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 		   <tr style="height:25px">
 			<td width="20%" class="dvtCellLabel" align=right>CC:&nbsp;</td>
 			<td width="30%" align=left class="dvtCellInfo">
-				<input name="ccmail" type="text" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'"  value="">
+				<input name="ccmail" type="text" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'"  value="">
 			</td>
 			<td width="20%" class="dvtCellLabel" align=right>BCC:&nbsp;</td>
 			<td width="30%" align=left class="dvtCellInfo">
-				<input name="bccmail" type="text" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'"  value="">
+				<input name="bccmail" type="text" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'"  value="">
 			</td>
 		   </tr>
 
 		{elseif $uitype eq 55 || $uitype eq 255}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 			{if $MASS_EDIT eq '1' && $fldvalue neq ''}
-				{$APP.Salutation}<input type="checkbox" name="salutationtype_mass_edit_check" id="salutationtype_mass_edit_check" class="small" ><br />
+				{$APP.Salutation}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="salutationtype_mass_edit_check" id="salutationtype_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="salutationtype_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
+				<br />
 			{/if}
 			{if $uitype eq 55}
-				{$usefldlabel}{if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				{$usefldlabel}{if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			{elseif $uitype eq 255}
-				<font color="red">{$mandatory_field}</font>{$usefldlabel}{if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel}{if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
+				{/if}
 			{/if}
 			</td>
 
@@ -808,28 +1155,48 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 					value="{$secondvalue}"
 					tabindex="{$vt_tab}"
 					autocomplete="off"
-					class="autocomplete-input detailedViewTextBox"
+					class="autocomplete-input detailedViewTextBox slds-input"
 					data-autocomp='{$maindata["extendedfieldinfo"]|@json_encode}' />
 					<div id="listbox-unique-id" role="listbox" class="">
 						<ul class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid relation-autocomplete__target" style="opacity: 0; width: 100%; list-style-type: none; width: 90%; left: 0; transform: translateX(0); max-width: none;" role="presentation"></ul>
 					</div>
 				</div>
 			{else}
-				<input type="text" name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'" style="width:58%;" value= "{$secondvalue}" >
+				<input type="text" name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'" style="width:58%;" value= "{$secondvalue}" >
 			{/if}
 			</td>
 
 		{elseif $uitype eq 22}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
                 <span style='display:none;' id='{$fldname}_hidden'></span>
-				<textarea name="{$fldname}" cols="30" tabindex="{$vt_tab}" rows="2">{$fldvalue}</textarea>
+				<textarea name="{$fldname}" cols="30" tabindex="{$vt_tab}" rows="2" class="slds-input">{$fldvalue}</textarea>
 			</td>
 		{elseif $uitype eq 14}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {"LBL_TIMEFIELD"|@getTranslatedString}{if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {"LBL_TIMEFIELD"|@getTranslatedString}{if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width=10% align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -839,7 +1206,15 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 				<font color="red">{$mandatory_field}</font>{$usefldlabel}
 				{if $MASS_EDIT eq '1'}
-					<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small"  >
+					<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
 				{/if}
 			</td>
 			<td id="td_val_{$fldname}" colspan="1" width="30%" align=left class="dvtCellInfo">
@@ -874,7 +1249,15 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 				<font color="red">{$mandatory_field}</font>{$usefldlabel}
 				{if $MASS_EDIT eq '1'}
-					<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small"  >
+					<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div> 
 				{/if}
 			</td>
 			<td id="td_val_{$fldname}" colspan="1" width="30%" align=left class="dvtCellInfo">
@@ -907,7 +1290,15 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 				<font color="red">{$mandatory_field}</font>{$usefldlabel}
 				{if $MASS_EDIT eq '1'}
-					<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small"  disabled >
+					<div class="slds-form-element__control">
+						<div class="slds-checkbox">
+							<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" disabled>
+							<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+								<span class="slds-checkbox_faux"></span>
+								<span class="slds-form-element__label"></span>
+							</label>
+						</div>
+					</div> 
 				{/if}
 			</td>
 
@@ -919,45 +1310,107 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 		{elseif $uitype eq 156}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 				{if $fldvalue eq 'on'}
 					<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 						<span style='display:none;' id='{$fldname}_hidden'></span>
 						{if ($secondvalue eq 1 && isset($smarty.request.record) && $CURRENT_USERID != $smarty.request.record) || ($MODE == 'create')}
-							<input name="{$fldname}" tabindex="{$vt_tab}" type="checkbox" checked>
+							<div class="slds-form-element__control">
+								<div class="slds-checkbox">
+									<input name="{$fldname}" id="{$fldname}" tabindex="{$vt_tab}" type="checkbox" checked>
+									<label class="slds-checkbox__label" for="{$fldname}">
+										<span class="slds-checkbox_faux"></span>
+										<span class="slds-form-element__label"></span>
+									</label>
+								</div>
+							</div>
 						{else}
 							<input name="{$fldname}" type="hidden" value="on">
-							<input name="{$fldname}" disabled tabindex="{$vt_tab}" type="checkbox" checked>
+							<div class="slds-form-element__control">
+								<div class="slds-checkbox">
+									<input name="{$fldname}" disabled tabindex="{$vt_tab}" id="{$fldname}" type="checkbox" checked>
+									<label class="slds-checkbox__label" for="{$fldname}">
+										<span class="slds-checkbox_faux"></span>
+										<span class="slds-form-element__label"></span>
+									</label>
+								</div>
+							</div>
 						{/if}
 					</td>
 				{else}
 					<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 						<span style='display:none;' id='{$fldname}_hidden'></span>
 						{if ($secondvalue eq 1 && isset($smarty.request.record) && $CURRENT_USERID != $smarty.request.record) || ($MODE == 'create')}
-							<input name="{$fldname}" tabindex="{$vt_tab}" type="checkbox">
+							<div class="slds-form-element__control">
+								<div class="slds-checkbox">
+									<input name="{$fldname}" tabindex="{$vt_tab}" id="{$fldname}" type="checkbox">
+									<label class="slds-checkbox__label" for="{$fldname}">
+										<span class="slds-checkbox_faux"></span>
+										<span class="slds-form-element__label"></span>
+									</label>
+								</div>
+							</div>
 						{else}
-							<input name="{$fldname}" disabled tabindex="{$vt_tab}" type="checkbox">
+							<div class="slds-form-element__control">
+								<div class="slds-checkbox">
+									<input name="{$fldname}" disabled tabindex="{$vt_tab}" id="{$fldname}" type="checkbox">
+									<label class="slds-checkbox__label" for="{$fldname}">
+										<span class="slds-checkbox_faux"></span>
+										<span class="slds-form-element__label"></span>
+									</label>
+								</div>
+							</div>
 						{/if}
 					</td>
 				{/if}
 		{elseif $uitype eq 98}<!-- Role Selection Popup -->
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 			<span style='display:none;' id='{$fldname}_hidden'></span>
 			{if $thirdvalue eq 1}
-				<input name="role_name" id="role_name" readonly class="txtBox" tabindex="{$vt_tab}" value="{$secondvalue}" type="text">&nbsp;
+				<input name="role_name" id="role_name" readonly class="txtBox slds-input" tabindex="{$vt_tab}" value="{$secondvalue}" type="text">&nbsp;
 				<a href="javascript:openPopup();"><img src="{'select.gif'|@vtiger_imageurl:$THEME}" align="absmiddle" border="0"></a>
 			{else}
-				<input name="role_name" id="role_name" tabindex="{$vt_tab}" class="txtBox" readonly value="{$secondvalue}" type="text">&nbsp;
+				<input name="role_name" id="role_name" tabindex="{$vt_tab}" class="txtBox slds-input" readonly value="{$secondvalue}" type="text">&nbsp;
 			{/if}
 			<input name="user_role" id="user_role" value="{$fldvalue}" type="hidden">
 			</td>
 		{elseif $uitype eq 115}<!-- for Status field Disabled for nonadmin -->
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}"  width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -973,7 +1426,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 		{elseif $uitype eq 105}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -993,7 +1456,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 			{elseif $uitype eq 103}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" colspan="3" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -1001,18 +1474,38 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 			{elseif $uitype eq 101}<!-- for reportsto field USERS POPUP -->
 				<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-					<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+					<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+					<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+					{/if}
 				</td>
 				<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 					<span style='display:none;' id='{$fldname}_hidden'></span>
-					<input id="{$fldname}_display" name="{$fldname}_display" readonly type="text" style="border:1px solid #bababa;" value="{$fldvalue}" class="small" />&nbsp;
+					<input id="{$fldname}_display" name="{$fldname}_display" readonly type="text" style="border:1px solid #bababa;" value="{$fldvalue}" class="small slds-input" />&nbsp;
 					<input id="{$fldname}" name="{$fldname}" type="hidden" value="{$secondvalue}" id="{$fldname}" />
 					&nbsp;<input title="{$APP.LBL_CHANGE_TITLE}" accessKey="C" type="button" class="small" value='{$APP.LBL_CHANGE}' name="btn1" onclick='return window.open("index.php?module=Users&action=Popup&html=Popup_picker&form=vtlibPopupView&form_submit=false&fromlink={$fromlink}&recordid={if isset($ID)}{$ID}{/if}&forfield={$fldname}","test","width=640,height=603,resizable=0,scrollbars=0");'>
 					&nbsp;<input type="image" src="{'clear_field.gif'|@vtiger_imageurl:$THEME}" alt="{$APP.LBL_CLEAR}" title="{$APP.LBL_CLEAR}" onClick="this.form.{$fldname}.value=''; this.form.{$fldname}_display.value=''; return false;" align="absmiddle" style='cursor:hand;cursor:pointer'>
 				</td>
 			{elseif $uitype eq 117}<!-- for currency in users details-->
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -1041,29 +1534,59 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			</td>
 			{elseif $uitype eq 106}
 			<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
 				{if $MODE eq 'edit'}
-				<input type="text" readonly name="{$fldname}" value="{$fldvalue}" tabindex="{$vt_tab}" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'">
+				<input type="text" readonly name="{$fldname}" value="{$fldvalue}" tabindex="{$vt_tab}" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'">
 				{else}
-				<input type="text" name="{$fldname}" value="{$fldvalue}" tabindex="{$vt_tab}" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'">
+				<input type="text" name="{$fldname}" value="{$fldvalue}" tabindex="{$vt_tab}" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'">
 				{/if}
 			</td>
 			{elseif $uitype eq 99}
 				{if $MODE eq 'create'}
 				<td id="td_{$fldname}" width=20% class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-					<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+					<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+					<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+					{/if}
 				</td>
 				<td id="td_val_{$fldname}" width=30% align=left class="dvtCellInfo">
 					<span style='display:none;' id='{$fldname}_hidden'></span>
-					<input type="password" name="{$fldname}" tabindex="{$vt_tab}" value="{$fldvalue}" class=detailedViewTextBox onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'">
+					<input type="password" name="{$fldname}" tabindex="{$vt_tab}" value="{$fldvalue}" class='detailedViewTextBox slds-input' onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'">
 				</td>
 				{/if}
 		{elseif $uitype eq 30}
 			<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
-				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+				<font color="red">{$mandatory_field}</font>{$usefldlabel} {if $MASS_EDIT eq '1'}
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
+				{/if}
 			</td>
 			<td id="td_val_{$fldname}" colspan="3" width="30%" align=left class="dvtCellInfo">
 				<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -1096,7 +1619,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 		{elseif $uitype eq 26}
 		<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 		<font color="red">{$mandatory_field}</font>{$fldlabel}
-		{if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small" >{/if}
+		{if $MASS_EDIT eq '1'}
+		<div class="slds-form-element__control">
+			<div class="slds-checkbox">
+				<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small">
+				<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+					<span class="slds-checkbox_faux"></span>
+					<span class="slds-form-element__label"></span>
+				</label>
+			</div>
+		</div>
+		{/if}
 		</td>
 		<td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
 			<span style='display:none;' id='{$fldname}_hidden'></span>
@@ -1109,7 +1642,17 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 		{elseif $uitype eq 27}
 		<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align="right" >
 			<font color="red">{$mandatory_field}</font>{$fldlabel_other}&nbsp;
-			{if $MASS_EDIT eq '1'}<input type="checkbox" name="{$fldname}" id="{$fldname}_mass_edit_check" class="small" >{/if}
+			{if $MASS_EDIT eq '1'}
+			<div class="slds-form-element__control">
+				<div class="slds-checkbox">
+					<input type="checkbox" name="{$fldname}" id="{$fldname}_mass_edit_check" class="small">
+					<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+						<span class="slds-checkbox_faux"></span>
+						<span class="slds-form-element__label"></span>
+					</label>
+				</div>
+			</div>
+			{/if}
         </td>
         <td id="td_val_{$fldname}" width="30%" align=left class="dvtCellInfo">
             <span style='display:none;' id='{$fldname}_hidden'></span>
@@ -1143,7 +1686,15 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 		<td id="td_{$fldname}" width="20%" class="dvtCellLabel{if $mandatory_field == '*'} mandatory_field_label{/if}" align=right>
 			<font color="red">{$mandatory_field}</font>{$usefldlabel}
 			{if $MASS_EDIT eq '1'}
-				<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small"  disabled >
+				<div class="slds-form-element__control">
+					<div class="slds-checkbox">
+						<input type="checkbox" name="{$fldname}_mass_edit_check" id="{$fldname}_mass_edit_check" class="small"  disabled >
+						<label class="slds-checkbox__label" for="{$fldname}_mass_edit_check">
+							<span class="slds-checkbox_faux"></span>
+							<span class="slds-form-element__label"></span>
+						</label>
+					</div>
+				</div>
 			{/if}
 		</td>
 
@@ -1194,7 +1745,7 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 			<input name="{$fldname}" id="{$fldname}_I__" type="file" value="{$secondvalue}" tabindex="{$vt_tab}" onchange="validateFilename(this);validateFileSize(this,'{$UPLOAD_MAXSIZE}');" style="display: none;"/>
 			<input type="hidden" name="{$fldname}_hidden" value="{$secondvalue}"/>
 			<input type="hidden" name="id" value=""/>
-			<input type="text" id="{$fldname}_E__" name="{$fldname}" class="detailedViewTextBox" onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'" value="{$secondvalue}" /><br>
+			<input type="text" id="{$fldname}_E__" name="{$fldname}" class="detailedViewTextBox slds-input" onFocus="this.className='detailedViewTextBoxOn slds-input'" onBlur="this.className='detailedViewTextBox slds-input'" value="{$secondvalue}" /><br>
 			<div id="displaySize"></div>
 			<span id="{$fldname}_value" style="display:none;">
 			{if $secondvalue neq ''}
@@ -1214,13 +1765,20 @@ alt="{'LBL_CLEAR'|@getTranslatedString}" title="{'LBL_CLEAR'|@getTranslatedStrin
 					{assign var=check_value value=""}
 					{assign var=show_value value="hidden"}
 				{/if}
-				<td id="td_{$fldname}" align="right" class="dvtCellLabel" style="border:0px solid red;">
-					{$tax.taxlabel} {$APP.COVERED_PERCENTAGE}
-					<input type="checkbox" name="{$tax.check_name}" id="{$tax.check_name}" class="small" onclick="fnshowHide(this,'{$tax.taxname}')" {$check_value}>
+				<td id="td_{$fldname}" align="right" class="dvtCellLabel" style="border:0px solid red;">					
+					<div class="slds-form-element__control">
+						<div class="slds-checkbox">
+							<input type="checkbox" name="{$tax.check_name}" id="{$tax.check_name}" class="small" onclick="fnshowHide(this,'{$tax.taxname}')" {$check_value}>
+							<label class="slds-checkbox__label" for="{$tax.check_name}">
+								<span class="slds-form-element__label">{$tax.taxlabel} {$APP.COVERED_PERCENTAGE}</span>
+								<span class="slds-checkbox_faux"></span>								
+							</label>
+						</div>
+					</div>
 				</td>
 				<td id="td_val_{$fldname}" class="dvtCellInfo" align="left" style="border:0px solid red;">
 					<span style='display:none;' id='{$fldname}_hidden'></span>
-					<input type="text" class="detailedViewTextBox" name="{$tax.taxname}" id="{$tax.taxname}" value="{$tax.percentage}" style="visibility:{$show_value};" onBlur="fntaxValidation('{$tax.taxname}')">
+					<input type="text" class="detailedViewTextBox slds-input" name="{$tax.taxname}" id="{$tax.taxname}" value="{$tax.percentage}" style="visibility:{$show_value};" onBlur="fntaxValidation('{$tax.taxname}')">
 				</td>
 			   </tr>
 			{/foreach}

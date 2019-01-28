@@ -120,6 +120,7 @@ function addConditionRow(groupIndex) {ldelim}
 												'<td width=90% class="genHeaderSmall"><b>{$MOD.LBL_SELECT_FIELDS}</b></td>'+
 												'<td align=right>'+
 													'<img border="0" align="absmiddle" src="themes/images/close.gif" style="cursor: pointer;" alt="{$APP.LBL_CLOSE}" title="{$APP.LBL_CLOSE}" onclick="hideAllElementsByName(\'relFieldsPopupDiv\');"/>'+
+												'<span class="slds-icon_container slds-icon-action-close slds-icon_container--circle"><svg class="slds-icon slds-icon--small" aria-hidden="true"><use xlink:href="include/LD/assets/icons/action-sprite/svg/symbols.svg#close"></use></svg></span>'+
 												'</td>'+
 											'</tr>'+
 										'</table>'+
@@ -214,7 +215,7 @@ function addConditionGroup(parentNodeId) {ldelim}
 			"</tr>"+
 			"<tr id='groupfooter_"+groupIndex+"'>"+
 				"<td colspan='5' align='left'>"+
-					"<input type='button' class='crmbutton edit small' value='{$APP.LBL_NEW_CONDITION}' onclick='addConditionRow(\""+groupIndex+"\")' />"+
+					"<input type='button' class='crmbutton edit small slds-button slds-button_success' value='{$APP.LBL_NEW_CONDITION}' onclick='addConditionRow(\""+groupIndex+"\")' />"+
 				"</td>"+
 			"</tr>"+
 		"</table>"+
@@ -282,7 +283,7 @@ function add_grouping_criteria(grouping_criteria) {ldelim}
 		</tr>
 		<tr>
 			<td colspan="2" align="right">
-				<input type="button" class="crmbutton create small" value="{'LBL_NEW_GROUP'|@getTranslatedString:$MODULE}" onclick="addNewConditionGroup('adv_filter_div')" />
+				<input type="button" class="crmbutton create small slds-button slds-button_brand" value="{'LBL_NEW_GROUP'|@getTranslatedString:$MODULE}" onclick="addNewConditionGroup('adv_filter_div')" />
 			</td>
 		</tr>
 	</table>
