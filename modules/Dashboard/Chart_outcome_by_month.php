@@ -9,11 +9,10 @@
  ********************************************************************************/
 require_once 'include/utils/utils.php';
 require_once 'include/logging.php';
-require_once "modules/Dashboard/DashboardCharts.php";
-global $current_language, $currentModule, $action, $theme;
+require_once 'modules/Dashboard/DashboardCharts.php';
+global $current_language, $currentModule, $action, $theme, $current_user;
 $current_module_strings = return_module_language($current_language, 'Dashboard');
-require 'user_privileges/sharing_privileges_'.$current_user->id.'.php';
-require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+$userprivs = $current_user->getPrivileges();
 
 $log = LoggerManager::getLogger('outcome_by_month');
 
@@ -41,30 +40,18 @@ if (isset($_REQUEST['obm_date_end']) && $_REQUEST['obm_date_end'] == '') {
 }
 if (isset($_SESSION['obm_date_start']) && $_SESSION['obm_date_start'] != '' && !isset($_REQUEST['obm_date_start'])) {
 	$date_start = $_SESSION['obm_date_start'];
-	$log->debug("_SESSION['obm_date_start'] is:");
-	$log->debug($_SESSION['obm_date_start']);
 } elseif (isset($_REQUEST['obm_date_start']) && $_REQUEST['obm_date_start'] != '') {
 	$date_start = $_REQUEST['obm_date_start'];
 	$current_user->setPreference('obm_date_start', $_REQUEST['obm_date_start']);
-	$log->debug("_REQUEST['obm_date_start'] is:");
-	$log->debug($_REQUEST['obm_date_start']);
-	$log->debug("_SESSION['obm_date_start'] is:");
-	$log->debug($_SESSION['obm_date_start']);
 } else {
 	$date_start = '2000-01-01';
 }
 
 if (isset($_SESSION['obm_date_end']) && $_SESSION['obm_date_end'] != '' && !isset($_REQUEST['obm_date_end'])) {
 	$date_end = $_SESSION['obm_date_end'];
-	$log->debug("_SESSION['obm_date_end'] is:");
-	$log->debug($_SESSION['obm_date_end']);
 } elseif (isset($_REQUEST['obm_date_end']) && $_REQUEST['obm_date_end'] != '') {
 	$date_end = $_REQUEST['obm_date_end'];
 	$current_user->setPreference('obm_date_end', $_REQUEST['obm_date_end']);
-	$log->debug("_REQUEST['obm_date_end'] is:");
-	$log->debug($_REQUEST['obm_date_end']);
-	$log->debug("_SESSION['obm_date_end'] is:");
-	$log->debug($_SESSION['obm_date_end']);
 } else {
 	$date_end = '2100-01-01';
 }
@@ -77,15 +64,9 @@ if (isset($_REQUEST['showmypipeline'])) {
 	$ids = array($_REQUEST['showpipelineof']);
 } elseif (isset($_SESSION['obm_ids']) && count($_SESSION['obm_ids']) != 0 && !isset($_REQUEST['obm_ids'])) {
 	$ids = $_SESSION['obm_ids'];
-	$log->debug("_SESSION['obm_ids'] is:");
-	$log->debug($_SESSION['obm_ids']);
 } elseif (isset($_REQUEST['obm_ids']) && count($_REQUEST['obm_ids']) > 0) {
 	$ids = $_REQUEST['obm_ids'];
 	$current_user->setPreference('obm_ids', $_REQUEST['obm_ids']);
-	$log->debug("_REQUEST['obm_ids'] is:");
-	$log->debug($_REQUEST['obm_ids']);
-	$log->debug("_SESSION['obm_ids'] is:");
-	$log->debug($_SESSION['obm_ids']);
 } else {
 	$ids = get_user_array(false);
 	$ids = array_keys($ids);
@@ -133,8 +114,7 @@ if (isset($_SESSION['obm_date_end'])) {
 </tr><tr>
 <td nowrap><?php echo $current_module_strings['LBL_USERS'];?></td>
 <?php
-$pottabid = getTabid('Potentials');
-if ($is_admin==false && $profileGlobalPermission[2] == 1 && ($defaultOrgSharingPermission[$pottabid] == 3 || $defaultOrgSharingPermission[$pottabid] == 0)) {
+if (!$userprivs->hasGlobalWritePermission() && !$userprivs->hasModuleWriteSharing(getTabid('Potentials'))) {
 ?>
 	<td valign='top' ><select name="obm_ids[]" multiple size='3'><?php
 	$usrarray = get_user_array(false, 'Active', $current_user->id, 'private');

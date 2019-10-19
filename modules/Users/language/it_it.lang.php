@@ -54,6 +54,8 @@ $mod_strings = array(
   'LBL_DATE_FORMAT' => 'Formato Data',
 
   'LBL_ERROR' => 'Errore:',
+  'FORM_TOKEN_EXPIRED'=>'Edit token has expired. Try again.',
+  'ERR_CANNOTEDITUSER' => 'Not Permitted. You cannot edit this User',
   'LBL_PASSWORD' => 'Password:',
   'LBL_USER_NAME' => 'Nome Utente',
   'LBL_2FACODE' => 'Code',
@@ -213,6 +215,7 @@ $mod_strings = array(
 
   'LBL_ASTERISKEXTENSIONS_EXIST' => 'Estensione Asterisk gi&agrave esistente!',
   'LBL_CURRENCY_SEPARATORS_INCORRECT' => 'Decimal Separator and Digit Grouping Separator cannot be the same.',
+  'LBL_FORUSER' => ' for User ',
 
   'LBL_CREATE_NEW_GROUP' => 'Crea Nuovo Gruppo',
   'LBL_NEW_GROUP' => 'Nuovo Gruppo',
@@ -333,6 +336,8 @@ $mod_strings = array(
   'LBL_EMAIL_SCHDS_DESC' => 'La seguente &egrave; la lista delle notifiche che sono attivate automaticamente quando l`evento corrispondente &egrave; accaduto',
   'LBL_ACTIVE' => 'Attivo',
   'LBL_INACTIVE' => 'Inattivo',
+  'LBL_ON'=>'On',
+  'LBL_OFF'=>'Off',
   'LBL_NOTIFICATION' => 'Notifica',
   'LBL_DESCRIPTION' => 'Descrizione',
   'LBL_TASK_NOTIFICATION' => 'Notifica di Compiti Ritardati',
@@ -771,6 +776,7 @@ $mod_strings = array(
 'LBL_USERLOGGEDOUTOK' => 'The user has been logged out correctly.',
 'LBL_USERLOGGEDOUTNOK' => 'The user could not be logged out.',
 'LBL_UNBLOCK_USR' => 'Unblock the session to login?',
+'LOGGED IN' => 'Logged In',
 // LDAP
 'LBL_QUERY' => 'Query',
 'LBL_FORE_LASTNAME' => 'Nome o Cognome',

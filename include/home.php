@@ -7,7 +7,6 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ********************************************************************************/
-global $current_user;
 require_once 'include/utils/ListViewUtils.php';
 require_once 'modules/CustomView/CustomView.php';
 require_once 'include/DatabaseUtil.php';
@@ -36,9 +35,10 @@ class Homestuff {
 		if (!empty($this->defaulttitle)) {
 			$this->stufftitle = $this->defaulttitle;
 		}
-		$query="insert into vtiger_homestuff(stuffid, stuffsequence, stufftype, userid, visible, stufftitle) values(?, ?, ?, ?, ?, ?)";
-		$params= array($stuffid,$sequence,$this->stufftype,$current_user->id,0,$this->stufftitle);
-		$result=$adb->pquery($query, $params);
+		$query= $query="insert into vtiger_homestuff(stuffid,stuffsequence,stufftype, userid, visible, stufftitle) values(?, ?, ?, ?, ?, ?)";
+		$params = array($stuffid,$sequence,$this->stufftype,$current_user->id,0,$this->stufftitle);
+		$result= $adb->pquery($query, $params);
+
 		if (!$result) {
 			return false;
 		}
@@ -53,14 +53,39 @@ class Homestuff {
 			}
 
 			foreach ($fieldarray as $field) {
-				$queryfld="insert into vtiger_homemoduleflds values(? ,?);";
-				$params = array($stuffid,$field);
-				$result=$adb->pquery($queryfld, $params);
+				$result=$adb->pquery('insert into vtiger_homemoduleflds values(? ,?)', array($stuffid, $field));
 			}
 
 			if (!$result) {
 				return false;
 			}
+		} elseif ($this->stufftype=='CustomWidget') {
+			$rs = $adb->query('select count(value) from vtiger_seq_temp');
+			$q=$adb->query_result($rs, 0, 0);
+			if ($q > 0) {
+				$rs = $adb->query('select min(value) from vtiger_seq_temp');
+				$id=$adb->query_result($rs, 0, 0);
+			} else {
+				$id = $stuffid;
+			}
+			$adb->pquery('update vtiger_homestuff_seq set id=?', array($id-1));
+			$adb->pquery('update vtiger_homestuff set stuffid=? where stuffid=?', array($id,$stuffid));
+			$adb->query('delete from vtiger_seq_temp');
+			$stuffid=$adb->getUniqueId('vtiger_homestuff');
+			$fieldarray=explode(",", $this->fieldvalue);
+			$result=$adb->pquery('insert into vtiger_home_customwidget values(?,?,?)', array($id, $this->selmodule, $this->selmodule));
+
+			if (!$result) {
+				return false;
+			}
+
+			$params = array($stuffid,$this->selFiltername,$this->selAggregatename,$fieldarray[0]);
+			$result=$adb->pquery('insert into vtiger_home_cw_fields values (?,?,?,?)', $params);
+			if (!$result) {
+				return false;
+			}
+
+			$stuffid=$adb->getUniqueId('vtiger_homestuff');
 		} elseif ($this->stufftype=="RSS") {
 			$queryrss="insert into vtiger_homerss values(?,?,?)";
 			$params = array($stuffid,$this->txtRss,$this->maxentries);
@@ -106,6 +131,24 @@ class Homestuff {
 			}
 		}
 		return "loadAddedDiv($stuffid,'".$this->stufftype."')";
+	}
+
+	/**
+	 * this function adds a widget filter
+	 */
+	public function addCustomWidgetFilter() {
+		global $adb;
+		$stuffid=$adb->getUniqueId('vtiger_homestuff');
+		$result=$adb->pquery('insert into vtiger_seq_temp values(?)', array($stuffid));
+		$rs = $adb->pquery('select min(value) from vtiger_seq_temp', array());
+		$id=$adb->query_result($rs, 0, 0);
+		$fieldarray=explode(',', $this->fieldvalue);
+		$result=$adb->pquery('insert into vtiger_home_cw_fields values(? ,?,?,?)', array($id, $this->selFiltername, $this->selAggregatename, $fieldarray[0]));
+		if (!$result) {
+			return false;
+		} else {
+			return true;
+		}
 	}
 
 	/**
@@ -217,6 +260,8 @@ class Homestuff {
 			$details=$this->getModuleFilters($sid);
 		} elseif ($stuffType=='RSS') {
 			$details=$this->getRssDetails($sid);
+		} elseif ($stuffType=='CustomWidget') {
+			$details=$this->getCWDetails($sid);
 		} elseif ($stuffType=='DashBoard' && vtlib_isModuleActive('Dashboard')) {
 			$details=$this->getDashDetails($sid);
 		} elseif ($stuffType=='Default') {
@@ -225,6 +270,145 @@ class Homestuff {
 			$details = $this->getReportChartDetails($sid);
 		}
 		return $details;
+	}
+
+	/**
+	 * function to get Custom Widget Details
+	 */
+	private function getCWDetails($sid) {
+		$list=array();
+		global $adb, $current_user;
+		$querycvid = 'select vtiger_home_cw_fields.filtername,vtiger_home_cw_fields.aggregate,vtiger_home_cw_fields.field, vtiger_home_customwidget.modulename
+			from vtiger_home_cw_fields
+			left join vtiger_home_customwidget on vtiger_home_customwidget.stuffid=vtiger_home_cw_fields.stuffid
+			where vtiger_home_cw_fields.stuffid=?';
+		$resultcvid=$adb->pquery($querycvid, array($sid));
+		$nr=$adb->num_rows($resultcvid);
+		for ($i=0; $i<$nr; $i++) {
+			$list[$i]=array();
+			$modname=$adb->query_result($resultcvid, $i, 'modulename');
+			if (isPermitted($modname, 'index') != 'yes') {
+				continue;
+			}
+			$aggr=$adb->query_result($resultcvid, $i, 'aggregate');
+			$cvid=$adb->query_result($resultcvid, $i, 'filtername');
+			$column_count = $adb->num_rows($resultcvid);
+			$cvid_check_query = $adb->pquery('SELECT * FROM vtiger_customview WHERE cvid=?', array($cvid));
+			if ($adb->num_rows($cvid_check_query) > 0) {
+				$focus = CRMEntity::getInstance($modname);
+				$oCustomView = new CustomView($modname);
+				$listquery = getListQuery($modname);
+
+				if (trim($listquery) == '') {
+					$listquery = $focus->getListQuery($modname);
+				}
+
+				$query = $oCustomView->getModifiedCvListQuery($cvid, $listquery, $modname);
+				$count_result = $adb->query(mkCountQuery($query));
+				$noofrows = $adb->query_result($count_result, 0, 'count');
+
+				//To get the current language file
+				global $current_language,$app_strings;
+				$fieldmod_strings = return_module_language($current_language, $modname);
+
+				if ($modname == 'Calendar') {
+					$query .= "AND vtiger_activity.activitytype NOT IN ('Emails')";
+				}
+
+				for ($l=0; $l < $column_count; $l++) {
+					$fieldinfo = $adb->query_result($resultcvid, $i, 'field');
+					list($tabname,$colname,$fldname,$fieldmodlabel) = explode(':', $fieldinfo);
+					$fieldheader=explode('_', $fieldmodlabel, 2);
+					$fldlabel=$fieldheader[1];
+					$pos=strpos($fldlabel, '_');
+
+					if ($pos==true) {
+						$fldlabel=str_replace('_', ' ', $fldlabel);
+					}
+
+					$field_label=isset($app_strings[$fldlabel])?$app_strings[$fldlabel]:(isset($fieldmod_strings[$fldlabel])?$fieldmod_strings[$fldlabel]:$fldlabel);
+					$cv_presence=$adb->pquery("SELECT * from vtiger_cvcolumnlist WHERE cvid = ? and columnname LIKE '%".$fldname."%'", array($cvid));
+
+					if (!is_admin($current_user)) {
+						$fld_permission = getFieldVisibilityPermission($modname, $current_user->id, $fldname);
+					} else {
+						$fld_permission = 0;
+					}
+
+					if ($fld_permission == 0 && $adb->num_rows($cv_presence)) {
+						$field_query = $adb->pquery(
+							'SELECT fieldlabel FROM vtiger_field WHERE fieldname=? AND tablename=? and vtiger_field.presence in (0,2)',
+							array($fldname,$tabname)
+						);
+						$field_label = $adb->query_result($field_query, 0, 'fieldlabel');
+					}
+					//$fieldcolumns[$fldlabel] = array($tabname=>$colname);
+				}
+
+				// $list= getListViewEntries($focus,$modname,$list_result,6,"","","","",$oCustomView,'HomePage',$fieldcolumns);
+				if (getUItype($modname, $colname) == 71) {
+					$isCurrencyField = true;
+				} else {
+					$isCurrencyField = false;
+				}
+
+				$rs = $adb->pquery('SELECT viewname,entitytype FROM vtiger_customview WHERE cvid=?', array($cvid));
+				$cvid_ch = $adb->query_result($rs, 0, 'viewname');
+				$c1 = $adb->query_result($rs, 0, 'entitytype');
+				$rs = $adb->pquery('SELECT modulename FROM vtiger_entityname where modulename=?', array($c1));
+				$tab2 = $adb->query_result($rs, 0, 'modulename');
+				$c=$tabname.'.'.$colname;
+				$listquery = getListQuery($tab2);
+				$query = $oCustomView->getModifiedCvListQuery($cvid, $listquery, $tab2);
+				switch ($aggr) {
+					case 'sum':
+						$count_result = $adb->query(mkSumQuery($query, $c));
+						break;
+					case 'min':
+						$count_result = $adb->query(mkMinQuery($query, $c));
+						break;
+					case 'max':
+						$count_result = $adb->query(mkMaxQuery($query, $c));
+						break;
+					case 'count':
+						$count_result = $adb->query(mkCountQuery($query));
+						break;
+					case 'avg':
+						$count_result = $adb->query(mkAvgQuery($query, $c));
+						break;
+				}
+
+				$r = $adb->query_result($count_result, 0, 0);
+				if (trim($r)===',') {
+					$r='-';
+				}
+				$wlisturl = 'index.php?action=ListView&module='.$modname.'&viewname='.$cvid;
+				$list[$i][]='<a href="'.$wlisturl.'">'.getTranslatedString($cvid_ch, $modname).'</a>';
+				$list[$i][]='<a href="'.$wlisturl.'">'.getTranslatedString(strtoupper($aggr), 'Reports').'('.getTranslatedString($field_label, $modname).')</a>';
+				if ($isCurrencyField) {
+					$currencyField = new CurrencyField($r);
+					$list[$i][] = '<a href="'.$wlisturl.'">'.$currencyField->getDisplayValueWithSymbol($current_user).'</a>';
+				} elseif (is_numeric($r)) {
+					$currencyField = new CurrencyField($r);
+					$list[$i][]= '<a href="'.$wlisturl.'">'.$currencyField->getDisplayValue($current_user).'</a>';
+				} else {
+					$list[$i][]='<a href="'.$wlisturl.'">'.$r.'</a>' ;
+				}
+			} else {
+				echo "<font color='red'>getTranslatedString('LBL_FILTERSELECTEDNOTFOUND')</font>";
+			}
+		}
+		$header = array();
+		$header[]=getTranslatedString('LBL_HOME_METRICS', 'Home');
+		$header[]=getTranslatedString('LBL_HOME_AGGREGATEFIELD');
+		$header[]=getTranslatedString('LBL_HOME_VALUE');
+		$return_value = array('ModuleName'=>'Home', 'cvid'=>0, 'Header'=>$header, 'Entries'=>$list);
+
+		if (count($header)!=0) {
+			 return $return_value;
+		} else {
+			echo getTranslatedString('LBL_FIELDINFILTERNOTFOUND');
+		}
 	}
 
 	/**
@@ -344,11 +528,10 @@ class Homestuff {
 
 	public function getReportChartDetails($stuffId, $skipChart = '') {
 		global $adb;
-		$qry="select * from vtiger_homereportchart where stuffid=?";
-		$result=$adb->pquery($qry, array($stuffId));
-		$reportId=$adb->query_result($result, 0, "reportid");
-		$chartType=$adb->query_result($result, 0, "reportcharttype");
-		$reportDetails=array('ReportId'=>$reportId,'Chart'=>$chartType);
+		$result=$adb->pquery('select * from vtiger_homereportchart where stuffid=?', array($stuffId));
+		$reportId=$adb->query_result($result, 0, 'reportid');
+		$chartType=$adb->query_result($result, 0, 'reportcharttype');
+		$reportDetails=array('ReportId'=>$reportId, 'Chart'=>$chartType);
 		$this->reportdetails[$stuffId] = $reportDetails;
 		if ($skipChart == '') {
 			return $this->getDisplayReportChart($reportId, $chartType);
@@ -368,8 +551,7 @@ class Homestuff {
 	private function getDefaultDetails($dfid, $calCnt) {
 		global $adb;
 		$details = array('ModuleName'=>'','Title'=>'','Header'=>'','Entries'=>array(),'search_qry'=>'');
-		$qry="select * from vtiger_homedefault where stuffid=?";
-		$result=$adb->pquery($qry, array($dfid));
+		$result=$adb->pquery('select * from vtiger_homedefault where stuffid=?', array($dfid));
 		$maxval=$adb->query_result($result, 0, "maxentries");
 		$hometype=$adb->query_result($result, 0, "hometype");
 
@@ -489,9 +671,9 @@ class Homestuff {
  */
 function getGroupTaskLists($maxval) {
 	//get all the group relation tasks
-	global $current_user, $adb, $log, $app_strings;
+	global $current_user, $adb, $app_strings;
 	$userid= $current_user->id;
-	$groupids = explode(",", fetchUserGroupids($userid));
+	$groupids = explode(',', fetchUserGroupids($userid));
 
 	//Check for permission before constructing the query.
 	if (vtlib_isModuleActive('Leads') && count($groupids) > 0 &&
@@ -509,7 +691,7 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid=vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and vtiger_leaddetails.leadid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
@@ -517,7 +699,7 @@ function getGroupTaskLists($maxval) {
 
 		if (vtlib_isModuleActive("Calendar") && isPermitted('Calendar', 'index') == "yes") {
 			if ($query !='') {
-				$query .= " union all ";
+				$query .= ' union all ';
 			}
 			//Get the activities assigned to group
 			$query .= "(select vtiger_activity.activityid as id,vtiger_activity.subject as name,vtiger_groups.groupname as groupname,'Activities' as Type
@@ -527,7 +709,7 @@ function getGroupTaskLists($maxval) {
 				where vtiger_crmentity.deleted=0 and ((vtiger_activity.eventstatus != 'held' and (vtiger_activity.status is null or vtiger_activity.status = '')) or
 					(vtiger_activity.status!='completed' and (vtiger_activity.eventstatus is null or vtiger_activity.eventstatus=''))) and vtiger_activity.activityid>0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
@@ -535,7 +717,7 @@ function getGroupTaskLists($maxval) {
 
 		if (vtlib_isModuleActive("HelpDesk") && isPermitted('HelpDesk', 'index') == "yes") {
 			if ($query !='') {
-				$query .= " union all ";
+				$query .= ' union all ';
 			}
 			//Get the tickets assigned to group (status not Closed -- hardcoded value)
 			$query .= "(select vtiger_troubletickets.ticketid,vtiger_troubletickets.title as name,vtiger_groups.groupname,'Tickets   ' as Type
@@ -544,7 +726,7 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid=vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and vtiger_troubletickets.status != 'Closed' and vtiger_troubletickets.ticketid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
@@ -552,7 +734,7 @@ function getGroupTaskLists($maxval) {
 
 		if (vtlib_isModuleActive("Potentials") && isPermitted('Potentials', 'index') == "yes") {
 			if ($query != '') {
-				$query .=" union all ";
+				$query .=' union all ';
 			}
 			//Get the potentials assigned to group(sales stage not Closed Lost or Closed Won-- hardcoded value)
 			$query .= "(select vtiger_potential.potentialid,vtiger_potential.potentialname as name,vtiger_groups.groupname as groupname,'Potentials ' as Type
@@ -562,15 +744,15 @@ function getGroupTaskLists($maxval) {
 				where vtiger_crmentity.deleted=0 and ((vtiger_potential.sales_stage !='Closed Lost') or (vtiger_potential.sales_stage != 'Closed Won')) and
 					vtiger_potential.potentialid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
 		}
 
-		if (vtlib_isModuleActive("Accounts") && isPermitted('Accounts', 'index') == "yes") {
+		if (vtlib_isModuleActive('Accounts') && isPermitted('Accounts', 'index') == "yes") {
 			if ($query != '') {
-				$query .=" union all ";
+				$query .=' union all ';
 			}
 			//Get the Accounts assigned to group
 			$query .= "(select vtiger_account.accountid as id,vtiger_account.accountname as name,vtiger_groups.groupname as groupname, 'Accounts ' as Type
@@ -579,7 +761,7 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid=vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and vtiger_account.accountid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
@@ -587,7 +769,7 @@ function getGroupTaskLists($maxval) {
 
 		if (vtlib_isModuleActive("Contacts") && isPermitted('Contacts', 'index') =='yes') {
 			if ($query != '') {
-				$query .=" union all ";
+				$query .=' union all ';
 			}
 			//Get the Contacts assigned to group
 			$query .= "(select vtiger_contactdetails.contactid as id, vtiger_contactdetails.lastname as name ,vtiger_groups.groupname as groupname, 'Contacts ' as Type
@@ -596,15 +778,15 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid = vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and vtiger_contactdetails.contactid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
 		}
 
-		if (vtlib_isModuleActive("Campaigns") && isPermitted('Campaigns', 'index') =='yes') {
+		if (vtlib_isModuleActive('Campaigns') && isPermitted('Campaigns', 'index') =='yes') {
 			if ($query != '') {
-				$query .=" union all ";
+				$query .=' union all ';
 			}
 			//Get the Campaigns assigned to group(Campaign status not Complete -- hardcoded value)
 			$query .= "(select vtiger_campaign.campaignid as id, vtiger_campaign.campaignname as name, vtiger_groups.groupname as groupname,'Campaigns ' as Type
@@ -613,7 +795,7 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid = vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and (vtiger_campaign.campaignstatus != 'Complete') and vtiger_campaign.campaignid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
@@ -621,7 +803,7 @@ function getGroupTaskLists($maxval) {
 
 		if (vtlib_isModuleActive("Quotes") && isPermitted('Quotes', 'index') == 'yes') {
 			if ($query != '') {
-				$query .=" union all ";
+				$query .=' union all ';
 			}
 			//Get the Quotes assigned to group(Quotes stage not Rejected -- hardcoded value)
 			$query .="(select vtiger_quotes.quoteid as id,vtiger_quotes.subject as name, vtiger_groups.groupname as groupname ,'Quotes 'as Type
@@ -630,7 +812,7 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid = vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and (vtiger_quotes.quotestage != 'Rejected') and vtiger_quotes.quoteid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
@@ -638,7 +820,7 @@ function getGroupTaskLists($maxval) {
 
 		if (vtlib_isModuleActive("SalesOrder") && isPermitted('SalesOrder', 'index') =='yes') {
 			if ($query != '') {
-				$query .=" union all ";
+				$query .=' union all ';
 			}
 			//Get the Sales Order assigned to group
 			$query .="(select vtiger_salesorder.salesorderid as id, vtiger_salesorder.subject as name,vtiger_groups.groupname as groupname,'SalesOrder ' as Type
@@ -647,15 +829,15 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid = vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and vtiger_salesorder.salesorderid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
 		}
 
-		if (vtlib_isModuleActive("Invoice") && isPermitted('Invoice', 'index') =='yes') {
+		if (vtlib_isModuleActive('Invoice') && isPermitted('Invoice', 'index') =='yes') {
 			if ($query != '') {
-				$query .=" union all ";
+				$query .=' union all ';
 			}
 			//Get the Sales Order assigned to group(Invoice status not Paid -- hardcoded value)
 			$query .="(select vtiger_invoice.invoiceid as Id , vtiger_invoice.subject as Name, vtiger_groups.groupname as groupname,'Invoice ' as Type
@@ -664,7 +846,7 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid = vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and(vtiger_invoice.invoicestatus != 'Paid') and vtiger_invoice.invoiceid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
@@ -672,7 +854,7 @@ function getGroupTaskLists($maxval) {
 
 		if (vtlib_isModuleActive("PurchaseOrder") && isPermitted('PurchaseOrder', 'index') == 'yes') {
 			if ($query != '') {
-				$query .=" union all ";
+				$query .=' union all ';
 			}
 			//Get the Purchase Order assigned to group
 			$query.="(select vtiger_purchaseorder.purchaseorderid as id,vtiger_purchaseorder.subject as name,vtiger_groups.groupname as groupname,'PurchaseOrder ' as Type
@@ -681,7 +863,7 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid =vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and vtiger_purchaseorder.purchaseorderid >0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
@@ -689,7 +871,7 @@ function getGroupTaskLists($maxval) {
 
 		if (vtlib_isModuleActive("Documents") && isPermitted('Documents', 'index') == 'yes') {
 			if ($query != '') {
-				$query .=" union all ";
+				$query .=' union all ';
 			}
 			//Get the Purchase Order assigned to group
 			$query .="(select vtiger_notes.notesid as id,vtiger_notes.title as name,vtiger_groups.groupname as groupname, 'Documents' as Type
@@ -698,13 +880,12 @@ function getGroupTaskLists($maxval) {
 				inner join vtiger_groups on vtiger_crmentity.smownerid =vtiger_groups.groupid
 				where vtiger_crmentity.deleted=0 and vtiger_notes.notesid > 0";
 			if (count($groupids) > 0) {
-				$query .= " and vtiger_groups.groupid in (". generateQuestionMarks($groupids). ")";
+				$query .= ' and vtiger_groups.groupid in ('. generateQuestionMarks($groupids). ')';
 				$params[] = $groupids;
 			}
 			$query .= " LIMIT $maxval)";
 		}
 
-		$log->info("Here is the where clause for the list view: $query");
 		$result = $adb->pquery($query, $params);
 
 		$title=array();

@@ -58,8 +58,8 @@ function __vt_time_diffdays($arr) {
 function __cb_time_diffyears($arr) {
 	$time_operand1 = $time_operand2 = 0;
 	if (count($arr) > 1) {
-		$time_operand1 = $time1 = $arr[0];
-		$time_operand2 = $time2 = $arr[1];
+		$time_operand1 = $arr[0];
+		$time_operand2 = $arr[1];
 	} else {
 		$time_operand1 = date('Y-m-d H:i:s'); // Current time
 		$time_operand2 = $arr[0];
@@ -109,13 +109,17 @@ function __cb_getWeekdayDifference($arr) {
 function __vt_add_days($arr) {
 	if (count($arr) > 1) {
 		$baseDate = $arr[0];
+		if (empty($baseDate)) {
+			$baseDate = date('Y-m-d'); // Current date
+		} else {
+			$baseDate = DateTimeField::convertToDBFormat($baseDate);
+		}
 		$noOfDays = $arr[1];
 	} else {
 		$noOfDays = $arr[0];
 		$baseDate = date('Y-m-d'); // Current date
 	}
-	preg_match('/\d\d\d\d-\d\d-\d\d/', $baseDate, $match);
-	$baseDate = strtotime($match[0]);
+	$baseDate = strtotime($baseDate);
 	$date = strftime('%Y-%m-%d', $baseDate + ($noOfDays * 24 * 60 * 60));
 	return $date;
 }
@@ -123,13 +127,17 @@ function __vt_add_days($arr) {
 function __vt_sub_days($arr) {
 	if (count($arr) > 1) {
 		$baseDate = $arr[0];
+		if (empty($baseDate)) {
+			$baseDate = date('Y-m-d'); // Current date
+		} else {
+			$baseDate = DateTimeField::convertToDBFormat($baseDate);
+		}
 		$noOfDays = $arr[1];
 	} else {
 		$noOfDays = $arr[0];
 		$baseDate = date('Y-m-d'); // Current date
 	}
-	preg_match('/\d\d\d\d-\d\d-\d\d/', $baseDate, $match);
-	$baseDate = strtotime($match[0]);
+	$baseDate = strtotime($baseDate);
 	$date = strftime('%Y-%m-%d', $baseDate - ($noOfDays * 24 * 60 * 60));
 	return $date;
 }
@@ -137,13 +145,17 @@ function __vt_sub_days($arr) {
 function __vt_add_months($arr) {
 	if (count($arr) > 1) {
 		$baseDate = $arr[0];
+		if (empty($baseDate)) {
+			$baseDate = date('Y-m-d'); // Current date
+		} else {
+			$baseDate = DateTimeField::convertToDBFormat($baseDate);
+		}
 		$noOfMonths = $arr[1];
 	} else {
 		$noOfMonths = $arr[0];
 		$baseDate = date('Y-m-d'); // Current date
 	}
-	preg_match('/\d\d\d\d-\d\d-\d\d/', $baseDate, $match);
-	$baseDate = strtotime("+$noOfMonths months", strtotime($match[0]));
+	$baseDate = strtotime("+$noOfMonths months", strtotime($baseDate));
 	$date = strftime('%Y-%m-%d', $baseDate);
 	return $date;
 }
@@ -151,13 +163,17 @@ function __vt_add_months($arr) {
 function __vt_sub_months($arr) {
 	if (count($arr) > 1) {
 		$baseDate = $arr[0];
+		if (empty($baseDate)) {
+			$baseDate = date('Y-m-d'); // Current date
+		} else {
+			$baseDate = DateTimeField::convertToDBFormat($baseDate);
+		}
 		$noOfMonths = $arr[1];
 	} else {
 		$noOfMonths = $arr[0];
 		$baseDate = date('Y-m-d'); // Current date
 	}
-	preg_match('/\d\d\d\d-\d\d-\d\d/', $baseDate, $match);
-	$baseDate = strtotime("-$noOfMonths months", strtotime($match[0]));
+	$baseDate = strtotime("-$noOfMonths months", strtotime($baseDate));
 	$date = strftime('%Y-%m-%d', $baseDate);
 	return $date;
 }
@@ -294,5 +310,30 @@ function __cb_next_dateLaborable($arr) {
 	} else {
 		return '';
 	}
+}
+
+function __cb_add_workdays($arr) {
+	$date = new DateTime($arr[0]);
+	$numofdays = $arr[1];
+	$addsaturday = isset($arr[2]) ? $arr[2] : 1;
+	if ($addsaturday == 0) {
+		$lastdow = 6;
+	} else {
+		$lastdow = 7;
+	}
+	if (isset($arr[3]) && trim($arr[3])!='') {
+		$holidays = explode(',', $arr[3]);
+	} else {
+		$holidays = array();
+	}
+	$interval = new DateInterval('P1D');
+	$x = 0;
+	while ($x < $numofdays) {
+		$date = $date->add($interval);
+		if ($date->format('N') < $lastdow && !in_array($date->format('Y-m-d'), $holidays)) {
+			$x++;
+		}
+	}
+	return $date->format('Y-m-d');
 }
 ?>

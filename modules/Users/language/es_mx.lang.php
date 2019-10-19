@@ -58,6 +58,8 @@ $mod_strings = array(
 'LBL_DATE_FORMAT'=>'Formato de Fecha',
 
 'LBL_ERROR'=>'Error:',
+'FORM_TOKEN_EXPIRED'=>'La clave de edición ha expirado. Intentalo de nuevo.',
+'ERR_CANNOTEDITUSER' => 'No permitido. No puedes editar este usuario',
 'LBL_PASSWORD'=>'Contraseña:',
 'LBL_USER_NAME'=>'Usuario:',
 'LBL_2FACODE' => 'Código:',
@@ -216,6 +218,7 @@ $mod_strings = array(
 
 'LBL_ASTERISKEXTENSIONS_EXIST' => 'Extensión Asterisk ya Existe!',
 'LBL_CURRENCY_SEPARATORS_INCORRECT' => 'El Separador Decimal y de Agrupamiento de Dígitos no puede ser el mismo.',
+'LBL_FORUSER' => ' en el Usuario ',
 
 'LBL_CREATE_NEW_GROUP'=>'Crear nuevo grupo',
 'LBL_NEW_GROUP'=>'Nuevo Grupo',
@@ -336,6 +339,8 @@ $mod_strings = array(
 'LBL_EMAIL_SCHDS_DESC'=>'Lo que sigue es la lista de las notificaciones que se activan automáticamente cuando el correspondiente evento ha ocurrido.',
 'LBL_ACTIVE'=>'Activo',
 'LBL_INACTIVE'=>'Inactivo',
+'LBL_ON'=>'On',
+'LBL_OFF'=>'Off',
 'LBL_NOTIFICATION'=>'Notificación',
 'LBL_DESCRIPTION'=>'Descripción',
 'LBL_TASK_NOTIFICATION'=>'Notificación de tarea retrasada',
@@ -774,10 +779,10 @@ $mod_strings = array(
 'LBL_USERLOGGEDOUTOK' => 'Se ha cerrado la sesión del usuario.',
 'LBL_USERLOGGEDOUTNOK' => 'No se ha podido cerrar la sesión del usuario.',
 'LBL_UNBLOCK_USR' => 'Desbloquear usuario y permitir la entrada.',
+'LOGGED IN' => 'Dentro',
 // LDAP
 'LBL_QUERY' => 'Consulta',
 'LBL_FORE_LASTNAME' => 'Nombre o Apellido',
 'LBL_NO_LDAP_MATCHES' => 'No se han encontrado usuarios en el servidor LDAP!',
 );
-
 ?>

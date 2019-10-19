@@ -9,11 +9,10 @@
  ********************************************************************************/
 require_once 'include/utils/utils.php';
 require_once 'include/logging.php';
-require_once "modules/Dashboard/DashboardCharts.php";
-global $current_language, $currentModule, $action;
+require_once 'modules/Dashboard/DashboardCharts.php';
+global $current_language, $currentModule, $action, $current_user;
 $current_module_strings = return_module_language($current_language, 'Dashboard');
-require 'user_privileges/sharing_privileges_'.$current_user->id.'.php';
-require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+$userprivs = $current_user->getPrivileges();
 $log = LoggerManager::getLogger('pipeline_by_sales_stage');
 
 if (isset($_REQUEST['pbss_refresh'])) {
@@ -42,30 +41,18 @@ if (isset($_REQUEST['pbss_date_end']) && $_REQUEST['pbss_date_end'] == '') {
 //get the dates to display
 if (isset($_SESSION['pbss_date_start']) && $_SESSION['pbss_date_start'] != '' && !isset($_REQUEST['pbss_date_start'])) {
 	$date_start = $_SESSION['pbss_date_start'];
-	$log->debug("_SESSION['pbss_date_start'] is:");
-	$log->debug($_SESSION['pbss_date_start']);
 } elseif (isset($_REQUEST['pbss_date_start']) && $_REQUEST['pbss_date_start'] != '') {
 	$date_start = $_REQUEST['pbss_date_start'];
 	$current_user->setPreference('pbss_date_start', $_REQUEST['pbss_date_start']);
-	$log->debug("_REQUEST['pbss_date_start'] is:");
-	$log->debug($_REQUEST['pbss_date_start']);
-	$log->debug("_SESSION['pbss_date_start'] is:");
-	$log->debug($_SESSION['pbss_date_start']);
 } else {
 	$date_start = '2001-01-01';
 }
 
 if (isset($_SESSION['pbss_date_end']) && $_SESSION['pbss_date_end'] != '' && !isset($_REQUEST['pbss_date_end'])) {
 	$date_end = $_SESSION['pbss_date_end'];
-	$log->debug("_SESSION['pbss_date_end'] is:");
-	$log->debug($_SESSION['pbss_date_end']);
 } elseif (isset($_REQUEST['pbss_date_end']) && $_REQUEST['pbss_date_end'] != '') {
 	$date_end = $_REQUEST['pbss_date_end'];
 	$current_user->setPreference('pbss_date_end', $_REQUEST['pbss_date_end']);
-	$log->debug("_REQUEST['pbss_date_end'] is:");
-	$log->debug($_REQUEST['pbss_date_end']);
-	$log->debug("_SESSION['pbss_date_end'] is:");
-	$log->debug($_SESSION['pbss_date_end']);
 } else {
 	$date_end = '2100-01-01';
 }
@@ -75,15 +62,9 @@ $datax = array();
 //get list of sales stage keys to display
 if (isset($_SESSION['pbss_sales_stages']) && count($_SESSION['pbss_sales_stages']) > 0 && !isset($_REQUEST['pbss_sales_stages'])) {
 	$tempx = $_SESSION['pbss_sales_stages'];
-	$log->debug("_SESSION['pbss_sales_stages'] is:");
-	$log->debug($_SESSION['pbss_sales_stages']);
 } elseif (isset($_REQUEST['pbss_sales_stages']) && count($_REQUEST['pbss_sales_stages']) > 0) {
 	$tempx = $_REQUEST['pbss_sales_stages'];
 	$current_user->setPreference('pbss_sales_stages', $_REQUEST['pbss_sales_stages']);
-	$log->debug("_REQUEST['pbss_sales_stages'] is:");
-	$log->debug($_REQUEST['pbss_sales_stages']);
-	$log->debug("_SESSION['pbss_sales_stages'] is:");
-	$log->debug($_SESSION['pbss_sales_stages']);
 }
 
 //set $datax using selected sales stage keys
@@ -94,9 +75,6 @@ if (count($tempx) > 0) {
 } else {
 	$datax = $comboFieldArray['sales_stage_dom'];
 }
-$log->debug('datax is:');
-$log->debug($datax);
-
 $ids = array();
 //get list of user ids for which to display data
 if (isset($_REQUEST['showmypipeline'])) {
@@ -105,15 +83,9 @@ if (isset($_REQUEST['showmypipeline'])) {
 	$ids = array($_REQUEST['showpipelineof']);
 } elseif (isset($_SESSION['pbss_ids']) && count($_SESSION['pbss_ids']) != 0 && !isset($_REQUEST['pbss_ids'])) {
 	$ids = $_SESSION['pbss_ids'];
-	$log->debug("_SESSION['pbss_ids'] is:");
-	$log->debug($_SESSION['pbss_ids']);
 } elseif (isset($_REQUEST['pbss_ids']) && count($_REQUEST['pbss_ids']) > 0) {
 	$ids = $_REQUEST['pbss_ids'];
 	$current_user->setPreference('pbss_ids', $_REQUEST['pbss_ids']);
-	$log->debug("_REQUEST['pbss_ids'] is:");
-	$log->debug($_REQUEST['pbss_ids']);
-	$log->debug("_SESSION['pbss_ids'] is:");
-	$log->debug($_SESSION['pbss_ids']);
 } else {
 	$ids = get_user_array(false);
 	$ids = array_keys($ids);
@@ -167,8 +139,7 @@ if (isset($_SESSION['pbss_date_end'])) {
 </tr><tr>
 <td valign='top' nowrap><?php echo $current_module_strings['LBL_USERS'];?></td>
 <?php
-$pottabid = getTabid('Potentials');
-if ($is_admin==false && $profileGlobalPermission[2] == 1 && ($defaultOrgSharingPermission[$pottabid] == 3 || $defaultOrgSharingPermission[$pottabid] == 0)) {
+if (!$userprivs->hasGlobalWritePermission() && !$userprivs->hasModuleWriteSharing(getTabid('Potentials'))) {
 ?>
 	<td valign='top'><select name="pbss_ids[]" multiple size='3'><?php
 	$usrarray = get_user_array(false, 'Active', $current_user->id, 'private');

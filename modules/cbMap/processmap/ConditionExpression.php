@@ -45,6 +45,9 @@
   </function>
  </map>
 
+ <map>
+	<template>The user assigned to the record is: $(assigned_user_id : (Users) first_name) $(assigned_user_id : (Users) last_name)</template>
+ </map>
  *************************************************************************************************/
 
 require_once 'modules/com_vtiger_workflow/include.inc';
@@ -59,14 +62,15 @@ require_once 'include/Webservices/Retrieve.php';
 class ConditionExpression extends processcbMap {
 
 	public function processMap($arguments) {
-		global $adb, $current_user;
+		global $current_user;
 		$xml = $this->getXMLContent();
 		$entityId = $arguments[0];
 		$holduser = $current_user;
-		$current_user = Users::getActiveAdminUser(); // evaluate condition as admin user
+		$current_user = Users::getActiveAdminUser(); // in order to retrieve all entity data for evaluation
 		if (!empty($entityId)) {
 			$entity = new VTWorkflowEntity($current_user, $entityId, true);
 			if (is_null($entity->data)) { // invalid context
+				$current_user = $holduser;
 				return false;
 			}
 		}
@@ -84,17 +88,26 @@ class ConditionExpression extends processcbMap {
 			}
 			$function = (String)$xml->function->name;
 			$testexpression = '$exprEvaluation = ' . $function . '(';
-			foreach ($xml->function->parameters->parameter as $k => $v) {
-				if (isset($entity->data[(String)$v])) {
-					$testexpression.= "'" . $entity->data[(String)$v] . "',";
-				} elseif (isset($GLOBALS[(String)$v])) {
-					$testexpression.= "'" . $GLOBALS[(String)$v] . "',";
-				} else {
-					$testexpression.= "'" . (String)$v . "',";
+			if (isset($xml->function->parameters) && isset($xml->function->parameters->parameter)) {
+				$GLOBALS['currentuserID'] = $current_user->id;
+				foreach ($xml->function->parameters->parameter as $v) {
+					if (isset($entity->data[(String)$v])) {
+						$testexpression.= "'" . $entity->data[(String)$v] . "',";
+					} elseif (isset($GLOBALS[(String)$v])) {
+						$testexpression.= "'" . $GLOBALS[(String)$v] . "',";
+					} else {
+						$testexpression.= "'" . (String)$v . "',";
+					}
 				}
+				unset($GLOBALS['currentuserID']);
 			}
 			$testexpression = trim($testexpression, ',') . ');';
 			eval($testexpression);
+		} elseif (isset($xml->template)) {
+			$testexpression = (String)$xml->template;
+			$entityCache = new VTEntityCache($current_user);
+			$ct = new VTSimpleTemplate($testexpression);
+			$exprEvaluation = $ct->render($entityCache, $entityId);
 		}
 		return $exprEvaluation;
 	}

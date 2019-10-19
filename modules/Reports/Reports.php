@@ -90,6 +90,7 @@ class Reports extends CRMEntity {
 	public $adv_rel_fields = array();
 
 	public $module_list = array();
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-account', 'class' => 'slds-icon', 'icon'=>'report');
 
 	/** Function to set primodule,secmodule,reporttype,reportname,reportdescription,folderid for given vtiger_reportid
 	 *  This function accepts the vtiger_reportid as argument
@@ -97,8 +98,8 @@ class Reports extends CRMEntity {
 	 */
 	public function __construct($reportid = '') {
 		global $adb, $current_user, $app_strings;
-		$current_user_parent_role_seq='';
-		require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+		$userprivs = $current_user->getPrivileges();
+		$is_admin = is_admin($current_user);
 		$this->initListOfModules();
 		if ($reportid != "") {
 			// Lookup information in cache first
@@ -117,7 +118,7 @@ class Reports extends CRMEntity {
 				$userGroups->getAllUserGroups($current_user->id);
 				$user_groups = $userGroups->user_groups;
 				$user_group_query = '';
-				if (!empty($user_groups) && $is_admin==false) {
+				if (!empty($user_groups) && !$is_admin) {
 					$user_group_query = " (shareid IN (".generateQuestionMarks($user_groups).") AND setype='groups') OR";
 					$params[] = $user_groups;
 				}
@@ -129,7 +130,7 @@ class Reports extends CRMEntity {
 							from vtiger_user2role
 							inner join vtiger_users on vtiger_users.id=vtiger_user2role.userid
 							inner join vtiger_role on vtiger_role.roleid=vtiger_user2role.roleid
-							where vtiger_role.parentrole like '".$current_user_parent_role_seq."::%'))";
+							where vtiger_role.parentrole like '".$userprivs->getParentRoleSequence()."::%'))";
 					$params[] = $current_user->id;
 					$params[] = $current_user->id;
 				}
@@ -139,7 +140,7 @@ class Reports extends CRMEntity {
 					from vtiger_user2role
 					inner join vtiger_users on vtiger_users.id=vtiger_user2role.userid
 					inner join vtiger_role on vtiger_role.roleid=vtiger_user2role.roleid
-					where vtiger_role.parentrole like '".$current_user_parent_role_seq."::%'",
+					where vtiger_role.parentrole like '".$userprivs->getParentRoleSequence()."::%'",
 					array()
 				);
 				$subordinate_users = array();
@@ -181,7 +182,7 @@ class Reports extends CRMEntity {
 				$this->reportname = decode_html($cachedInfo['reportname']);
 				$this->reportdescription = decode_html($cachedInfo['description']);
 				$this->folderid = $cachedInfo['folderid'];
-				if ($is_admin==true || in_array($cachedInfo['owner'], $subordinate_users) || $cachedInfo['owner']==$current_user->id) {
+				if ($is_admin || in_array($cachedInfo['owner'], $subordinate_users) || $cachedInfo['owner']==$current_user->id) {
 					$this->is_editable = 'true';
 				} else {
 					$this->is_editable = 'false';
@@ -367,7 +368,7 @@ class Reports extends CRMEntity {
 				$returndata[] = $details;
 			} while ($reportfldrow = $adb->fetch_array($result));
 		}
-		$log->info('Reports :: sgetRptFldr -> returned report folder information');
+		$log->debug('Reports :: sgetRptFldr -> returned report folder information');
 		return $returndata;
 	}
 
@@ -377,7 +378,6 @@ class Reports extends CRMEntity {
 	 */
 	public function sgetRptsforFldr($rpt_fldr_id) {
 		global $adb, $log, $current_user;
-		$current_user_parent_role_seq='';
 		$returndata = array();
 
 		require_once 'include/utils/UserInfoUtil.php';
@@ -394,26 +394,29 @@ class Reports extends CRMEntity {
 			$params[] = $rpt_fldr_id;
 		}
 
-		require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+		$userprivs = $current_user->getPrivileges();
+		$is_admin = is_admin($current_user);
+		$current_user_parent_role_seq = $userprivs->getParentRoleSequence();
+		$grpurlid = ($userprivs->hasGroups() ? '&grpid='.implode(",", $userprivs->getGroups()) : '');
 		require_once 'include/utils/GetUserGroups.php';
 		$userGroups = new GetUserGroups();
 		$userGroups->getAllUserGroups($current_user->id);
 		$user_groups = $userGroups->user_groups;
 		$user_group_query = '';
-		if (!empty($user_groups) && $is_admin==false) {
+		if (!empty($user_groups) && !$is_admin) {
 			$user_group_query = ' (shareid IN ('.generateQuestionMarks($user_groups).") AND setype='groups') OR";
 			$params[] = $user_groups;
 		}
 
 		$non_admin_query = " vtiger_report.reportid IN (SELECT reportid from vtiger_reportsharing WHERE $user_group_query (shareid=? AND setype='users'))";
-		if ($is_admin==false) {
+		if (!$is_admin) {
 			$sql .= ' and ( ('.$non_admin_query.") or vtiger_report.sharingtype='Public' or vtiger_report.owner = ?";
 			$sql .= " or vtiger_report.owner in (
 				select vtiger_user2role.userid
 				from vtiger_user2role
 				inner join vtiger_users on vtiger_users.id=vtiger_user2role.userid
 				inner join vtiger_role on vtiger_role.roleid=vtiger_user2role.roleid
-				where vtiger_role.parentrole like '".$current_user_parent_role_seq."::%'))";
+				where vtiger_role.parentrole like '".$userprivs->getParentRoleSequence()."::%'))";
 			$params[] = $current_user->id;
 			$params[] = $current_user->id;
 		}
@@ -451,13 +454,12 @@ class Reports extends CRMEntity {
 					if ($minfo['adduserinfo']==1) {
 						$report_details['moreinfo'] = rtrim($report_details['moreinfo'], '/');
 						$report_details['moreinfo'] .= strpos($report_details['moreinfo'], '?') ? '&' : '?';
-						$report_details['moreinfo'] .= 'usrid='.$current_user->id.'&role='.$current_user_parent_role_seq;
-						$report_details['moreinfo'] .= ((isset($current_user_groups) && count($current_user_groups))>0 ? '&grpid='.implode(',', $current_user_groups):'');
+						$report_details['moreinfo'] .= 'usrid='.$current_user->id.'&role='.$current_user_parent_role_seq.$grpurlid;
 					}
 				} else {
 					$report_details['moreinfo'] = $report['moreinfo'];
 				}
-				if ($is_admin==true || in_array($report['owner'], $subordinate_users) || $report['owner']==$current_user->id) {
+				if ($is_admin || in_array($report['owner'], $subordinate_users) || $report['owner']==$current_user->id) {
 					$report_details['editable'] = 'true';
 				} else {
 					$report_details['editable'] = 'false';
@@ -474,7 +476,7 @@ class Reports extends CRMEntity {
 			$returndata = $returndata[$rpt_fldr_id];
 		}
 
-		$log->info('Reports :: sgetRptsforFldr -> returned report folder information');
+		$log->debug('Reports :: sgetRptsforFldr -> returned report folder information');
 		return $returndata;
 	}
 
@@ -594,9 +596,9 @@ class Reports extends CRMEntity {
 			$tabid = array('9','16');
 		}
 
-		require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+		$userprivs = $current_user->getPrivileges();
 		//Security Check
-		if ($is_admin == true || $profileGlobalPermission[1] == 0 || $profileGlobalPermission[2] ==0) {
+		if ($userprivs->hasGlobalReadPermission()) {
 			if ($module == 'Calendar') {
 				// calendar is special because it is two modules and has many overlapping fields so we have to filter them
 				$sql = 'select * from vtiger_field where vtiger_field.block in ('. generateQuestionMarks($block) .') and vtiger_field.displaytype in (1,2,3,4) and vtiger_field.presence in (0,2) AND tablename NOT IN ('.generateQuestionMarks($skipTalbes).') ';
@@ -730,7 +732,7 @@ class Reports extends CRMEntity {
 				$module_columnlist[$optionvalue] = $label;
 			}
 		}
-		$log->info("Reports :: FieldColumns->Successfully returned ColumnslistbyBlock".$module.$block);
+		$log->debug('Reports :: FieldColumns-> returned ColumnslistbyBlock'.$module.$block);
 		return $module_columnlist;
 	}
 
@@ -800,7 +802,7 @@ class Reports extends CRMEntity {
 	 */
 	public function getStdCriteriaByModule($module) {
 		global $adb, $log, $current_user;
-		require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+		$userprivs = $current_user->getPrivileges();
 
 		$tabid = getTabid($module);
 		foreach ($this->module_list[$module] as $blockid) {
@@ -809,7 +811,7 @@ class Reports extends CRMEntity {
 		$blockids = implode(',', $blockids);
 
 		$params = array($tabid, $blockids);
-		if ($is_admin == true || $profileGlobalPermission[1] == 0 || $profileGlobalPermission[2] == 0) {
+		if ($userprivs->hasGlobalReadPermission()) {
 			//uitype 6 and 23 added for start_date,EndDate,Expected Close Date
 			$sql = 'select *
 				from vtiger_field
@@ -846,7 +848,7 @@ class Reports extends CRMEntity {
 			$stdcriteria_list[$optionvalue] = $fieldlabel;
 		}
 
-		$log->info('Reports :: StdfilterColumns->Successfully returned Stdfilter for'.$module);
+		$log->debug('Reports :: StdfilterColumns-> returned Stdfilter for'.$module);
 		return $stdcriteria_list;
 	}
 
@@ -935,7 +937,7 @@ class Reports extends CRMEntity {
 			$array_list[] = $fieldcolname;
 		}
 
-		$log->info('Reports :: Successfully returned getSelctedSortingColumns');
+		$log->debug('Reports :: returned getSelctedSortingColumns');
 		return $array_list;
 	}
 
@@ -960,6 +962,8 @@ class Reports extends CRMEntity {
 		$inventory_fields = array('quantity','listprice','serviceid','productid','discount','comment');
 		$inventory_modules = getInventoryModules();
 		$options = array();
+		$userprivs = $current_user->getPrivileges();
+		$hasGlobalReadPermission = !$userprivs->hasGlobalReadPermission();
 		while ($columnslistrow = $adb->fetch_array($result)) {
 			$fieldname = '';
 			$fieldcolname = decode_html($columnslistrow['columnname']);
@@ -973,9 +977,8 @@ class Reports extends CRMEntity {
 			}
 			if ($selmod_field_disabled==false) {
 				list($tablename, $colname, $module_field, $fieldname, $single) = explode(':', $fieldcolname);
-				require 'user_privileges/user_privileges_'.$current_user->id.'.php';
 				list($module,$field) = explode('_', $module_field);
-				if (count($permitted_fields) == 0 && $is_admin == false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+				if (count($permitted_fields) == 0 && !$hasGlobalReadPermission) {
 					$permitted_fields = $this->getaccesfield($module);
 				}
 				$fieldlabel = trim(str_replace($module, ' ', $module_field));
@@ -997,7 +1000,7 @@ class Reports extends CRMEntity {
 				}
 			}
 		}
-		$log->info('ReportRun :: Successfully returned getQueryColumnsList'.$reportid);
+		$log->debug('ReportRun :: returned getQueryColumnsList'.$reportid);
 		return $options;
 	}
 
@@ -1082,7 +1085,7 @@ class Reports extends CRMEntity {
 			$advft_criteria[$i-1]['condition'] = '';
 		}
 		$this->advft_criteria = $advft_criteria;
-		$log->info('Reports :: Successfully returned getAdvancedFilterList');
+		$log->debug('Reports :: returned getAdvancedFilterList');
 		return true;
 	}
 
@@ -1098,7 +1101,7 @@ class Reports extends CRMEntity {
 		do {
 			$shtml .= "<option value='".$reportfldrow['folderid']."'>".$reportfldrow['foldername'].'</option>';
 		} while ($reportfldrow = $adb->fetch_array($result));
-		$log->info('Reports :: Successfully returned sgetRptFldrSaveReport');
+		$log->debug('Reports :: returned sgetRptFldrSaveReport');
 		return $shtml;
 	}
 
@@ -1146,7 +1149,7 @@ class Reports extends CRMEntity {
 				$options []= $this->sgetColumnstoTotalHTML($secondarymodule[$i], ($i+1));
 			}
 		}
-		$log->info('Reports :: Successfully returned sgetColumntoTotalSelected');
+		$log->debug('Reports :: returned sgetColumntoTotalSelected');
 		return $options;
 	}
 
@@ -1157,11 +1160,11 @@ class Reports extends CRMEntity {
 	 */
 	public function sgetColumnstoTotalHTML($module) {
 		global $adb, $log, $current_user;
-		require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+		$userprivs = $current_user->getPrivileges();
 		$tabid = getTabid($module);
 		$escapedchars = array('_SUM','_AVG','_MIN','_MAX');
 		$sparams = array($tabid);
-		if ($is_admin == true || $profileGlobalPermission[1] == 0 || $profileGlobalPermission[2] ==0) {
+		if ($userprivs->hasGlobalReadPermission()) {
 			$ssql = 'select *
 				from vtiger_field
 				inner join vtiger_tab on vtiger_tab.tabid = vtiger_field.tabid
@@ -1251,7 +1254,7 @@ class Reports extends CRMEntity {
 				$filters['label'][] = getTranslatedString($columntototalrow['tablabel'], $columntototalrow['tablabel']).' -'.getTranslatedString($columntototalrow['fieldlabel'], $columntototalrow['tablabel']);
 				if (isset($this->columnssummary)) {
 					$selectedcolumn = '';
-					$selectedcolumn1 = '';
+					$selectedcolumn1 = array();
 					for ($i=0; $i < count($this->columnssummary); $i++) {
 						$selectedcolumnarray = explode(':', $this->columnssummary[$i]);
 						$selectedcolumn = $selectedcolumnarray[1].':'.$selectedcolumnarray[2].':'.str_replace($escapedchars, '', $selectedcolumnarray[3]);
@@ -1298,7 +1301,7 @@ class Reports extends CRMEntity {
 			}
 		} while ($columntototalrow = $adb->fetch_array($result));
 
-		$log->info('Reports :: Successfully returned sgetColumnstoTotalHTML');
+		$log->debug('Reports :: returned sgetColumnstoTotalHTML');
 		return $options_list;
 	}
 

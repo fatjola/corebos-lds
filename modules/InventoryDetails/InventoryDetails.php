@@ -21,6 +21,8 @@ class InventoryDetails extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = true;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-product-item-transaction', 'class' => 'slds-icon', 'icon'=>'product_item_transaction');
+
 	/**
 	 * Mandatory table for supporting custom fields.
 	 */
@@ -282,7 +284,7 @@ class InventoryDetails extends CRMEntity {
 			FROM vtiger_inventoryproductrel
 			LEFT JOIN vtiger_products ON vtiger_products.productid=vtiger_inventoryproductrel.productid
 			LEFT JOIN vtiger_service ON vtiger_service.serviceid=vtiger_inventoryproductrel.productid
-			WHERE id = ?";
+			WHERE id = ? ORDER BY sequence_no";
 		} elseif ($taxtype == 'individual') {
 			$query = "SELECT id as related_to, vtiger_inventoryproductrel.productid, sequence_no, lineitem_id, quantity, listprice, comment as description,
 			$txsql
@@ -298,7 +300,7 @@ class InventoryDetails extends CRMEntity {
 			FROM vtiger_inventoryproductrel
 			LEFT JOIN vtiger_products ON vtiger_products.productid=vtiger_inventoryproductrel.productid
 			LEFT JOIN vtiger_service ON vtiger_service.serviceid=vtiger_inventoryproductrel.productid
-			WHERE id = ?";
+			WHERE id = ? ORDER BY sequence_no";
 		}
 		$res_inv_lines = $adb->pquery($query, array($related_to));
 
@@ -343,11 +345,13 @@ class InventoryDetails extends CRMEntity {
 		}
 
 		$requestindex = 1;
-		$inputFiles = $_FILES;
+		$inputFiles = isset($_FILES) ? $_FILES : array();
 		unset($_FILES);
 		while (isset($_REQUEST['deleted'.$requestindex]) && $_REQUEST['deleted'.$requestindex] == 1) {
 			$requestindex++;
 		}
+		$handler = vtws_getModuleHandlerFromName('InventoryDetails', $current_user);
+		$meta = $handler->getMeta();
 		// read $res_inv_lines result to create a new InventoryDetail for each register.
 		// Remember to take the Vendor if the Product is related with this.
 		while ($row = $adb->getNextRow($res_inv_lines, false)) {
@@ -368,6 +372,55 @@ class InventoryDetails extends CRMEntity {
 				$invdet_focus->id = '';
 				$invdet_focus->mode = '';
 			}
+			if (GlobalVariable::getVariable('Inventory_Check_Invoiced_Lines', 0, $currentModule) == 1) {
+				switch ($module) {
+					case 'SalesOrder':
+						if ($invdet_focus->mode == 'edit') {
+							$diff = $row['quantity']-$invdet_focus->column_fields['quantity'];
+							$result_units = $invdet_focus->column_fields['remaining_units']+$diff;
+							$invdet_focus->column_fields['remaining_units'] = ($result_units > 0 ? $result_units : 0);
+						} else {
+							$invdet_focus->column_fields['remaining_units'] = $row['quantity'];
+						}
+						break;
+					case 'Invoice':
+						if (array_key_exists('rel_lineitem_id'.$requestindex, $_REQUEST)) {
+							$rel_invdet = $_REQUEST['rel_lineitem_id'.$requestindex];
+							$sel_rel_rec_exists = 'SELECT inventorydetailsid FROM vtiger_inventorydetails INNER JOIN vtiger_crmentity 
+							ON vtiger_crmentity.crmid = vtiger_inventorydetails.inventorydetailsid WHERE deleted = 0 AND lineitem_id = ?';
+							$rel_rec_exists = $adb->pquery($sel_rel_rec_exists, array($rel_invdet));
+							if ($adb->num_rows($rel_rec_exists)>0) {
+								$rel_id_focus = new InventoryDetails();
+								$rel_id_focus->id = $adb->query_result($rel_rec_exists, 0, 0);
+								$rel_id_focus->retrieve_entity_info($rel_id_focus->id, 'InventoryDetails');
+								$rel_id_focus->mode = 'edit';
+								if ($invdet_focus->mode == 'edit') {
+									$diff = $row['quantity']-$invdet_focus->column_fields['quantity'];
+									$result_units = $rel_id_focus->column_fields['remaining_units']-$diff;
+									$rel_id_focus->column_fields['remaining_units'] = ($result_units > 0 ? $result_units : 0);
+								} else {
+									$result_units = $rel_id_focus->column_fields['remaining_units'] - $row['quantity'];
+									$rel_id_focus->column_fields['remaining_units'] = ($result_units > 0 ? $result_units : 0);
+								}
+								$rel_id_focus->save('InventoryDetails');
+							}
+						}
+						$invdet_focus->column_fields['remaining_units'] = $row['quantity'];
+						break;
+					default:
+						$invdet_focus->column_fields['remaining_units'] = $row['quantity'];
+						break;
+				}
+			} else {
+				$invdet_focus->column_fields['remaining_units'] = $row['quantity'];
+			}
+
+			foreach ($invdet_focus->column_fields as $fieldname => $val) {
+				if (isset($row[$fieldname])) {
+					$invdet_focus->column_fields[$fieldname] = $row[$fieldname];
+				}
+			}
+			$invdet_focus->column_fields = DataTransform::sanitizeRetrieveEntityInfo($invdet_focus->column_fields, $meta);
 
 			foreach ($invdet_focus->column_fields as $fieldname => $val) {
 				if (isset($_REQUEST[$fieldname.$requestindex])) {
@@ -379,8 +432,6 @@ class InventoryDetails extends CRMEntity {
 						$_REQUEST[$fieldname.'_canvas_image'] = vtlib_purify($_REQUEST[$fieldname.$requestindex.'_canvas_image']);
 						$_REQUEST[$fieldname.'_canvas_image_set'] = vtlib_purify($_REQUEST[$fieldname.$requestindex.'_canvas_image_set']);
 					}
-				} elseif (isset($row[$fieldname])) {
-					$invdet_focus->column_fields[$fieldname] = $row[$fieldname];
 				}
 			}
 			$invdet_focus->column_fields['lineitem_id'] = $row['lineitem_id'];
@@ -393,15 +444,39 @@ class InventoryDetails extends CRMEntity {
 				$invdet_focus->column_fields['tax_percent'] = 0;
 				$invdet_focus->column_fields['linetax'] = 0;
 			}
-			$handler = vtws_getModuleHandlerFromName('InventoryDetails', $current_user);
-			$meta = $handler->getMeta();
-			$invdet_focus->column_fields = DataTransform::sanitizeRetrieveEntityInfo($invdet_focus->column_fields, $meta);
 			$invdet_focus->save('InventoryDetails');
 			$requestindex++;
 			while (isset($_REQUEST['deleted'.$requestindex]) && $_REQUEST['deleted'.$requestindex] == 1) {
 				$requestindex++;
 			}
 		}
+		if (GlobalVariable::getVariable('Inventory_Check_Invoiced_Lines', 0, $currentModule) == 1) {
+			$check_invoiced = false;
+			switch ($module) {
+				case 'SalesOrder':
+					$soid = $related_to;
+					$check_invoiced = true;
+					break;
+				case 'Invoice':
+					$soid = $related_focus->column_fields['salesorder_id'];
+					if (isRecordExists($soid)) {
+						$check_invoiced = true;
+					}
+			}
+			if ($check_invoiced) {
+				$sel_invoiced = 'SELECT COUNT(*) as remaining FROM vtiger_inventorydetails INNER JOIN vtiger_crmentity 
+					ON vtiger_crmentity.crmid = vtiger_inventorydetails.inventorydetailsid WHERE deleted = 0 AND related_to = ? AND remaining_units > 0';
+				$rel_invoiced = $adb->pquery($sel_invoiced, array($soid));
+				$remaining = $adb->query_result($rel_invoiced, 0, 'remaining');
+				if ($remaining > 0) {
+					$invoiced = 0;
+				} else {
+					$invoiced = 1;
+				}
+				$adb->pquery('UPDATE vtiger_salesorder SET invoiced = ? WHERE salesorderid =?', array($invoiced,$soid));
+			}
+		}
+
 		$currentModule = $save_currentModule;
 	}
 }

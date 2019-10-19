@@ -7,8 +7,7 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  * Contributor(s): Valmir Carlos Trindade/Translate to Brazilian Portuguese| 03/03/2012 |Curitiba/Paraná/Brasil.|www.ttcasolucoes.com.br
- * Contributor: Ranieri Slemer, translate missing terms to brazilian portuguese | 22-Jan-2018 | www.ecrmweb.com.br
- * Contributor: Ranieri Slemer, translate missing terms to brazilian portuguese | 16-10-2018 | www.ecrmweb.com.br
+ * Contributor: Ranieri Slemer, translate missing terms to brazilian portuguese | 02-04-2019 | www.ecrmweb.com.br
  ********************************************************************************/
 
 $mod_strings = array(
@@ -52,6 +51,8 @@ $mod_strings = array(
 'LBL_DATE_FORMAT'=>'Formato da data',
 
 'LBL_ERROR'=>'Erro:',
+'FORM_TOKEN_EXPIRED'=>'Edit token has expired. Try again.',
+'ERR_CANNOTEDITUSER' => 'Not Permitted. You cannot edit this User',
 'LBL_PASSWORD'=>'Senha',
 'LBL_USER_NAME'=>'Usuário',
 'LBL_2FACODE' => 'Código',
@@ -152,7 +153,7 @@ $mod_strings = array(
 'LBL_OPPURTUNITIES'=>'Oportunidades',
 'LBL_TASKS'=>'Tarefas',
 'LBL_CASES'=>'Casos',
-'LBL_EMAILS'=>'E-mails',
+'LBL_EMAILS'=>'E-mail',
 'LBL_NOTES'=>'Documentos',
 'LBL_MEETINGS'=>'Reuniões',
 'LBL_CALLS'=>'Chamadas',
@@ -210,8 +211,9 @@ $mod_strings = array(
 'LBL_TEMPLATE_MESSAGE'=>'Mensagem do e-mail',
 'LBL_VIEWING'=>'A visualizar',
 'LBL_PROPERTIES'=>'Propriedade de',
-'LBL_ASTERISKEXTENSIONS_EXIST' => 'Extensão iPBX já existe!',
+'LBL_ASTERISKEXTENSIONS_EXIST' => 'Extensão iPBX já está em uso',
 'LBL_CURRENCY_SEPARATORS_INCORRECT' => 'O separador décimal e o separador de agrupamento de dígitos não podem coincidir.',
+'LBL_FORUSER' => ' pelo usuário ',
 
 // Added fields in createnewgroup.php
 'LBL_CREATE_NEW_GROUP'=>'Criar novo Grupo',
@@ -341,6 +343,8 @@ $mod_strings = array(
 'LBL_EMAIL_SCHDS_DESC'=>'Abaixo está a lista de notificações ativadas automaticamente quando o evento correspondente ocorrer.',
 'LBL_ACTIVE'=>'Ativo',
 'LBL_INACTIVE'=>'Inativo',
+'LBL_ON' => 'Ligado',
+'LBL_OFF' => 'Desligado',
 'LBL_NOTIFICATION'=>'Notificação',
 'LBL_DESCRIPTION'=>'Descrição',
 'LBL_TASK_NOTIFICATION'=>'Notificação de tarefas atrasadas',
@@ -567,7 +571,7 @@ $mod_strings = array(
 'LBL_CONTACT_US'=>'Contacte-nos',
 'LBL_READ_LICENSE'=>'Ler Licença',
 'LBL_VERSION'=>'Versão',
-'LBL_TEAM'=>'Equipa',
+'LBL_TEAM'=>'Equipe',
 'LBL_CREDITS'=>'Créditos',
 'LBL_THIRD_PARTY'=>'Terceiros',
 
@@ -611,7 +615,7 @@ $mod_strings = array(
 'LBL_EMAIL_ADDRESS'=>'E-mail',
 'LBL_NAME_EXAMPLE'=>'(exemplo : João da Silva)',
 'LBL_EMAIL_EXAMPLE'=>'(exemplo : joaosilva@xyz.com.br)',
-'LBL_REFRESH_TIMEOUT'=>'Atualizar timeout',
+'LBL_REFRESH_TIMEOUT'=>'Refresh',
 'LBL_1_MIN'=>'1 minuto',
 'LBL_2_MIN'=>'2 minutos',
 'LBL_3_MIN'=>'3 minutos',
@@ -792,6 +796,7 @@ $mod_strings = array(
 'LBL_USERLOGGEDOUTOK' => 'O usuário foi desconectado corretamente.',
 'LBL_USERLOGGEDOUTNOK' => 'O usuário não pode ser desconectado.',
 'LBL_UNBLOCK_USR' => 'Desbloquear a sessão para iniciar uma nova sessão?',
+'LOGGED IN' => 'Logged In',
 // LDAP
 'LBL_QUERY' => 'Pergunta',
 'LBL_FORE_LASTNAME' => 'Nome ou sobrenome',

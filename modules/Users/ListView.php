@@ -40,6 +40,19 @@ $userid = array();
 $blockedusers = $cbodBlockedUsers;
 $blockedusers[] = 'admin';
 $userid_Query = 'SELECT id,user_name FROM vtiger_users WHERE user_name IN ('.generateQuestionMarks($blockedusers).')';
+$total = "SELECT COUNT(id) as users FROM vtiger_users";
+$result = $adb->pquery($total, array());
+$total_users = $adb->query_result($result, 0, 'users');
+$admin ="SELECT COUNT(id) as users FROM vtiger_users WHERE is_admin = ?";
+$admin_result = $adb->pquery($admin, array('on'));
+$total_admin = $adb->query_result($admin_result, 0, 'users');
+$active_user ="SELECT COUNT(id) as users FROM vtiger_users WHERE status = ?";
+$active_result = $adb->pquery($active_user, array('Active'));
+$total_active = $adb->query_result($active_result, 0, 'users');
+$inactive_user ="SELECT COUNT(id) as users FROM vtiger_users WHERE status = ?";
+$inactive_result = $adb->pquery($inactive_user, array('Inactive'));
+$inactive = $adb->query_result($inactive_result, 0, 'users');
+
 $users = $adb->pquery($userid_Query, array($blockedusers));
 $norows = $adb->num_rows($users);
 if ($norows  > 0) {
@@ -49,6 +62,10 @@ if ($norows  > 0) {
 	}
 }
 $smarty->assign('USERNODELETE', $userid);
+$smarty->assign('TOTALUSERS', $total_users);
+$smarty->assign('TOTALADMIN', $total_admin);
+$smarty->assign('TOTALACTIVE', $total_active);
+$smarty->assign('TOTALINACTIVE', $inactive);
 
 $userid_noedit = array();
 if (count($cbodBlockedUsers)>0) {
@@ -107,6 +124,47 @@ $limit_start_rec = ($start-1) * $list_max_entries_per_page;
 $list_result = $adb->pquery($list_query. " LIMIT $limit_start_rec, $list_max_entries_per_page", array());
 
 $recordListRangeMsg = getRecordRangeMessage($list_result, $limit_start_rec, $noofrows);
+
+$adminStatusFilterValueQuery = 'select distinct is_admin from vtiger_users';
+$userStatusFilterValueQuery = 'select distinct status from vtiger_users';
+$adminStatusValues = $adb->pquery($adminStatusFilterValueQuery, array());
+$userStatusValues = $adb->pquery($userStatusFilterValueQuery, array());
+$noadminstatusrows = $adb->num_rows($adminStatusValues);
+$nouserstatusrows = $adb->num_rows($userStatusValues);
+$default_admin_status_value_filters ='';
+
+if ($noadminstatusrows > 0) {
+	for ($i=0; $i < $noadminstatusrows; $i++) {
+		$status = $adb->query_result($adminStatusValues, $i, 'is_admin');
+		if ($status == 'on') {
+			$lbl_trans_key = 'LBL_ON';
+		} else {
+			$lbl_trans_key = 'LBL_OFF';
+		}
+		$default_admin_status_value_filters = $default_admin_status_value_filters.'<option value='.$status.'>'.getTranslatedString($lbl_trans_key, 'Users').'</option>';
+	}
+}
+
+$default_user_status_value_filters ='';
+
+if ($nouserstatusrows > 0) {
+	for ($i=0; $i < $nouserstatusrows; $i++) {
+		$status = $adb->query_result($userStatusValues, $i, 'status');
+		if ($status == 'Active') {
+			$lbl_trans_key = 'LBL_ACTIVE';
+		} else {
+			$lbl_trans_key = 'LBL_INACTIVE';
+		}
+		$default_user_status_value_filters = $default_user_status_value_filters.'<option value='.$status.'>'.getTranslatedString($lbl_trans_key, 'Users').'</option>';
+	}
+	$default_user_status_value_filters = $default_user_status_value_filters.'<option value="loggedin">'.getTranslatedString('LOGGED IN', 'Users').'</option>';
+}
+
+if (isset($_REQUEST['error_string'])) {
+	$errormessageclass = isset($_REQUEST['error_msgclass']) ? vtlib_purify($_REQUEST['error_msgclass']) : '';
+	$smarty->assign('ERROR_MESSAGE_CLASS', $errormessageclass);
+	$smarty->assign('ERROR_MESSAGE', vtlib_purify($_REQUEST['error_string']));
+}
 $smarty->assign('recordListRange', $recordListRangeMsg);
 $url_string = '';
 $navigationOutput = getTableHeaderSimpleNavigation($navigation_array, $url_string, 'Users', 'index', '');
@@ -117,8 +175,10 @@ $smarty->assign('CURRENT_USERID', $current_user->id);
 $smarty->assign('THEME', $theme);
 $smarty->assign('IMAGE_PATH', $image_path);
 $smarty->assign('CATEGORY', $category);
-$smarty->assign('LIST_HEADER', getListViewHeader($focus, 'Users', $url_string, $sorder, $order_by, '', ''));
-$smarty->assign('LIST_ENTRIES', getListViewEntries($focus, 'Users', $list_result, $navigation_array, '', '', 'EditView', 'Delete', ''));
+$smarty->assign('LIST_ADMIN_STATUS', $default_admin_status_value_filters);
+$smarty->assign('LIST_USER_STATUS', $default_user_status_value_filters);
+$smarty->assign('LIST_FIELDS', $focus->list_fields_names);
+$smarty->assign('LIST_HEADER', $focus->getUserListHeader());
 $smarty->assign('PAGE_START_RECORD', $limit_start_rec);
 $smarty->assign('NAVIGATION', $navigationOutput);
 $smarty->assign('USER_IMAGES', getUserImageNames());

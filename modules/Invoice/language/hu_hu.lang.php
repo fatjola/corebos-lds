@@ -57,6 +57,7 @@ $mod_strings = array(
 	'LBL_POSTAL_CODE' => 'Irányítószám:',
 	'LBL_COUNTRY' => 'Ország:',
 	'LBL_DESCRIPTION_INFORMATION' => 'Leírás',
+	'LBL_Invoice_FINANCIALINFO' => 'Financial Information',
 	'LBL_DESCRIPTION' => 'Leírás:',
 	'LBL_TERMS_INFORMATION' => 'Határidők és Feltételek',
 	'NTC_COPY_BILLING_ADDRESS' => 'Számlázási cím másolása a Szállítási címhez',
@@ -156,6 +157,10 @@ $mod_strings = array(
 	'Documents' => 'Dokumentumok',
 	'SINGLE_Invoice' => 'Díjbekérő',
 	'Notes' => 'Jegyzetek',
-	'invoice_no' => 'Díjbekérő No.'
+	'invoice_no' => 'Díjbekérő No.',
+	'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+	'Amount Due'=>'Amount Due',
+	'Amount Paid'=>'Amount Paid',
+	'Total Amount'=>'Total Amount',
 );
 ?>

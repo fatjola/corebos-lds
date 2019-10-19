@@ -24,13 +24,12 @@ require_once 'modules/PickList/PickListUtils.php';
  */
 function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, $generatedtype, $tabid = '', $module = '', $cbMapFI = array()) {
 	global $log, $adb, $mod_strings, $app_strings, $current_user, $theme, $default_charset;
-	$log->debug("Entering getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel," . print_r($col_fields, true) . ", $generatedtype, $tabid) method ...");
+	$log->debug("> getDetailViewOutputHtml $uitype, $fieldname, $fieldlabel," . print_r($col_fields, true) . ", $generatedtype, $tabid");
 	$theme_path = 'themes/' . $theme . '/';
 	$image_path = $theme_path . 'images/';
 	$value = '';
 	$label_fld = array();
-	require 'user_privileges/user_privileges_' . $current_user->id . '.php';
-	require 'user_privileges/sharing_privileges_' . $current_user->id . '.php';
+	$userprivs = $current_user->getPrivileges();
 
 	// vtlib customization: New uitype to handle relation between modules
 	if ($uitype == '10') {
@@ -270,12 +269,8 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 		}
 		$label_fld[] = getTranslatedString($fieldlabel, $module);
 		$label_fld[] = $col_fields[$fieldname];
-	} elseif ($uitype == 20 || $uitype == 21 || $uitype == 22 || $uitype == 24) {
-		if ($uitype == 20) { //Fix the issue #4680
-			$col_fields[$fieldname] = $col_fields[$fieldname];
-		} else {
-			$col_fields[$fieldname] = nl2br($col_fields[$fieldname]);
-		}
+	} elseif ($uitype == 21) {
+		$col_fields[$fieldname] = nl2br($col_fields[$fieldname]);
 		$label_fld[] = getTranslatedString($fieldlabel, $module);
 		$label_fld[] = $col_fields[$fieldname];
 	} elseif ($uitype == 51 || $uitype == 73) {
@@ -307,9 +302,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			$label_fld[] = $user_name;
 		}
 		$tabidmodule = getTabid($module);
-		if ($is_admin == false && $profileGlobalPermission[2] == 1 && isset($defaultOrgSharingPermission[$tabidmodule])
-			&& ($defaultOrgSharingPermission[$tabidmodule] == 3 || $defaultOrgSharingPermission[$tabidmodule] == 0)
-		) {
+		if (!$userprivs->hasGlobalWritePermission() && !$userprivs->hasModuleWriteSharing($tabidmodule)) {
 			$ua = get_user_array(false, 'Active', $assigned_user_id, 'private');
 			$users_combo = get_select_options_array($ua, $assigned_user_id);
 		} else {
@@ -347,9 +340,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 
 		//Security Checks
 		$tabidmodule = getTabid($module);
-		if ($fieldname == 'assigned_user_id' && $is_admin == false && $profileGlobalPermission[2] == 1
-			&& ($defaultOrgSharingPermission[$tabidmodule] == 3 || $defaultOrgSharingPermission[$tabidmodule] == 0)
-		) {
+		if ($fieldname == 'assigned_user_id' && !$userprivs->hasGlobalWritePermission() && !$userprivs->hasModuleWriteSharing($tabidmodule)) {
 			$result = get_current_user_access_groups($module);
 		} else {
 			$result = get_group_options();
@@ -388,9 +379,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			$team_style = 'display:none';
 		}
 
-		if ($fieldname == 'assigned_user_id' && $is_admin == false && $profileGlobalPermission[2] == 1
-			&& ($defaultOrgSharingPermission[getTabid($module)] == 3 || $defaultOrgSharingPermission[getTabid($module)] == 0)
-		) {
+		if ($fieldname == 'assigned_user_id' && !$userprivs->hasGlobalWritePermission() && !$userprivs->hasModuleWriteSharing($tabidmodule)) {
 			$user_array = get_user_array(false, 'Active', $current_user->id, 'private');
 		} else {
 			$user_array = get_user_array(false, 'Active', $current_user->id);
@@ -399,9 +388,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 
 		$groups_combo = '';
 		if ($noof_group_rows != 0) {
-			if ($fieldname == 'assigned_user_id' && $is_admin == false && $profileGlobalPermission[2] == 1
-				&& ($defaultOrgSharingPermission[getTabid($module)] == 3 || $defaultOrgSharingPermission[getTabid($module)] == 0)
-			) {
+			if ($fieldname == 'assigned_user_id' && !$userprivs->hasGlobalWritePermission() && !$userprivs->hasModuleWriteSharing($tabidmodule)) {
 				$group_array = get_group_array(false, 'Active', $current_user->id, 'private');
 			} else {
 				$group_array = get_group_array(false, 'Active', $current_user->id);
@@ -431,7 +418,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			} else {
 				$roleids = $roleid;
 			}
-			if ($is_admin == true || $profileGlobalPermission[1] == 0 || $profileGlobalPermission[2] == 0) {
+			if ($userprivs->hasGlobalReadPermission()) {
 				$pick_query = 'select salutationtype from vtiger_salutationtype order by salutationtype';
 				$params = array();
 			} else {
@@ -586,7 +573,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 				if ($col_fields['filestatus'] == 1) {
 					$custfldval = '<a href = "index.php?module=Utilities&action=UtilitiesAjax&file=ExecuteFunctions&functiontocall=downloadfile&return_module='
 						. $col_fields['record_module'] . '&fileid=' . $attachmentid . '&entityid=' . $col_fields['record_id']
-						. '" onclick=\'javascript:dldCntIncrease(' . $col_fields['record_id'] . ');\'>' . $col_fields[$fieldname] . '</a>';
+						. '" onclick=\'javascript:dldCntIncrease(' . $col_fields['record_id'] . ');\'>' . decode_html($col_fields[$fieldname]) . '</a>';
 					$image_res = $adb->pquery('SELECT path,name FROM vtiger_attachments WHERE attachmentsid = ?', array($attachmentid));
 					$image_path = $adb->query_result($image_res, 0, 'path');
 					$image_name = decode_html($adb->query_result($image_res, 0, 'name'));
@@ -598,7 +585,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 						$custfldval .= '<br/><video width="300px" height="300px" controls><source src="' . $imgpath . '" type="' . $col_fields['filetype'] . '"></video>';
 					}
 				} else {
-					$custfldval = $col_fields[$fieldname];
+					$custfldval = decode_html($col_fields[$fieldname]);
 				}
 			}
 		}
@@ -677,16 +664,22 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			//decode_html  - added to handle UTF-8   characters in file names
 			//urlencode    - added to handle special characters like #, %, etc.,
 			$image_name = decode_html($adb->query_result($image_res, 0, 'name'));
-			$imgpath = $image_path . $image_id . "_" . urlencode($image_name);
+			$imgpath = $image_path . $image_id . '_' . urlencode($image_name);
 			if ($image_name != '') {
 				$ftype = $adb->query_result($image_res, 0, 'type');
 				$isimage = stripos($ftype, 'image') !== false;
 				$isvideo = stripos($ftype, 'video') !== false;
+				if (GlobalVariable::getVariable('Attachment_ShowDownloadName', '0')=='1') {
+					$dllink = '<a href="index.php?module=Utilities&action=UtilitiesAjax&file=ExecuteFunctions&functiontocall=downloadfile&return_module='
+						. $col_fields['record_module'] . '&fileid=' . $image_id . '&entityid=' . $col_fields['record_id'] . '">' . $col_fields[$fieldname] . '</a><br>';
+				} else {
+					$dllink = '';
+				}
 				if ($isimage) {
 					$imgtxt = getTranslatedString('SINGLE_'.$module, $module).' '.getTranslatedString('Image');
-					$label_fld[] = '<img src="' . $imgpath . '" alt="' . $imgtxt . '" title= "' . $imgtxt . '" style="max-width:300px; max-height:300px">';
+					$label_fld[] = $dllink.'<img src="' . $imgpath . '" alt="' . $imgtxt . '" title= "' . $imgtxt . '" style="max-width:300px; max-height:300px">';
 				} elseif ($isvideo) {
-					$label_fld[] = '<video width="300px" height="300px" controls><source src="' . $imgpath . '" type="' . $ftype . '"></video>';
+					$label_fld[] = $dllink.'<video width="300px" height="300px" controls><source src="' . $imgpath . '" type="' . $ftype . '"></video>';
 				} else {
 					$imgtxt = getTranslatedString('SINGLE_'.$module, $module).' '.getTranslatedString('SINGLE_Documents');
 					$label_fld[] = '<a href="' . $imgpath . '" alt="' . $imgtxt . '" title= "' . $imgtxt . '" target="_blank">'.$image_name.'</a>';
@@ -1032,13 +1025,6 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 			$label_fld[] = $currencyField->getDisplayValue(null, false, true);
 			$label_fld['cursymb'] = $currencyField->getCurrencySymbol();
 		}
-	} elseif ($uitype == 76) {
-		$label_fld[] = getTranslatedString($fieldlabel, $module);
-		$potential_id = $col_fields[$fieldname];
-		$potential_name = (empty($potential_id) ? '' : getPotentialName($potential_id));
-		$label_fld[] = $potential_name;
-		$label_fld['secid'] = $potential_id;
-		$label_fld['link'] = 'index.php?module=Potentials&action=DetailView&record=' . $potential_id;
 	} elseif ($uitype == 78) {
 		$label_fld[] = getTranslatedString($fieldlabel, $module);
 		$quote_id = $col_fields[$fieldname];
@@ -1053,13 +1039,6 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 		$label_fld[] = $purchaseorder_name;
 		$label_fld['secid'] = $purchaseorder_id;
 		$label_fld['link'] = 'index.php?module=PurchaseOrder&action=DetailView&record=' . $purchaseorder_id;
-	} elseif ($uitype == 80) {
-		$label_fld[] = getTranslatedString($fieldlabel, $module);
-		$salesorder_id = $col_fields[$fieldname];
-		$salesorder_name = (empty($salesorder_id) ? '' : getSoName($salesorder_id));
-		$label_fld[] = $salesorder_name;
-		$label_fld['secid'] = $salesorder_id;
-		$label_fld['link'] = 'index.php?module=SalesOrder&action=DetailView&record=' . $salesorder_id;
 	} elseif ($uitype == 30) {
 		if ($col_fields[$fieldname]) {
 			$rem_days = floor($col_fields[$fieldname] / (24 * 60));
@@ -1199,7 +1178,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
 		$label_fld['isadmin'] = 0;
 	}
 
-	$log->debug('Exiting getDetailViewOutputHtml method ...');
+	$log->debug('< getDetailViewOutputHtml');
 	return $label_fld;
 }
 
@@ -1210,7 +1189,7 @@ function getDetailViewOutputHtml($uitype, $fieldname, $fieldlabel, $col_fields, 
  */
 function getDetailAssociatedProducts($module, $focus) {
 	global $log, $adb, $theme, $log, $app_strings;
-	$log->debug('Entering getDetailAssociatedProducts(' . $module . ',' . get_class($focus) . ') method ...');
+	$log->debug('> getDetailAssociatedProducts ' . $module . ',' . get_class($focus));
 
 	if (vtlib_isModuleActive('Products')) {
 		$hide_stock = 'no';
@@ -1228,7 +1207,7 @@ function getDetailAssociatedProducts($module, $focus) {
 	}
 
 	$cbMap = cbMap::getMapByName($module.'InventoryDetails', 'MasterDetailLayout');
-	$MDMapFound = ($cbMap!=null);
+	$MDMapFound = ($cbMap!=null && isPermitted('InventoryDetails', 'index')=='yes');
 	if ($MDMapFound) {
 		$cbMapFields = $cbMap->MasterDetailLayout();
 	}
@@ -1306,8 +1285,9 @@ function getDetailAssociatedProducts($module, $focus) {
 		}
 		$comment = $adb->query_result($result, $i - 1, 'comment');
 		$qtyinstock = $adb->query_result($result, $i - 1, 'qtyinstock');
+		$qtyinstockshow = CurrencyField::convertToUserFormat($qtyinstock, null, true);
 		$qty = $adb->query_result($result, $i - 1, 'quantity');
-		$qty = number_format($qty, 2, '.', ''); //Convert to 2 decimals
+		$qtyshow = CurrencyField::convertToUserFormat($qty, null, true);
 		//$unitprice = $adb->query_result($result, $i - 1, 'unit_price');
 		$listprice = $adb->query_result($result, $i - 1, 'listprice');
 		$total = $qty * $listprice;
@@ -1390,11 +1370,14 @@ function getDetailAssociatedProducts($module, $focus) {
 
 		$output .= '<td class="crmTableRow small lineOnTop detailview_inventory_stockcell">';
 		if ($module != 'PurchaseOrder' && $hide_stock == 'no') {
-			$output .= '<b>'.$app_strings['LBL_QTY_IN_STOCK'].':</b>&nbsp;'.$qtyinstock;
+			$output .= '<b>'.$app_strings['LBL_QTY_IN_STOCK'].':</b>&nbsp;'.$qtyinstockshow;
 		}
 		if ($MDMapFound) {
 			$invdTabid = getTabid('InventoryDetails');
 			foreach ($cbMapFields['detailview']['fields'] as $mdfield) {
+				if ($mdfield['fieldinfo']['name']=='id') {
+					continue;
+				}
 				$output .= '<br>';
 				$output .= '<b>'.$mdfield['fieldinfo']['label'].'</b>:&nbsp;';
 				$mdrs = $adb->pquery(
@@ -1419,7 +1402,7 @@ function getDetailAssociatedProducts($module, $focus) {
 			}
 		}
 		$output .= '</td>';
-		$output .= '<td class="crmTableRow small lineOnTop detailview_inventory_qtycell">' . $qty . '</td>';
+		$output .= '<td class="crmTableRow small lineOnTop detailview_inventory_qtycell">' . $qtyshow . '</td>';
 		$output .= '
 			<td class="crmTableRow small lineOnTop detailview_inventory_lpricecell" align="right">
 				<table width="100%" border="0" cellpadding="5" cellspacing="0">
@@ -1579,11 +1562,11 @@ function getDetailAssociatedProducts($module, $focus) {
 	$output .= '</tr>';
 	$output .= '</table>';
 
-	$log->debug('Exiting getDetailAssociatedProducts method ...');
+	$log->debug('< getDetailAssociatedProducts');
 	return $output;
 }
 
-/** This function returns the related vtiger_tab details for a given entity or a module.
+/** This function returns the related tab details for a given entity or a module.
  * Param $module - module name
  * Param $focus - module object
  * Return type is an array
@@ -1591,8 +1574,9 @@ function getDetailAssociatedProducts($module, $focus) {
  */
 function getRelatedListsInformation($module, $focus) {
 	global $log, $adb, $current_user;
-	$log->debug('Entering getRelatedListsInformation(' . $module . ',' . get_class($focus) . ') method ...');
-	require 'user_privileges/user_privileges_' . $current_user->id . '.php';
+	$log->debug('> getRelatedListsInformation ' . $module . ',' . get_class($focus));
+	$userprivs = $current_user->getPrivileges();
+	$is_admin = is_admin($current_user);
 
 	$cur_tab_id = getTabid($module);
 
@@ -1610,8 +1594,8 @@ function getRelatedListsInformation($module, $focus) {
 		$actions = $adb->query_result($result, $i, 'actions');
 		//$relationId = $adb->query_result($result, $i, 'relation_id');
 		if ($rel_tab_id != 0) {
-			if ($is_admin || $profileTabsPermission[$rel_tab_id] == 0) {
-				if ($is_admin || $profileActionPermission[$rel_tab_id][3] == 0) {
+			if ($is_admin || $userprivs->hasModuleAccess($rel_tab_id)) {
+				if ($is_admin || $userprivs->getModulePermission($rel_tab_id, 3) == 0) {
 					// vtlib customization: Send more information (from module, related module) to the callee
 					$focus_list[$label] = $focus->$function_name($focus->id, $cur_tab_id, $rel_tab_id, $actions);
 				}
@@ -1621,7 +1605,7 @@ function getRelatedListsInformation($module, $focus) {
 			$focus_list[$label] = $focus->$function_name($focus->id, $cur_tab_id, $rel_tab_id, $actions);
 		}
 	}
-	$log->debug('Exiting getRelatedListsInformation method ...');
+	$log->debug('< getRelatedListsInformation');
 	return $focus_list;
 }
 
@@ -1633,8 +1617,9 @@ function getRelatedListsInformation($module, $focus) {
  */
 function getRelatedLists($module, $focus, $restrictedRelations = null) {
 	global $log, $adb, $current_user;
-	$log->debug('Entering getRelatedLists(' . $module . ') method ...');
-	require 'user_privileges/user_privileges_' . $current_user->id . '.php';
+	$log->debug('> getRelatedLists ' . $module);
+	$userprivs = $current_user->getPrivileges();
+	$is_admin = is_admin($current_user);
 
 	$cur_tab_id = getTabid($module);
 
@@ -1657,8 +1642,8 @@ function getRelatedLists($module, $focus, $restrictedRelations = null) {
 		$actions = $adb->query_result($result, $i, 'actions');
 		$relationId = $adb->query_result($result, $i, 'relation_id');
 		if ($rel_tab_id != 0) {
-			if ($is_admin || $profileTabsPermission[$rel_tab_id] == 0) {
-				if ($is_admin || $profileActionPermission[$rel_tab_id][3] == 0) {
+			if ($is_admin || $userprivs->hasModuleAccess($rel_tab_id)) {
+				if ($is_admin || $userprivs->getModulePermission($rel_tab_id, 3) == 0) {
 					// vtlib customization: Send more information (from module, related module) to the callee
 					$focus_list[$label] = array('related_tabid' => $rel_tab_id, 'relationId' => $relationId, 'actions' => $actions);
 				}
@@ -1668,7 +1653,7 @@ function getRelatedLists($module, $focus, $restrictedRelations = null) {
 			$focus_list[$label] = array('related_tabid' => $rel_tab_id, 'relationId' => $relationId, 'actions' => $actions);
 		}
 	}
-	$log->debug('Exiting getRelatedLists method ...');
+	$log->debug('< getRelatedLists');
 	return $focus_list;
 }
 
@@ -1709,13 +1694,16 @@ function isPresentRelatedLists($module, $activity_mode = '') {
 
 	global $adb, $current_user;
 	$retval = array();
-	if (file_exists('tabdata.php') && (filesize('tabdata.php') != 0)) {
-		include 'tabdata.php';
-	}
-	require 'user_privileges/user_privileges_' . $current_user->id . '.php';
+	$userprivs = $current_user->getPrivileges();
 	$tab_id = getTabid($module);
 	// We need to check if there is at least 1 relation, no need to use count(*)
-	$result = $adb->pquery('select relation_id,related_tabid,label from vtiger_relatedlists where tabid=? order by sequence', array($tab_id));
+	$result = $adb->pquery(
+		'select relation_id,vtiger_relatedlists.related_tabid,label,vtiger_tab.presence
+			from vtiger_relatedlists
+			inner join vtiger_tab on vtiger_tab.tabid=vtiger_relatedlists.related_tabid
+			where vtiger_relatedlists.tabid=? order by sequence',
+		array($tab_id)
+	);
 	$count = $adb->num_rows($result);
 	if ($count < 1 || ($module == 'Calendar' && $activity_mode == 'task')) {
 		$retval = 'false';
@@ -1728,10 +1716,9 @@ function isPresentRelatedLists($module, $activity_mode = '') {
 			if (empty($relatedTabId)) {
 				$retval[$relatedId] = $relationLabel;
 			} else {
-				if (isset($tab_seq_array[$relatedTabId]) && $tab_seq_array[$relatedTabId] === 0) {
-					if ($is_admin || $profileTabsPermission[$relatedTabId] === 0) {
-						$retval[$relatedId] = $relationLabel;
-					}
+				$presence = $adb->query_result($result, $i, 'presence');
+				if ($presence == 0 && ($userprivs->isAdmin() || $userprivs->hasModuleAccess($relatedTabId))) {
+					$retval[$relatedId] = $relationLabel;
 				}
 			}
 		}
@@ -1749,7 +1736,7 @@ function isPresentRelatedLists($module, $activity_mode = '') {
  */
 function getDetailBlockInformation($module, $result, $col_fields, $tabid, $block_label) {
 	global $log, $adb;
-	$log->debug("Entering getDetailBlockInformation($module, $result," . print_r($col_fields, true) . ", $tabid, " . print_r($block_label, true) . ') method ...');
+	$log->debug("> getDetailBlockInformation $module, $result," . print_r($col_fields, true) . ", $tabid, " . print_r($block_label, true));
 	$label_data = array();
 
 	$bmapname = $module.'_FieldInfo';
@@ -1906,7 +1893,7 @@ function getDetailBlockInformation($module, $result, $col_fields, $tabid, $block
 			}
 		}
 	}
-	$log->debug("Exiting getDetailBlockInformation method ...");
+	$log->debug('< getDetailBlockInformation');
 	return $returndata;
 }
 

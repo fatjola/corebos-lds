@@ -114,7 +114,7 @@ switch ($focus->column_fields['maptype']) {
 			$mapinfo = $rsm->getCompleteMapping();
 		break;
 	case 'RelatedPanes':
-			$mapinfo = $focus->RelatedPanes();
+			$mapinfo = $focus->RelatedPanes(array(74));
 		break;
 	case 'Import':
 		$mapinfo = $focus->Import()->getCompleteMapping();
@@ -149,9 +149,7 @@ switch ($focus->column_fields['maptype']) {
 		$mapinfo = $focus->GlobalSearchAutocomplete();
 		break;
 	case 'FieldDependency':
-		$mapinfo = $focus->FieldDependency()->getCompleteMapping();
-		$mapinfo['TargetModule'] = $focus->FieldDependency()->getMapTargetModule();
-		$mapinfo['OriginModule'] = $focus->FieldDependency()->getMapOriginModule();
+		$mapinfo = $focus->FieldDependency();
 		break;
 	case 'Validations':
 		$mapinfo = $focus->Validations(
@@ -169,6 +167,20 @@ switch ($focus->column_fields['maptype']) {
 		break;
 	case 'Detail View Layout Mapping':
 			$mapinfo = $focus->DetailViewLayoutMapping();
+		break;
+	case 'Webservice Mapping':
+		$focus2 = CRMEntity::getInstance('Accounts');
+		$focus2->retrieve_entity_info(74, 'Accounts');
+		$mapinfo = $focus->WebserviceMapping($focus2->column_fields, $focus2->column_fields);
+		break;
+	case 'DecisionTable':
+		$context = array(
+			'season' => isset($_REQUEST['season']) ? $_REQUEST['season'] : 'Fall',
+			'guestcount' => isset($_REQUEST['guest']) ? $_REQUEST['guest'] : 8,
+			'numyears' => isset($_REQUEST['numyears']) ? $_REQUEST['numyears'] : 2,
+			'record_id' => 74,
+		);
+		$mapinfo = $focus->DecisionTable($context);
 		break;
 	default:
 		break;

@@ -21,6 +21,8 @@ class cbQuestion extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = true;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'custom', 'containerClass' => 'slds-icon_container slds-icon-custom-custom102', 'class' => 'slds-icon', 'icon'=>'custom102');
+
 	/**
 	 * Mandatory table for supporting custom fields.
 	 */
@@ -173,7 +175,66 @@ class cbQuestion extends CRMEntity {
 	 */
 	//public function get_dependents_list($id, $cur_tab_id, $rel_tab_id, $actions=false) { }
 
-	public static function getAnswer($qid) {
+	public static function getSQL($qid, $params = array()) {
+		global $current_user, $adb, $log;
+		if (isPermitted('cbQuestion', 'DetailView', $qid) != 'yes') {
+			return array('type' => 'ERROR', 'answer' => 'LBL_PERMISSION');
+		}
+		include_once 'include/Webservices/Query.php';
+		include_once 'include/Webservices/VtigerModuleOperation.php';
+		$q = new cbQuestion();
+		$q->retrieve_entity_info($qid, 'cbQuestion');
+		if ($q->column_fields['sqlquery']=='1') {
+			$mod = CRMEntity::getInstance($q->column_fields['qmodule']);
+			$query = 'SELECT '.decode_html($q->column_fields['qcolumns']).' FROM '.$mod->table_name.' ';
+			if (!empty($q->column_fields['qcondition'])) {
+				$conds = decode_html($q->column_fields['qcondition']);
+				foreach ($params as $param => $value) {
+					$conds = str_replace($param, $value, $conds);
+				}
+				$query .= $conds;
+			}
+			if (!empty($q->column_fields['groupby'])) {
+				$query .= ' GROUP BY '.$q->column_fields['groupby'];
+			}
+			if (!empty($q->column_fields['orderby'])) {
+				$query .= ' ORDER BY '.$q->column_fields['orderby'];
+			}
+			if (!empty($q->column_fields['qpagesize'])) {
+				$query .= ' LIMIT '.$q->column_fields['qpagesize'];
+			}
+			$query .= ';';
+		} else {
+			$query = 'SELECT '.decode_html($q->column_fields['qcolumns']).' FROM '.decode_html($q->column_fields['qmodule']);
+			if (!empty($q->column_fields['qcondition'])) {
+				$conds = decode_html($q->column_fields['qcondition']);
+				foreach ($params as $param => $value) {
+					$conds = str_replace($param, $value, $conds);
+				}
+				$query .= ' WHERE '.$conds;
+			}
+			if (!empty($q->column_fields['groupby'])) {
+				$query .= ' GROUP BY '.$q->column_fields['groupby'];
+			}
+			if (!empty($q->column_fields['orderby'])) {
+				$query .= ' ORDER BY '.$q->column_fields['orderby'];
+			}
+			if (!empty($q->column_fields['qpagesize'])) {
+				$query .= ' LIMIT '.$q->column_fields['qpagesize'];
+			}
+			$query .= ';';
+			try {
+				$webserviceObject = VtigerWebserviceObject::fromName($adb, $q->column_fields['qmodule']);
+				$vtModuleOperation = new VtigerModuleOperation($webserviceObject, $current_user, $adb, $log);
+				$query = $vtModuleOperation->wsVTQL2SQL($query, $meta, $queryRelatedModules);
+			} catch (Exception $e) {
+				return getTranslatedString('SQLError', 'cbQuestion').': '.$query;
+			}
+		}
+		return $query;
+	}
+
+	public static function getAnswer($qid, $params = array()) {
 		global $current_user, $default_charset;
 		if (isPermitted('cbQuestion', 'DetailView', $qid) != 'yes') {
 			return array('type' => 'ERROR', 'answer' => 'LBL_PERMISSION');
@@ -181,15 +242,19 @@ class cbQuestion extends CRMEntity {
 		include_once 'include/Webservices/Query.php';
 		$q = new cbQuestion();
 		$q->retrieve_entity_info($qid, 'cbQuestion');
-		$query = 'SELECT '.$q->column_fields['qcolumns'].' FROM '.$q->column_fields['qmodule'];
+		$query = 'SELECT '.decode_html($q->column_fields['qcolumns']).' FROM '.decode_html($q->column_fields['qmodule']);
 		if (!empty($q->column_fields['qcondition'])) {
-			$query .= ' WHERE '.$q->column_fields['qcondition'];
-		}
-		if (!empty($q->column_fields['orderby'])) {
-			$query .= ' ORDER BY '.$q->column_fields['orderby'];
+			$conds = decode_html($q->column_fields['qcondition']);
+			foreach ($params as $param => $value) {
+				$conds = str_replace($param, $value, $conds);
+			}
+			$query .= ' WHERE '.$conds;
 		}
 		if (!empty($q->column_fields['groupby'])) {
 			$query .= ' GROUP BY '.$q->column_fields['groupby'];
+		}
+		if (!empty($q->column_fields['orderby'])) {
+			$query .= ' ORDER BY '.$q->column_fields['orderby'];
 		}
 		if (!empty($q->column_fields['qpagesize'])) {
 			$query .= ' LIMIT '.$q->column_fields['qpagesize'];
@@ -203,6 +268,25 @@ class cbQuestion extends CRMEntity {
 			'properties' => html_entity_decode($q->column_fields['typeprops'], ENT_QUOTES, $default_charset),
 			'answer' => vtws_query($query, $current_user)
 		);
+	}
+
+	public static function getFormattedAnswer($qid, $params = array()) {
+		$ans = self::getAnswer($qid, $params);
+		switch ($ans['type']) {
+			case 'Table':
+				$ret = self::getTableFromAnswer($ans);
+				break;
+			case 'Number':
+				$ret = array_pop($ans['answer'][0]);
+				break;
+			case 'Pie':
+				$ret = self::getChartFromAnswer($ans);
+				break;
+			case 'ERROR':
+			default:
+				$ret = getTranslatedString('LBL_PERMISSION');
+		}
+		return $ret;
 	}
 
 	public static function getTableFromAnswer($ans) {
@@ -243,15 +327,18 @@ class cbQuestion extends CRMEntity {
 			$properties = json_decode($ans['properties']);
 			$labels = array();
 			$values = array();
+			$rc = array();
 			for ($x = 0; $x < count($answer); $x++) {
 				$labels[] = getTranslatedString($answer[$x][$properties->key_label], $module);
 				$values[] = $answer[$x][$properties->key_value];
+				$rc[] = 'getRandomColor()';
 			}
+			$chartID = uniqid('chartAns');
 			$chart .= '<script src="include/chart.js/Chart.min.js"></script>
 				<script src="include/chart.js/randomColor.js"></script>';
-			$chart .= '<div class="hide_tab" style="width: 70%;">';
+			$chart .= '<div style="width: 80%;">';
 			$chart .= '<h2>'.$title.' - '.$type.' Chart</h2>';
-			$chart .= '<canvas id="chartAns" style="width:500px;height:250px;margin:auto;padding:10px;"></canvas>';
+			$chart .= '<canvas id="'.$chartID.'" style="width:500px;height:250px;margin:auto;padding:10px;"></canvas>';
 			$chart .= '
 				<script type="text/javascript">
 					function getRandomColor() {
@@ -262,7 +349,7 @@ class cbQuestion extends CRMEntity {
 					}
 
 					window.doChartAns = function(charttype) {
-						let chartans = document.getElementById("chartAns");
+						let chartans = document.getElementById("'.$chartID.'");
 						let context = chartans.getContext("2d");
 						context.clearRect(0, 0, chartans.width, chartans.height);
 					
@@ -270,15 +357,16 @@ class cbQuestion extends CRMEntity {
 							labels: '.json_encode($labels).',
 							datasets: [{
 								data: '.json_encode($values).',
-								backgroundColor: [getRandomColor(),getRandomColor()]
+								backgroundColor: ['.implode(',', $rc).']
 							}]
 						};
 						var maxnum = Math.max.apply(Math, chartDataObject.datasets[0].data);
-						var maxgrph = Math.ceil(maxnum + (5 * maxnum / 100));
+						var maxgrph = Math.ceil(maxnum + (6 * maxnum / 100));
 						Chart.scaleService.updateScaleDefaults("linear", {
 							ticks: {
 								min: 0,
-								max: maxgrph
+								max: maxgrph,
+								precision: 0
 							}
 						});
 						window.chartAns = new Chart(chartans,{
@@ -298,7 +386,7 @@ class cbQuestion extends CRMEntity {
 						});
 					}
 
-					let charttype = "'.$type.'";
+					let charttype = "'.strtolower($type).'";
 					doChartAns(charttype);
 				</script>
 			';

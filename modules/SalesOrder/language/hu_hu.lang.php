@@ -48,6 +48,7 @@ $mod_strings = array(
 	'LBL_ADDRESS_INFORMATION' => 'Cím adatok',
 	'LBL_Quote_INFORMATION' => 'Cég Információ',
 	'LBL_CUSTOM_INFORMATION' => 'Egyedi Információ',
+	'LBL_SalesOrder_FINANCIALINFO' => 'Financial Information',
 	'LBL_BILLING_ADDRESS' => 'Számlázási cím:',
 	'LBL_SHIPPING_ADDRESS' => 'Szállítási cím:',
 	'LBL_ANY_ADDRESS' => 'Bármilyen cím:',
@@ -160,6 +161,7 @@ $mod_strings = array(
 	'SalesOrder No' => 'Megrendelés No.',
 	'Recurring Invoice Information' => 'Előfizetés - Ismétlődő Díjbekérő beállításai',
 	'RecurringInvoice' => 'Recurring Invoice',
+	'Recommended frequency for RecurringInvoice is 12 hours' => 'Recommended frequency for Recurring Invoice is 12 hours',
 	'Enable Recurring' => 'Díjbekérő-ismétlődés engedélyezve',
 	'Frequency' => 'Gyakoriság',
 	'Start Period' => 'Első Díjbekérő',
@@ -183,5 +185,10 @@ $mod_strings = array(
 	'3years' => '3 Years',
 	'4years' => '4 Years',
 	'5years' => '5 Years',
+	'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+	'Amount Due'=>'Amount Due',
+	'Amount Paid'=>'Amount Paid',
+	'Total Amount'=>'Total Amount',
+	'Invoiced' => 'Invoiced',
 );
 ?>

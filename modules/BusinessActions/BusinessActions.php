@@ -23,6 +23,7 @@ class BusinessActions extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = true;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-case-change-status', 'class' => 'slds-icon', 'icon'=>'case_change_status');
 
 	/**
 	 * Mandatory table for supporting custom fields.
@@ -265,12 +266,13 @@ class BusinessActions extends CRMEntity {
 		}
 
 		$result = array();
+		$alreadyLoaded = array();
 		if ($multitype) {
 			foreach ($type as $t) {
 				$result[$t] = array();
+				$alreadyLoaded[$t] = array();
 			}
 		}
-
 		foreach ($accumulator as $row) {
 			/** Should the widget be shown */
 			$return = cbEventHandler::do_filter('corebos.filter.link.show', array($row, $type, $parameters));
@@ -300,11 +302,18 @@ class BusinessActions extends CRMEntity {
 				$link->linkurl = $strtemplate->merge($link->linkurl);
 				$link->linkicon= $strtemplate->merge($link->linkicon);
 			}
-
 			if ($multitype) {
+				if (in_array($link->linktype, array('HEADERSCRIPT', 'HEADERCSS', 'HEADERSCRIPT_POPUP', 'HEADERCSS_POPUP', 'FOOTERSCRIPT')) && in_array($link->linkurl, $alreadyLoaded[$link->linktype])) {
+					continue;
+				}
+				$alreadyLoaded[$link->linktype][] = $link->linkurl;
 				$result[$link->linktype][] = $link;
 			} else {
-				$result[$link->linktype] = $link;
+				if (in_array($link->linktype, array('HEADERSCRIPT', 'HEADERCSS', 'HEADERSCRIPT_POPUP', 'HEADERCSS_POPUP', 'FOOTERSCRIPT')) && in_array($link->linkurl, $alreadyLoaded)) {
+					continue;
+				}
+				$alreadyLoaded[] = $link->linkurl;
+				$result[] = $link;
 			}
 		}
 
@@ -320,7 +329,7 @@ class BusinessActions extends CRMEntity {
 	 * @param String ICON to use on the display
 	 * @param Integer Order or sequence of displaying the link
 	 */
-	public static function addLink($tabid, $type, $label, $url, $iconpath = '', $sequence = 0, $handlerInfo = null, $onlyonmymodule = false) {
+	public static function addLink($tabid, $type, $label, $url, $iconpath = '', $sequence = 0, $handlerInfo = null, $onlyonmymodule = false, $brmap = 0) {
 		global $adb;
 		$module_name = getTabModuleName($tabid);
 
@@ -348,6 +357,8 @@ class BusinessActions extends CRMEntity {
 			$newBA->column_fields['onlyonmymodule'] = $onlyonmymodule;
 			$newBA->column_fields['linkicon'] = $iconpath;
 			$newBA->column_fields['active'] = 1;
+			$newBA->column_fields['mandatory'] = 1;
+			$newBA->column_fields['brmap'] = $brmap;
 
 			if (!empty($handlerInfo)) {
 				$newBA->column_fields['handler_path'] = (isset($handlerInfo['path']) ? $handlerInfo['path'] : '');
@@ -395,12 +406,10 @@ class BusinessActions extends CRMEntity {
 			);
 		}
 
-		$countba = $adb->num_rows($ba);
-
-		for ($i = 0; $i < $countba; $i++) {
-			$recordid = $adb->query_result($ba, $i, "businessactionsid");
-			$focus = CRMEntity::getInstance('BusinessActions');
-			DeleteEntity('BusinessActions', 'BusinessActions', $focus, $recordid, 0);
+		$focus = CRMEntity::getInstance('BusinessActions');
+		while ($row = $adb->fetch_array($ba)) {
+			$focus->id = $row['businessactionsid'];
+			DeleteEntity('BusinessActions', 'BusinessActions', $focus, $row['businessactionsid'], 0);
 		}
 	}
 
@@ -465,6 +474,36 @@ class BusinessActions extends CRMEntity {
 				vtws_revise($linkInfo, $current_user);
 			}
 		}
+	}
+
+	public static function getModuleLinkStatusInfo($actiontype, $actionlabel) {
+		global $adb;
+		$allEntities = array();
+		$allModules = array();
+		$entityQuery = "SELECT tabid,name FROM vtiger_tab WHERE isentitytype=1 and name NOT IN ('Rss','Recyclebin','Events','Calendar')";
+		$result = $adb->pquery($entityQuery, array());
+		while ($result && $row = $adb->fetch_array($result)) {
+			$allEntities[$row['tabid']] = getTranslatedString($row['name'], $row['name']);
+			$allModules[$row['tabid']] = $row['name'];
+		}
+		asort($allEntities);
+		$mlist = array();
+		foreach ($allEntities as $tabid => $mname) {
+			$checkres = $adb->pquery(
+				'SELECT 1
+					FROM vtiger_businessactions
+					INNER JOIN vtiger_crmentity ON crmid = businessactionsid
+					WHERE vtiger_crmentity.deleted = 0
+						AND (module_list = ? OR module_list LIKE ? OR module_list LIKE ? OR module_list LIKE ?)
+						AND elementtype_action=? AND linklabel=?',
+				array($allModules[$tabid], $allModules[$tabid].' %', '% '.$allModules[$tabid].' %', '% '.$allModules[$tabid], $actiontype, $actionlabel)
+			);
+			$mlist[$tabid] = array(
+				'name' => $mname,
+				'active' => $adb->num_rows($checkres),
+			);
+		}
+		return $mlist;
 	}
 
 	/**

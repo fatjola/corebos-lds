@@ -15,7 +15,6 @@ if (isset($tool_buttons)==false) {
 }
 
 $record = vtlib_purify($_REQUEST['record']);
-$isduplicate = isset($_REQUEST['isDuplicate']) ? vtlib_purify($_REQUEST['isDuplicate']) : '';
 $tabid = getTabid($currentModule);
 $category = getParentTab($currentModule);
 
@@ -23,9 +22,6 @@ if ($record != '') {
 	$focus->id = $record;
 	$focus->retrieve_entity_info($record, $currentModule);
 	$focus->name=$focus->column_fields[$focus->list_link_field];
-}
-if ($isduplicate == 'true') {
-	$focus->id = '';
 }
 $errormessageclass = isset($_REQUEST['error_msgclass']) ? vtlib_purify($_REQUEST['error_msgclass']) : '';
 $errormessage = isset($_REQUEST['error_msg']) ? vtlib_purify($_REQUEST['error_msg']) : '';
@@ -153,7 +149,7 @@ if ($isPresentRelatedListBlock) {
 		$keys = array_keys($rl);
 		if (array_key_exists($keys[0], $_SESSION['BLOCKINITIALSTATUS']) && $_SESSION['BLOCKINITIALSTATUS'][$keys[0]] == 1) {
 			$open_related_modules[] = $keys[0];
-			$smarty->assign("SELECTEDHEADERS", $open_related_modules);
+			$smarty->assign('SELECTEDHEADERS', $open_related_modules);
 		}
 	}
 	$smarty->assign('RELATEDLISTBLOCK', $related_list_block);

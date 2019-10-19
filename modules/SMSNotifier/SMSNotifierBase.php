@@ -46,11 +46,13 @@ class SMSNotifierBase extends CRMEntity {
 		/* Format: Field Label => array(tablename => columnname) */
 		// tablename should not have prefix 'vtiger_'
 		'Message' => array('smsnotifier' => 'message'),
+		'Created Time' => array('crmentity' => 'createdtime'),
 		'Assigned To' => array('crmentity' => 'smownerid')
 	);
 	public $list_fields_name = array(
 		/* Format: Field Label => fieldname */
 		'Message' => 'message',
+		'Created Time' => 'createdtime',
 		'Assigned To' => 'assigned_user_id'
 	);
 
@@ -61,11 +63,13 @@ class SMSNotifierBase extends CRMEntity {
 	public $search_fields = array(
 		/* Format: Field Label => array(tablename => columnname) */
 		// tablename should not have prefix 'vtiger_'
-		'Message' => array('smsnotifier' => 'message')
+		'Message' => array('smsnotifier' => 'message'),
+		'Created Time' => array('crmentity' => 'createdtime'),
 	);
 	public $search_fields_name = array(
 		/* Format: Field Label => fieldname */
-		'Message' => 'message'
+		'Message' => 'message',
+		'Created Time' => 'createdtime',
 	);
 
 	// For Popup window record selection
@@ -142,6 +146,10 @@ class SMSNotifierBase extends CRMEntity {
 			$accountsModuleInstance = Vtiger_Module::getInstance('Accounts');
 			$accountsModuleInstance->deleteLink('LISTVIEWBASIC', 'Send SMS');
 			$accountsModuleInstance->deleteLink('DETAILVIEWBASIC', 'Send SMS');
+
+			$vendorsModuleInstance = Vtiger_Module::getInstance('Vendors');
+			$vendorsModuleInstance->deleteLink('LISTVIEWBASIC', 'Send SMS');
+			$vendorsModuleInstance->deleteLink('DETAILVIEWBASIC', 'Send SMS');
 		}
 
 		if ($registerLinks) {
@@ -160,6 +168,10 @@ class SMSNotifierBase extends CRMEntity {
 			$accountsModuleInstance = Vtiger_Module::getInstance('Accounts');
 			$accountsModuleInstance->addLink('LISTVIEWBASIC', 'Send SMS', "SMSNotifierCommon.displaySelectWizard(this, '\$MODULE\$');");
 			$accountsModuleInstance->addLink('DETAILVIEWBASIC', 'Send SMS', "javascript:SMSNotifierCommon.displaySelectWizard_DetailView('\$MODULE\$', '\$RECORD\$');");
+
+			$vendorsModuleInstance = Vtiger_Module::getInstance('Vendors');
+			$vendorsModuleInstance->addLink('LISTVIEWBASIC', 'Send SMS', "SMSNotifierCommon.displaySelectWizard(this, '\$MODULE\$');");
+			$vendorsModuleInstance->addLink('DETAILVIEWBASIC', 'Send SMS', "javascript:SMSNotifierCommon.displaySelectWizard_DetailView('\$MODULE\$', '\$RECORD\$');");
 		}
 	}
 

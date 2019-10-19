@@ -125,6 +125,7 @@ FieldDependencies.prototype.actOnSelectChange = function (event) {
 			var condArray=new Array();
 			var condOperatorArray=new Array();
 			for (var j=0; j<conditions.length; j++) {
+				newGroup=false;
 				field=conditions[j]['columnname'];
 				comparator=conditions[j]['comparator'];
 				value=conditions[j]['value'];
@@ -230,7 +231,7 @@ FieldDependencies.prototype.fieldOptions = function (sourcename, targetFields, t
 			if (targetname != sourcename && targetElem!=undefined) { // avoid loop, target field can not be the same as responsible field
 				var targetvalues=targetFields[i]['options'];
 				var targetnode = jQuery('[name="'+targetname+'"]', this.baseform);
-				var selectedtargetvalue = targetnode.val();
+				var selectedtargetvalue = targetvalues[0];
 
 				// In IE we cannot hide the options!, the only way to achieve this effect is recreating the options list again.
 				// To maintain implementation consistency, let us keep copy of options in select node and use it for re-creation

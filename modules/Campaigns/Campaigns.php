@@ -11,7 +11,7 @@ require_once 'include/logging.php';
 require_once 'include/utils/utils.php';
 require_once 'modules/Contacts/Contacts.php';
 require_once 'modules/Leads/Leads.php';
-require 'user_privileges/default_module_view.php';
+require 'modules/Vtiger/default_module_view.php';
 
 class Campaigns extends CRMEntity {
 	public $db;
@@ -24,6 +24,8 @@ class Campaigns extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = false;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-campaign', 'class' => 'slds-icon', 'icon'=>'campaign');
+
 	/**
 	 * Mandatory table for supporting custom fields.
 	 */
@@ -99,7 +101,7 @@ class Campaigns extends CRMEntity {
 	 */
 	public function get_accounts($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view,$currentModule;
-		$log->debug("Entering get_accounts(".$id.") method ...");
+		$log->debug('> get_accounts '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -191,7 +193,7 @@ class Campaigns extends CRMEntity {
 
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug("Exiting get_accounts method ...");
+		$log->debug('< get_accounts');
 		return $return_value;
 	}
 
@@ -202,7 +204,7 @@ class Campaigns extends CRMEntity {
 	 */
 	public function get_contacts($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view,$currentModule;
-		$log->debug("Entering get_contacts(".$id.") method ...");
+		$log->debug('> get_contacts '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -299,7 +301,7 @@ class Campaigns extends CRMEntity {
 
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug("Exiting get_contacts method ...");
+		$log->debug('< get_contacts');
 		return $return_value;
 	}
 
@@ -310,7 +312,7 @@ class Campaigns extends CRMEntity {
 	 */
 	public function get_leads($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view, $currentModule;
-		$log->debug("Entering get_leads(".$id.") method ...");
+		$log->debug('> get_leads '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -404,7 +406,7 @@ class Campaigns extends CRMEntity {
 
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug("Exiting get_leads method ...");
+		$log->debug('< get_leads');
 		return $return_value;
 	}
 
@@ -610,31 +612,33 @@ class Campaigns extends CRMEntity {
 	 */
 	public function transferRelatedRecords($module, $transferEntityIds, $entityId) {
 		global $adb,$log;
-		$log->debug("Entering function transferRelatedRecords ($module, $transferEntityIds, $entityId)");
+		$log->debug('> transferRelatedRecords '.$module.','.print_r($transferEntityIds, true).','.$entityId);
 		parent::transferRelatedRecords($module, $transferEntityIds, $entityId);
-		$rel_table_arr = array("Contacts"=>"vtiger_campaigncontrel","Potentials"=>"vtiger_potential",
-					"Leads"=>"vtiger_campaignleadrel",
-					"Attachments"=>"vtiger_seattachmentsrel",
-					"Campaigns"=>"vtiger_campaignaccountrel","CobroPago"=>"vtiger_cobropago");
-
-		$tbl_field_arr = array("vtiger_campaigncontrel"=>"contactid","vtiger_potential"=>"potentialid",
-					"vtiger_campaignleadrel"=>"leadid",
-					"vtiger_seattachmentsrel"=>"attachmentsid",
-					"vtiger_campaignaccountrel"=>"accountid","vtiger_cobropago"=>"cobropagoid");
-
-		$entity_tbl_field_arr = array("vtiger_campaigncontrel"=>"campaignid","vtiger_potential"=>"campaignid",
-					"vtiger_campaignleadrel"=>"campaignid",
-					"vtiger_seattachmentsrel"=>"crmid",
-					"vtiger_campaignaccountrel"=>"campaignid","vtiger_cobropago"=>"related_id");
-
+		$rel_table_arr = array(
+			'Contacts'=>'vtiger_campaigncontrel',
+			'Leads'=>'vtiger_campaignleadrel',
+			'Attachments'=>'vtiger_seattachmentsrel',
+			'Campaigns'=>'vtiger_campaignaccountrel',
+		);
+		$tbl_field_arr = array(
+			'vtiger_campaigncontrel'=>'contactid',
+			'vtiger_campaignleadrel'=>'leadid',
+			'vtiger_seattachmentsrel'=>'attachmentsid',
+			'vtiger_campaignaccountrel'=>'accountid',
+		);
+		$entity_tbl_field_arr = array(
+			'vtiger_campaigncontrel'=>'campaignid',
+			'vtiger_campaignleadrel'=>'campaignid',
+			'vtiger_seattachmentsrel'=>'crmid',
+			'vtiger_campaignaccountrel'=>'campaignid',
+		);
 		foreach ($transferEntityIds as $transferId) {
 			foreach ($rel_table_arr as $rel_table) {
 				$id_field = $tbl_field_arr[$rel_table];
 				$entity_id_field = $entity_tbl_field_arr[$rel_table];
 				// IN clause to avoid duplicate entries
 				$sel_result =  $adb->pquery(
-					"select $id_field from $rel_table where $entity_id_field=? " .
-						" and $id_field not in (select $id_field from $rel_table where $entity_id_field=?)",
+					"select $id_field from $rel_table where $entity_id_field=? and $id_field not in (select $id_field from $rel_table where $entity_id_field=?)",
 					array($transferId,$entityId)
 				);
 				$res_cnt = $adb->num_rows($sel_result);
@@ -649,8 +653,7 @@ class Campaigns extends CRMEntity {
 				}
 			}
 		}
-		parent::transferRelatedRecords($module, $transferEntityIds, $entityId);
-		$log->debug("Exiting transferRelatedRecords...");
+		$log->debug('< transferRelatedRecords');
 	}
 }
 ?>

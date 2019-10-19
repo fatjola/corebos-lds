@@ -14,6 +14,7 @@ require_once 'modules/Contacts/Contacts.php';
 require_once 'modules/Accounts/Accounts.php';
 require_once 'modules/Potentials/Potentials.php';
 require_once 'modules/Users/Users.php';
+require_once 'modules/Emails/mail.php';
 
 class Emails extends CRMEntity {
 	public $db;
@@ -25,6 +26,7 @@ class Emails extends CRMEntity {
 
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = false;
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-email', 'class' => 'slds-icon', 'icon'=>'email');
 
 	// added to check email save from plugin or not
 	public $plugin_save = false;
@@ -40,6 +42,11 @@ class Emails extends CRMEntity {
 		'Date Sent' => array('activity' => 'date_start'),
 		'Time Sent' => array('activity' => 'time_start'),
 		'Assigned To' => array('crmentity' => 'smownerid'),
+		'Delivered' => array('emaildetails' => 'delivered'),
+		'Open' => array('emaildetails' => 'open'),
+		'Clicked' => array('emaildetails' => 'clicked'),
+		'Bounce' => array('emaildetails' => 'bounce'),
+		'Unsubscribe' => array('emaildetails' => 'unsubscribe'),
 		'Access Count' => array('email_track' => 'access_count')
 	);
 	public $list_fields_name = array(
@@ -48,6 +55,37 @@ class Emails extends CRMEntity {
 		'Date Sent' => 'date_start',
 		'Time Sent' => 'time_start',
 		'Assigned To' => 'assigned_user_id',
+		'Delivered' => 'delivered',
+		'Open' => 'open',
+		'Clicked' => 'clicked',
+		'Bounce' => 'bounce',
+		'Unsubscribe' => 'unsubscribe',
+		'Access Count' => 'access_count'
+	);
+	public $search_fields = array(
+		'Subject' => array('activity' => 'subject'),
+		'Related to' => array('seactivityrel' => 'parent_id'),
+		'Date Sent' => array('activity' => 'date_start'),
+		'Time Sent' => array('activity' => 'time_start'),
+		'Assigned To' => array('crmentity' => 'smownerid'),
+		'Delivered' => array('emaildetails' => 'delivered'),
+		'Open' => array('emaildetails' => 'open'),
+		'Clicked' => array('emaildetails' => 'clicked'),
+		'Bounce' => array('emaildetails' => 'bounce'),
+		'Unsubscribe' => array('emaildetails' => 'unsubscribe'),
+		'Access Count' => array('email_track' => 'access_count')
+	);
+	public $search_fields_name = array(
+		'Subject' => 'subject',
+		'Related to' => 'parent_id',
+		'Date Sent' => 'date_start',
+		'Time Sent' => 'time_start',
+		'Assigned To' => 'assigned_user_id',
+		'Delivered' => 'delivered',
+		'Open' => 'open',
+		'Clicked' => 'clicked',
+		'Bounce' => 'bounce',
+		'Unsubscribe' => 'unsubscribe',
 		'Access Count' => 'access_count'
 	);
 	public $list_link_field = 'subject';
@@ -163,7 +201,7 @@ class Emails extends CRMEntity {
 
 	public function insertIntoAttachment($id, $module, $direct_import = false) {
 		global $log, $adb;
-		$log->debug("Entering into insertIntoAttachment($id,$module) method.");
+		$log->debug('> insertIntoAttachment '.$id.','.$module);
 
 		$file_saved = false;
 
@@ -198,7 +236,7 @@ class Emails extends CRMEntity {
 				$adb->pquery($query, array($id,$attachmentId));
 			}
 		}
-		$log->debug("Exiting from insertIntoAttachment($id,$module) method.");
+		$log->debug('< insertIntoAttachment');
 	}
 
 	public static function EmailHasBeenSent($emailid) {
@@ -210,6 +248,43 @@ class Emails extends CRMEntity {
 		$result = $adb->pquery($sql, array($emailid));
 		$email_flag = $adb->query_result($result, 0, 'email_flag');
 		return  ($email_flag == 'SENT');
+	}
+
+	public static function emailServerCheck() {
+		global $adb, $current_user;
+		$user_og_server_config = $adb->pquery('select 1 from vtiger_mail_accounts where user_id = ? AND og_server_status=1', array($current_user->id));
+		$global_og_server_config = $adb->pquery('select 1 from vtiger_systems where server_type = ?', array('email'));
+		return ($adb->num_rows($global_og_server_config) > 0 || $adb->num_rows($user_og_server_config) > 0);
+	}
+
+	public static function useEmailHook() {
+		return true;
+	}
+
+	public static function sendEMail($to_email, $from_name, $from_email, $subject, $contents, $cc, $bcc, $attachment, $emailid, $logo, $qrScan, $replyto, $replyToEmail) {
+		$mail = new PHPMailer();
+		setMailerProperties($mail, $subject, $contents, $from_email, $from_name, trim($to_email, ','), $attachment, $emailid, $logo, $qrScan);
+		// Return immediately if Outgoing server not configured
+		if (empty($mail->Host)) {
+			return 0;
+		}
+		setCCAddress($mail, 'cc', $cc);
+		setCCAddress($mail, 'bcc', $bcc);
+		if (!empty($replyToEmail)) {
+			$mail->AddReplyTo($replyToEmail);
+		}
+		// mailscanner customization: If Support Reply To is defined use it.
+		$HELPDESK_SUPPORT_EMAIL_REPLY_ID = GlobalVariable::getVariable('HelpDesk_Support_Reply_EMail', $replyto, 'HelpDesk');
+		if ($HELPDESK_SUPPORT_EMAIL_REPLY_ID && $replyto != $HELPDESK_SUPPORT_EMAIL_REPLY_ID) {
+			$mail->AddReplyTo($HELPDESK_SUPPORT_EMAIL_REPLY_ID);
+		}
+		$mail_status = MailSend($mail);
+		if ($mail_status != 1) {
+			$mail_error = getMailError($mail, $mail_status);
+		} else {
+			$mail_error = $mail_status;
+		}
+		return $mail_error;
 	}
 
 	/*
@@ -270,7 +345,7 @@ class Emails extends CRMEntity {
 	/** Returns a list of the associated contacts */
 	public function get_contacts($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $currentModule, $adb;
-		$log->debug("Entering get_contacts(" . $id . ") method ...");
+		$log->debug('> get_contacts ' . $id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -316,48 +391,15 @@ class Emails extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug("Exiting get_contacts method ...");
+		$log->debug('< get_contacts');
 		return $return_value;
 	}
 
-	/** Returns the column name that needs to be sorted */
-	public function getSortOrder() {
-		global $log;
-		$log->debug("Entering getSortOrder() method ...");
-		if (isset($_REQUEST['sorder'])) {
-			$sorder = $this->db->sql_escape_string($_REQUEST['sorder']);
-		} else {
-			$sorder = (!empty($_SESSION['EMAILS_SORT_ORDER']) ? ($_SESSION['EMAILS_SORT_ORDER']) : ($this->default_sort_order));
-		}
-
-		$log->debug("Exiting getSortOrder method ...");
-		return $sorder;
-	}
-
-	/** Returns the order in which the records need to be sorted */
-	public function getOrderBy() {
-		global $log;
-		$log->debug("Entering getOrderBy() method ...");
-
-		$use_default_order_by = '';
-		if (GlobalVariable::getVariable('Application_ListView_Default_Sorting', 0)) {
-			$use_default_order_by = $this->default_order_by;
-		}
-
-		if (isset($_REQUEST['order_by'])) {
-			$order_by = $this->db->sql_escape_string($_REQUEST['order_by']);
-		} else {
-			$order_by = (!empty($_SESSION['EMAILS_ORDER_BY']) ? ($_SESSION['EMAILS_ORDER_BY']) : ($use_default_order_by));
-		}
-
-		$log->debug("Exiting getOrderBy method ...");
-		return $order_by;
-	}
 
 	/** Returns a list of the associated users */
 	public function get_users($id) {
-		global $log, $adb, $app_strings, $current_user;
-		$log->debug("Entering get_users( $id ) method ...");
+		global $log, $adb, $app_strings;
+		$log->debug('> get_users '.$id);
 
 		$id = $_REQUEST['record'];
 
@@ -417,7 +459,7 @@ class Emails extends CRMEntity {
 		}
 		$return_data['CUSTOM_BUTTON'] = $button;
 
-		$log->debug("Exiting get_users method ...");
+		$log->debug('< get_users');
 		return $return_data;
 	}
 
@@ -426,7 +468,7 @@ class Emails extends CRMEntity {
 	 */
 	public function create_export_query($where) {
 		global $log, $current_user;
-		$log->debug("Entering create_export_query( $where ) method ...");
+		$log->debug('> create_export_query '.$where);
 
 		include "include/utils/ExportUtils.php";
 
@@ -450,7 +492,7 @@ class Emails extends CRMEntity {
 		$query .= getNonAdminAccessControlQuery('Emails', $current_user);
 		$query .= "WHERE vtiger_activity.activitytype='Emails' AND vtiger_crmentity.deleted=0 ";
 
-		$log->debug("Exiting create_export_query method ...");
+		$log->debug('< create_export_query');
 		return $query;
 	}
 
@@ -459,10 +501,10 @@ class Emails extends CRMEntity {
 	 */
 	public function set_emails_contact_invitee_relationship($email_id, $contact_id) {
 		global $log;
-		$log->debug("Entering set_emails_contact_invitee_relationship(" . $email_id . "," . $contact_id . ") method ...");
+		$log->debug('> set_emails_contact_invitee_relationship '.$email_id.','.$contact_id);
 		$query = "insert into $this->rel_contacts_table (contactid,activityid) values(?,?)";
 		$this->db->pquery($query, array($contact_id, $email_id), true, "Error setting email to contact relationship: <BR>$query");
-		$log->debug("Exiting set_emails_contact_invitee_relationship method ...");
+		$log->debug('< set_emails_contact_invitee_relationship');
 	}
 
 	/**
@@ -470,10 +512,10 @@ class Emails extends CRMEntity {
 	 */
 	public function set_emails_se_invitee_relationship($email_id, $contact_id) {
 		global $log;
-		$log->debug("Entering set_emails_se_invitee_relationship(" . $email_id . "," . $contact_id . ") method ...");
+		$log->debug('> set_emails_se_invitee_relationship '.$email_id.','.$contact_id);
 		$query = "insert into $this->rel_serel_table (crmid,activityid) values(?,?)";
 		$this->db->pquery($query, array($contact_id, $email_id), true, "Error setting email to contact relationship: <BR>$query");
-		$log->debug("Exiting set_emails_se_invitee_relationship method ...");
+		$log->debug('< set_emails_se_invitee_relationship');
 	}
 
 	/**
@@ -481,10 +523,10 @@ class Emails extends CRMEntity {
 	 */
 	public function set_emails_user_invitee_relationship($email_id, $user_id) {
 		global $log;
-		$log->debug("Entering set_emails_user_invitee_relationship(" . $email_id . "," . $user_id . ") method ...");
+		$log->debug('> set_emails_user_invitee_relationship '.$email_id.','.$user_id);
 		$query = "insert into $this->rel_users_table (smid,activityid) values (?,?)";
 		$this->db->pquery($query, array($user_id, $email_id), true, "Error setting email to user relationship: <BR>$query");
-		$log->debug("Exiting set_emails_user_invitee_relationship method ...");
+		$log->debug('< set_emails_user_invitee_relationship');
 	}
 
 	// Function to unlink an entity with given Id from another entity
@@ -506,6 +548,26 @@ class Emails extends CRMEntity {
 		}
 		unset($list_buttons['mass_edit']);
 		return $list_buttons;
+	}
+
+	public static function sendEmailTemplate($templateName, $context, $module, $to_email, $par_id, $from_name = '', $from_email = '', $desired_lang = null, $default_lang = null) {
+		require_once 'modules/Emails/mail.php';
+		global $adb, $default_charset;
+		$sql = fetchEmailTemplateInfo($templateName, $desired_lang, $default_lang);
+		if ($sql && $adb->num_rows($sql)>0) {
+			$sub = $adb->query_result($sql, 0, 'subject');
+			$body = $adb->query_result($sql, 0, 'template');
+			$sub = html_entity_decode($sub, ENT_QUOTES, $default_charset);
+			$mail_body = html_entity_decode($body, ENT_QUOTES, $default_charset);
+			foreach ($context as $value => $val) {
+				$mail_body = str_replace($value, $val, $mail_body);
+			}
+			$mail_body = getMergedDescription($mail_body, $par_id, $module);
+			$sub = getMergedDescription($sub, $par_id, $module);
+			return send_mail($module, $to_email, $from_name, $from_email, $sub, $mail_body);
+		} else {
+			return false;
+		}
 	}
 }
 
@@ -654,7 +716,7 @@ function get_to_emailids($module) {
 // attach the generated pdf with the email
 function pdfAttach($obj, $module, $file_name, $id) {
 	global $log, $adb, $current_user;
-	$log->debug("Entering into pdfAttach() method.");
+	$log->debug('> pdfAttach');
 
 	$file_name = basename($file_name);
 	$date_var = date('Y-m-d H:i:s');
@@ -669,7 +731,7 @@ function pdfAttach($obj, $module, $file_name, $id) {
 	$upload_file_path = decideFilePath();
 
 	//Copy the file from temporary directory into storage directory for upload
-	$source_file_path = "storage/" . $file_name;
+	$source_file_path = 'storage/' . $file_name;
 	$status = copy($source_file_path, $upload_file_path . $current_id . "_" . $file_name);
 	//Check wheather the copy process is completed successfully or not. if failed no need to put entry in attachment table
 	if ($status) {
@@ -688,10 +750,10 @@ function pdfAttach($obj, $module, $file_name, $id) {
 		// Delete the file that was copied
 		checkFileAccessForDeletion($source_file_path);
 		unlink($source_file_path);
-
+		$log->debug('< pdfAttach');
 		return true;
 	} else {
-		$log->debug('pdf not attached');
+		$log->debug('< pdfAttach: pdf not attached');
 		return false;
 	}
 }

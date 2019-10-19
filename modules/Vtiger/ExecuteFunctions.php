@@ -16,7 +16,7 @@
  *  Author       : JPL TSolucio, S. L.
  *************************************************************************************************/
 require_once 'include/utils/utils.php';
-require_once 'include/utils/CommonUtils.php';
+include_once 'vtlib/Vtiger/Link.php';
 global $adb, $log, $current_user;
 
 $functiontocall = vtlib_purify($_REQUEST['functiontocall']);
@@ -116,10 +116,21 @@ switch ($functiontocall) {
 			} elseif (recordIsAssignedToInactiveUser(vtlib_purify($_REQUEST['crmid']))) {
 				echo 'yes';
 			} else {
-				echo 'no';
+				$lnks = Vtiger_Link::getAllByType(getTabid($valmod), 'PRESAVE', array('MODULE'=>$valmod, 'ACTION'=>'Save'));
+				if (count($lnks)>0) {
+					echo 'yes';
+				} else {
+					echo 'no';
+				}
 			}
 		}
 		die();
+		break;
+	case 'getWeekendDates':
+		$startDate = vtlib_purify($_REQUEST['startFrom']);
+		$endDate = vtlib_purify($_REQUEST['endFrom']);
+		$format = isset($_REQUEST['dateFormat']) ? vtlib_purify($_REQUEST['dateFormat']) : 'Y-m-d';
+		$ret =  DateTimeField::getWeekendDates($startDate, $endDate, $format);
 		break;
 	case 'ValidationLoad':
 		$valmod = vtlib_purify($_REQUEST['valmodule']);
@@ -138,7 +149,17 @@ switch ($functiontocall) {
 		if (file_exists("modules/{$valmod}/{$valmod}Validation.php")) {
 			include "modules/{$valmod}/{$valmod}Validation.php";
 		} else {
-			echo '%%%OK%%%';
+			$lnks = Vtiger_Link::getAllByType(getTabid($valmod), 'PRESAVE', array('MODULE'=>$valmod, 'ACTION'=>'Save'));
+			if (count($lnks)>0) {
+				$screen_values = json_decode($_REQUEST['structure'], true);
+				$rdo = '';
+				foreach ($lnks as $lnk) {
+					$rdo .= vtlib_process_widget($lnk, $screen_values);
+				}
+				echo $rdo;
+			} else {
+				echo '%%%OK%%%';
+			}
 		}
 		die();
 		break;

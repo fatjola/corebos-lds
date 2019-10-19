@@ -5,14 +5,8 @@
  * The Original Code is:  vtiger CRM Open Source
  * The Initial Developer of the Original Code is vtiger.
  * Portions created by vtiger are Copyright (C) vtiger.
- * Portions created by Vicus are Copyright (C) Vicus.
  * All Rights Reserved.
- * Feel free to use / redistribute these languagefiles under the VPL 1.0.
- * This translations is based on earlier work of:
- * - IT-Online.nl <www.it-online.nl>
- * - Weltevree.org <www.Weltevree.org>
- ********************************************************************************/
-
+ ************************************************************************************/
 $mod_strings = array(
 'VTEmailTask' => 'Verstuur e-mail',
 'VTEntityMethodTask' => 'Start maatwerkfunctie',
@@ -23,11 +17,11 @@ $mod_strings = array(
 'LBL_EDIT_TASK_TITLE'=>'Bewerk een bestaande taak of maak een nieuwe aan',
 'LBL_EDIT_WORKFLOW'=>'Bewerk Werkstroom',
 'LBL_EDIT_WORKFLOW_TITLE'=>'Bewerk een bestaande werkstroom of maak een nieuwe aan',
+'LBL_FROM_TEMPLATE'=>'Van Sjabloon',
 'LBL_NEW_WORKFLOW'=>'Nieuwe Werkstroom',
 'LBL_NEW_TEMPLATE'=>'Bewaar als Sjabloon',
 'LBL_CREATE_WORKFLOW_FOR'=>'Maak een Werkstroom voor',
 'LBL_FOR_MODULE'=>'Voor Module',
-'LBL_FROM_TEMPLATE'=>'Van Sjabloon',
 'LBL_CHOOSE_A_TEMPLATE'=>'Kies een Sjabloon',
 'LBL_VALIDATION_MISSING_MANDATORY_FIELDS'=>'Er zijn lege verplichte velden.',
 'LBL_VALIDATION_INVALID_DATE_RANGE'=>'Startdatum/tijd is groter dan de Einddatum/tijd',
@@ -38,14 +32,12 @@ $mod_strings = array(
 'LBL_WORKFLOW_LIST'=>'Werkstroom Lijst',
 'LBL_AVAILABLE_WORKLIST_LIST'=>'Beschikbare Werkstromen',
 'LBL_LOADING'=>'Laden...',
-'LBL_REEVALCONDITIONS' => 'Evaluate conditions on execution',
+'LBL_REEVALCONDITIONS' => 'Evaluate conditions on delayed execution',
 'LBL_VALIDATION_ERROR'=>'Validatie Fout',
 'LBL_SELECT_OPTION_DOTDOTDOT'=>'Selecteer Optie...',
 'LBL_WORKFLOW_NOTE_CRON_CONFIG'=>'NOTE: U moet het Werkstroom cron script geconfigureerd hebben.',
 'LBL_NO_TEMPLATES'=>'Geen Sjablonen',
-
 'LBL_SELECT'=>'Selecteer',
-'LBL_MESSAGE'=>'Bericht',
 'LBL_SET_FIELD_VALUES'=>'Stel veldwaarde in',
 'LBL_ADD_FIELD'=>'Voeg veld toe',
 
@@ -91,7 +83,10 @@ $mod_strings = array(
 'Portal Url' => 'Portaal URL',
 'groupEmailList' => 'Group Email List',
 
+'Recommended frequency for Workflow is 15 mins' => 'Recommended frequency for Workflow is 15 mins',
 'Workflow'=>'Werkstroom',
+'WORKFLOW_DELETE_CONFIRMATION' => 'Are you sure you want to delete this Workflow?',
+'LBL_DELETE_WORKFLOW' => 'Delete Workflow',
 
 'VTCreateEntityTask' => 'Maak Entiteit',
 'LBL_ENTITY_TYPE' => 'Entiteittype',
@@ -101,6 +96,8 @@ $mod_strings = array(
 'LBL_PARENT_OWNER' => 'Parent Record Owner',
 'LBL_SPECIAL_OPTIONS' => 'Special Options',
 'CBTagTask' => 'Add/Delete Tag',
+'CBMassiveUpdateRelatedTask' => 'Update Related Records',
+'DuplicateRecords' => 'Duplicate Records',
 'Add Tag' => 'Add Tag',
 'Delete Tag' => 'Delete Tag',
 'Tags' => 'Tags',
@@ -119,6 +116,16 @@ $mod_strings = array(
 'CBSendMMMSGTask' => 'Send Message to Mattermost',
 'Send Message To MM' => 'Send Message to Mattermost',
 'VTSendMessage2MMTask' => 'Send Message to Mattermost',
+'whatsappworkflowtask' => 'Send WhatsApp Message',
+'Whatsapp Workflow Task' => 'Send WhatsApp Message',
+'WhatsappWorkflowTask' => 'Send WhatsApp Message',
+'Many to Many Relation Task' => 'Many to Many Relation Task',
+'Set Many to Many Relation' => 'Set Many to Many Relation',
+'NotifyOnPortalTicketCreation' => 'Notify On Portal Ticket Creation',
+'NotifyOnPortalTicketComment' => 'Notify On Portal Ticket Comment',
+'NotifyOwnerOnTicketChange' => 'Notify Owner On Ticket Change',
+'NotifyParentOnTicketChange' => 'Notify Parent On Ticket Change',
+
 'LBL_EVENTNAME' => 'Event Name',
 'LBL_DESCRIPTION' => 'Description',
 'LBL_STATUS' => 'Status',
@@ -152,6 +159,7 @@ $mod_strings = array(
 'LBL_SELECTED_DATES' => 'Selected Dates',
 'LBL_EXCEEDING_MAXIMUM_LIMIT' => 'Maximum limit exceeded',
 'LBL_NEXT_TRIGGER_TIME' => 'Next trigger time on',
+'LBL_MESSAGE'=>'Bericht',
 'UpdateInventoryProducts On Every Save' => 'Update Product Inventory',
 'Send Email to user when Notifyowner is True' => 'Send Email to user when Notifyowner is True',
 'Send Email to user when Portal User is True' => 'Send Email to user when Portal User is True',
@@ -165,7 +173,30 @@ $mod_strings = array(
 'Calculate or Update forecast amount' => 'Calculate or Update forecast amount',
 'LBL_METHOD_NAME' => 'Method Name',
 'NO_METHOD_AVAILABLE' => 'No method is available for this module.',
+'LBL_URLQUERY' => 'Query GMP',
+'gmp_url_explanation' => 'Module will apply default config (GA ID, version & ClientId), you must place in the query only specific elemnts,like hit type (t). You can look for Google Measurement protocol parameters here: <a href="https://developers.google.com/analytics/devguides/collection/protocol/v1/parameters">Measurement Protocol Parameter Reference</a>',
+'url_query' => 'Query GMP',
+'CBGMPTask' => 'Google Measurement Protocol',
+'GenerateDocument'=>'Generate Document',
+'Templates'=>'Templates',
 'launchrelwf' => 'Launch workflows on related updates',
 'LBL_WFPURPOSE' => 'Purpose',
+'Run Webservice Workflow Task' => 'Run Web Service',
+'RunWebserviceWorkflowTask' => 'Run Web Service',
+'runwebserviceworkflowtask' => 'Run Web Service',
+'Select IO Map' => 'Select IO Map',
+'Select Config Map' => 'Select Configuration Map',
+'CBPushNotificationTask' => 'Push Notification',
+'pushnoturl' => 'Push Notification URL',
+'CBQuestionMViewFunction' => 'Update Materialized View',
+'LBL_WHERE_TO_SAVE' => 'Where to Save:',
+'LBL_WHAT_TO_ENCODE' => 'What to Encode',
+'Select Field to Save Encoded Value' => 'Select Field to Save Encoded Value',
+'Select Field to Encode' => 'Select Field to Encode',
+'Encoding Type' => 'Encoding Type',
+'Select Encoding Type' => 'Select Encoding Type',
+'Generate Image Code' => 'Generate Image Code',
+'Generate Image Code Workflow Task' => 'Generate Image Code Workflow Task',
+'GenerateImageCodeWorkflowTask' => 'Generate Image Code Workflow Task',
 );
 ?>

@@ -21,6 +21,8 @@ class Services extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = true;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-proposition', 'class' => 'slds-icon', 'icon'=>'proposition');
+
 	/**
 	 * Mandatory table for supporting custom fields.
 	 */
@@ -110,10 +112,10 @@ class Services extends CRMEntity {
 			$this->insertIntoAttachment($this->id, $module);
 		}
 		//Inserting into service_taxrel table
-		if ((empty($_REQUEST['ajxaction']) || $_REQUEST['ajxaction']!='DETAILVIEW') && $_REQUEST['action']!='MassEditSave' && $_REQUEST['action']!='ProcessDuplicates') {
+		if (inventoryCanSaveProductLines($_REQUEST, $module)) {
 			$this->insertPriceInformation('vtiger_productcurrencyrel', 'Services');
 		}
-		if ((empty($_REQUEST['ajxaction']) || $_REQUEST['ajxaction'] != 'DETAILVIEW') && $_REQUEST['action'] != 'ProcessDuplicates') {
+		if (inventoryCanSaveProductLines($_REQUEST, $module) || $_REQUEST['action'] == 'MassEditSave') {
 			$this->insertTaxInformation('vtiger_producttaxrel', 'Services');
 		}
 		// Update unit price value in vtiger_productcurrencyrel
@@ -127,8 +129,12 @@ class Services extends CRMEntity {
 	*/
 	public function insertTaxInformation($tablename, $module) {
 		global $adb, $log;
-		$log->debug("Entering into insertTaxInformation($tablename, $module) method ...");
+		$log->debug("> insertTaxInformation $tablename, $module");
 		$tax_details = getAllTaxes();
+		if ($_REQUEST['action'] == 'MassEditSave') {
+			$params = json_decode($_REQUEST['params'], true);
+			$_REQUEST = array_merge($params, $_REQUEST);
+		}
 		$numtaxes = count($tax_details);
 		$tax_per = '';
 		//Save the Product - tax relationship if corresponding tax check box is enabled
@@ -151,18 +157,18 @@ class Services extends CRMEntity {
 		for ($i=0; $i<$numtaxes; $i++) {
 			$tax_name = $tax_details[$i]['taxname'];
 			$tax_checkname = $tax_details[$i]['taxname'].'_check';
-			if (isset($_REQUEST[$tax_checkname]) && ($_REQUEST[$tax_checkname] == 'on' || $_REQUEST[$tax_checkname] == 1)) {
+			if (!empty($_REQUEST[$tax_checkname]) && ($_REQUEST[$tax_checkname] == 'on' || $_REQUEST[$tax_checkname] == 1)) {
 				$taxid = getTaxId($tax_name);
 				$tax_per = $_REQUEST[$tax_name];
 				if ($tax_per == '') {
 					$log->debug('Tax selected but value not given so default value will be saved.');
 					$tax_per = getTaxPercentage($tax_name);
 				}
-				$log->debug("Going to save the Product - $tax_name tax relationship");
+				$log->debug("Going to save the Service - $tax_name tax relationship");
 				$adb->pquery('insert into vtiger_producttaxrel values(?,?,?)', array($this->id, $taxid, $tax_per));
 			}
 		}
-		$log->debug("Exiting from insertTaxInformation($tablename, $module) method ...");
+		$log->debug('< insertTaxInformation');
 	}
 
 	/**	function to save the service price information in vtiger_servicecurrencyrel table
@@ -172,13 +178,13 @@ class Services extends CRMEntity {
 	*/
 	public function insertPriceInformation($tablename, $module) {
 		global $adb, $log;
-		$log->debug("Entering into insertPriceInformation($tablename, $module) method ...");
+		$log->debug("> insertPriceInformation $tablename, $module");
 		//removed the update of currency_id based on the logged in user's preference : fix 6490
 
 		$currency_details = getAllCurrencies('all');
 
 		//Delete the existing currency relationship if any
-		if ($this->mode == 'edit' && $_REQUEST['action'] != 'MassEditSave' && $_REQUEST['action'] != 'ProcessDuplicates') {
+		if ($this->mode == 'edit' && $_REQUEST['action'] !== 'MassEditSave') {
 			$sql = 'delete from vtiger_productcurrencyrel where productid=? and currencyid=?';
 			for ($i=0; $i<count($currency_details); $i++) {
 				$curid = $currency_details[$i]['curid'];
@@ -194,15 +200,15 @@ class Services extends CRMEntity {
 			$curname = $currency_details[$i]['currencylabel'];
 			$cur_checkname = 'cur_' . $curid . '_check';
 			$cur_valuename = 'curname' . $curid;
-			$srvprice = (isset($_REQUEST['unit_price']) ? $_REQUEST['unit_price'] : 0);
-			$requestPrice = CurrencyField::convertToDBFormat($srvprice, null, true);
-			$actualPrice = CurrencyField::convertToDBFormat((isset($_REQUEST[$cur_valuename]) ? $_REQUEST[$cur_valuename] : 0), null, true);
-			if (isset($_REQUEST[$cur_checkname]) && ($_REQUEST[$cur_checkname] == 'on' || $_REQUEST[$cur_checkname] == 1)) {
+			if (!empty($_REQUEST[$cur_checkname]) && ($_REQUEST[$cur_checkname] == 'on' || $_REQUEST[$cur_checkname] == 1)) {
+				$srvprice = (isset($_REQUEST['unit_price']) ? $_REQUEST['unit_price'] : 0);
+				$requestPrice = CurrencyField::convertToDBFormat($srvprice, null, true);
+				$actualPrice = CurrencyField::convertToDBFormat((isset($_REQUEST[$cur_valuename]) ? $_REQUEST[$cur_valuename] : 0), null, true);
 				$conversion_rate = $currency_details[$i]['conversionrate'];
 				$actual_conversion_rate = $service_base_conv_rate * $conversion_rate;
 				$converted_price = $actual_conversion_rate * $requestPrice;
 
-				$log->debug("Going to save the Product - $curname currency relationship");
+				$log->debug("Going to save the Service - $curname currency relationship");
 				$adb->pquery('insert into vtiger_productcurrencyrel values(?,?,?,?)', array($this->id, $curid, $converted_price, $actualPrice));
 
 				// Update the Product information with Base Currency choosen by the User.
@@ -211,14 +217,13 @@ class Services extends CRMEntity {
 				}
 			}
 		}
-		$log->debug("Exiting from insertPriceInformation($tablename, $module) method ...");
+		$log->debug('< insertPriceInformation');
 	}
 
 	public function updateUnitPrice() {
 		$prod_res = $this->db->pquery('select unit_price, currency_id from vtiger_service where serviceid=?', array($this->id));
 		$prod_unit_price = $this->db->query_result($prod_res, 0, 'unit_price');
 		$prod_base_currency = $this->db->query_result($prod_res, 0, 'currency_id');
-
 		$query = 'update vtiger_productcurrencyrel set actual_price=? where productid=? and currencyid=?';
 		$params = array($prod_unit_price, $this->id, $prod_base_currency);
 		$this->db->pquery($query, $params);
@@ -251,7 +256,7 @@ class Services extends CRMEntity {
 	 */
 	public function get_quotes($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view, $currentModule;
-		$log->debug("Entering get_quotes(".$id.") method ...");
+		$log->debug('> get_quotes '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -312,7 +317,7 @@ class Services extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug('Exiting get_quotes method ...');
+		$log->debug('< get_quotes');
 		return $return_value;
 	}
 
@@ -322,7 +327,7 @@ class Services extends CRMEntity {
 	 */
 	public function get_purchase_orders($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view, $currentModule;
-		$log->debug("Entering get_purchase_orders(".$id.") method ...");
+		$log->debug('> get_purchase_orders '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -376,7 +381,7 @@ class Services extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug('Exiting get_purchase_orders method ...');
+		$log->debug('< get_purchase_orders');
 		return $return_value;
 	}
 
@@ -386,7 +391,7 @@ class Services extends CRMEntity {
 	 */
 	public function get_salesorder($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view, $currentModule;
-		$log->debug("Entering get_salesorder(".$id.") method ...");
+		$log->debug('> get_salesorder '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -444,7 +449,7 @@ class Services extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug('Exiting get_salesorder method ...');
+		$log->debug('< get_salesorder');
 		return $return_value;
 	}
 
@@ -454,7 +459,7 @@ class Services extends CRMEntity {
 	 */
 	public function get_invoices($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view, $currentModule;
-		$log->debug("Entering get_invoices(".$id.") method ...");
+		$log->debug('> get_invoices '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -508,7 +513,7 @@ class Services extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug("Exiting get_invoices method ...");
+		$log->debug('< get_invoices');
 		return $return_value;
 	}
 
@@ -518,7 +523,7 @@ class Services extends CRMEntity {
 	 */
 	public function get_service_pricebooks($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $currentModule, $log, $singlepane_view;
-		$log->debug("Entering get_service_pricebooks(".$id.") method ...");
+		$log->debug('> get_service_pricebooks '.$id);
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
 		checkFileAccessForInclusion("modules/$related_module/$related_module.php");
@@ -555,7 +560,6 @@ class Services extends CRMEntity {
 				ON vtiger_pricebookproductrel.pricebookid = vtiger_pricebook.pricebookid
 			WHERE vtiger_crmentity.deleted = 0
 			AND vtiger_pricebookproductrel.productid = ".$id;
-		$log->debug("Exiting get_product_pricebooks method ...");
 
 		$return_value = GetRelatedList($currentModule, $related_module, $focus, $query, $button, $returnset);
 
@@ -564,7 +568,7 @@ class Services extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug('Exiting get_service_pricebooks method ...');
+		$log->debug('< get_service_pricebooks');
 		return $return_value;
 	}
 
@@ -577,7 +581,7 @@ class Services extends CRMEntity {
 	 */
 	public function getPriceBookRelatedServices($query, $focus, $returnset = '') {
 		global $log, $adb, $app_strings, $current_language, $current_user, $theme;
-		$log->debug("Entering getPriceBookRelatedServices(".$query.",".get_class($focus).",".$returnset.") method ...");
+		$log->debug('> getPriceBookRelatedServices '.$query.','.get_class($focus).','.$returnset);
 
 		$current_module_strings = return_module_language($current_language, 'Services');
 		$list_max_entries_per_page = GlobalVariable::getVariable('Application_ListView_PageSize', 20, 'Services');
@@ -595,8 +599,8 @@ class Services extends CRMEntity {
 		$relatedmodule = 'Services';
 		if (empty($_SESSION['rlvs'][$module][$relatedmodule])) {
 			$modObj = new ListViewSession();
-			$modObj->sortby = $focus->default_order_by;
-			$modObj->sorder = $focus->default_sort_order;
+			$modObj->sortby = $focus->getOrderBy();
+			$modObj->sorder = $focus->getSortOrder();
 			coreBOS_Session::set('rlvs^'.$module.'^'.$relatedmodule, get_object_vars($modObj));
 		}
 		if (isset($_REQUEST['relmodule']) && $_REQUEST['relmodule']!='' && $_REQUEST['relmodule'] == $relatedmodule) {
@@ -662,7 +666,7 @@ class Services extends CRMEntity {
 		$navigationOutput[] = getRelatedTableHeaderNavigation($navigation_array, '', $module, $relatedmodule, $focus->id);
 		$return_data = array('header'=>$header,'entries'=>$entries_list,'navigation'=>$navigationOutput);
 
-		$log->debug('Exiting getPriceBookRelatedServices method ...');
+		$log->debug('< getPriceBookRelatedServices');
 		return $return_data;
 	}
 
@@ -674,8 +678,7 @@ class Services extends CRMEntity {
 	 */
 	public function transferRelatedRecords($module, $transferEntityIds, $entityId) {
 		global $adb,$log;
-		$log->debug("Entering function transferRelatedRecords ($module, $transferEntityIds, $entityId)");
-
+		$log->debug('> transferRelatedRecords '.$module.','.print_r($transferEntityIds, true).','.$entityId);
 		$rel_table_arr = array(
 			'Quotes' => 'vtiger_inventoryproductrel',
 			'PurchaseOrder' => 'vtiger_inventoryproductrel',
@@ -683,25 +686,21 @@ class Services extends CRMEntity {
 			'Invoice' => 'vtiger_inventoryproductrel',
 			'PriceBooks' => 'vtiger_pricebookproductrel',
 		);
-
 		$tbl_field_arr = array(
 			'vtiger_inventoryproductrel'=>'id',
 			'vtiger_pricebookproductrel'=>'pricebookid',
 		);
-
 		$entity_tbl_field_arr = array(
 			'vtiger_inventoryproductrel'=>'productid',
 			'vtiger_pricebookproductrel'=>'productid',
 		);
-
 		foreach ($transferEntityIds as $transferId) {
 			foreach ($rel_table_arr as $rel_table) {
 				$id_field = $tbl_field_arr[$rel_table];
 				$entity_id_field = $entity_tbl_field_arr[$rel_table];
 				// IN clause to avoid duplicate entries
 				$sel_result = $adb->pquery(
-					"select $id_field from $rel_table where $entity_id_field=? " .
-						" and $id_field not in (select $id_field from $rel_table where $entity_id_field=?)",
+					"select $id_field from $rel_table where $entity_id_field=? and $id_field not in (select $id_field from $rel_table where $entity_id_field=?)",
 					array($transferId,$entityId)
 				);
 				$res_cnt = $adb->num_rows($sel_result);
@@ -716,9 +715,8 @@ class Services extends CRMEntity {
 				}
 			}
 		}
-
 		parent::transferRelatedRecords($module, $transferEntityIds, $entityId);
-		$log->debug("Exiting transferRelatedRecords...");
+		$log->debug('< transferRelatedRecords');
 	}
 
 	/*

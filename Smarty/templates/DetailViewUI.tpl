@@ -31,10 +31,10 @@
                     	{$APP.LBL_CANCEL_BUTTON_LABEL}
                     </a>
                 </div>
-                {if $keyid eq '71' && $keyfldname eq 'unit_price'}
+                {if $keyid eq '72' && $keyfldname eq 'unit_price'}
                 	{if $PRICE_DETAILS|@count > 0}
 						<span id="multiple_currencies" width="38%" style="align:right;">
-							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:void(0);" onclick="toggleShowHide('currency_class','multiple_currencies');">{$APP.LBL_MORE_CURRENCIES} &raquo;</a>
+							&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="javascript:void(0);" onclick="toggleShowHide('currency_class','multiple_currencies');event.stopPropagation();">{$APP.LBL_MORE_CURRENCIES} &raquo;</a>
 						</span>
 
 						<div id="currency_class" class="multiCurrencyDetailUI">
@@ -43,8 +43,8 @@
 								<th colspan="2">
 									<b>{$MOD.LBL_PRODUCT_PRICES}</b>
 								</th>
-								<th align="right">
-									<img border="0" style="cursor: pointer;" onclick="toggleShowHide('multiple_currencies','currency_class');" src="{'close.gif'|@vtiger_imageurl:$THEME}"/>
+								<th class='cblds-t-align--right' style="text-align:right;">
+									<img border="0" style="cursor: pointer;" onclick="toggleShowHide('multiple_currencies','currency_class');event.stopPropagation();" src="{'close.gif'|@vtiger_imageurl:$THEME}"/>
 								</th>
 							</tr>
 							<tr class="detailedViewHeader">
@@ -177,7 +177,7 @@
                                                           <a href="javascript:;" onclick="hndCancel('dtlview_{$keyfldname}','editarea_{$keyfldname}','{$keyfldname}');event.stopPropagation();" class="detailview_ajaxbutton ajax_cancelsave_detailview">{$APP.LBL_CANCEL_BUTTON_LABEL}</a>
                                                        </div>
                                                   </td>
-                                             {elseif $keyid eq '19' || $keyid eq '20'} <!--TextArea/Description-->
+                                             {elseif $keyid eq '19'} <!--TextArea/Description-->
 						<!-- we will empty the value of ticket and faq comment -->
 						{if isset($MOD.LBL_ADD_COMMENT) && $label eq $MOD.LBL_ADD_COMMENT}
 							{assign var=keyval value=''}
@@ -199,7 +199,7 @@
 									</div>
 								</td>
 							{/if}
-                                             {elseif $keyid eq '21' || $keyid eq '24' || $keyid eq '22'} <!--TextArea/Street-->
+                                             {elseif $keyid eq '21'} <!--TextArea/Street-->
                                                   <td width=25% class="dvtCellInfo" align="left" id="mouseArea_{$keyfldname}" onmouseover="hndMouseOver({$keyid},'{$keyfldname}');" onmouseout="fnhide('crmspanid');" onclick='handleEdit(event);'>&nbsp;<span id="dtlview_{$keyfldname}" style="word-break:break-word;">{$keyval}</span>
                                               		<div id="editarea_{$keyfldname}" style="display:none;">
                                               		  <textarea id="txtbox_{$keyfldname}" name="{$keyfldname}" class="detailedViewTextBox" style="word-break:break-word;" onFocus="this.className='detailedViewTextBoxOn'" onBlur="this.className='detailedViewTextBox'" rows=2>{$keyval|regex_replace:"/<br\s*\/>/":""}</textarea>
@@ -327,7 +327,7 @@
 			{/if}
                         </td>
 
-						{elseif $keyid eq 83}<!-- Handle the Tax in Inventory -->
+						{elseif $keyid eq 83 && count($TAX_DETAILS)>0}<!-- Handle the Tax in Inventory -->
 							<td class="dvtCellInfo" colspan=3>&nbsp;</td></tr>
 							{foreach item=tax key=count from=$TAX_DETAILS}
 							<tr style="height:25px">
@@ -389,7 +389,7 @@
 					</td>
 
 				{elseif $keyid eq 69 || $keyid eq '69m'}<!-- for Image Reflection -->
-					<td align="left" width=25%>&nbsp;{$keyval}</td>
+					<td align="left" width=25%>{$keyval}</td>
 				{elseif $keyid eq 68 || $keyid eq 101}
 					<td class="dvtCellInfo" id="mouseArea_{$keyfldname}" align="left" width=25% onmouseover="vtlib_listview.trigger('cell.onmouseover', this);" onmouseout="vtlib_listview.trigger('cell.onmouseout', this)">&nbsp;{$keyval}</td>
 				{elseif $keyid eq 10}<!-- for vtlib reference field -->

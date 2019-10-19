@@ -22,7 +22,7 @@ class VTUpdateFieldsTask extends VTTask {
 	public function doTask(&$entity) {
 		global $adb, $current_user, $logbg,$from_wf;
 		$from_wf = true;
-		$logbg->info('Entering workflow task VTUpdateFieldsTask');
+		$logbg->debug('> VTUpdateFieldsTask');
 		$util = new VTWorkflowUtils();
 		$util->adminUser();
 		$isqueue=$entity->isqueue;
@@ -77,7 +77,7 @@ class VTUpdateFieldsTask extends VTTask {
 						$focusrel[$fieldmodule] = CRMEntity::getInstance($fieldmodule);
 						$focusrel[$fieldmodule]->id = $relId;
 						$focusrel[$fieldmodule]->mode = 'edit';
-						$focusrel[$fieldmodule]->retrieve_entity_info($relId, $fieldmodule);
+						$focusrel[$fieldmodule]->retrieve_entity_info($relId, $fieldmodule, false, $from_wf);
 						$focusrel[$fieldmodule]->clearSingletonSaveFields();
 					}
 					if (count($relmodule)>3 && $isqueue==false) {
@@ -85,10 +85,10 @@ class VTUpdateFieldsTask extends VTTask {
 						$taskQueue->queueTask($this->id, $entityId, $delay);
 						return;
 					}
-					$moduleHandlerrel = vtws_getModuleHandlerFromName($fieldmodule, $current_user);
+					$moduleHandlerrel = vtws_getModuleHandlerFromName($fieldmodule, Users::getActiveAdminUser());
 					$handlerMetarel[$fieldmodule] = $moduleHandlerrel->getMeta();
 					$moduleFieldsrel = $handlerMetarel[$fieldmodule]->getModuleFields();
-					$fieldValue=$util->fieldvaluebytype($moduleFieldsrel, $fieldValueType, $fieldValue, $fldrelname, $focus, $entity, $handlerMetarel[$fieldmodule]);
+					$fieldValue=$util->fieldvaluebytype($moduleFieldsrel, $fieldValueType, $fieldValue, $fldrelname, $focus, $entity, $handlerMeta);
 				} else {
 					$fieldValue=$util->fieldvaluebytype($moduleFields, $fieldValueType, $fieldValue, $fieldName, $focus, $entity, $handlerMeta);
 				}
@@ -111,7 +111,16 @@ class VTUpdateFieldsTask extends VTTask {
 					if ($this->launchrelwf) {
 						$focusrel[$mod]->save($mod);
 					} else {
+						$em = new VTEventsManager($adb);
+						// Initialize Event trigger cache
+						$em->initTriggerCache();
+						$entityData = VTEntityData::fromCRMEntity($focusrel[$mod]);
+						$em->triggerEvent('corebos.beforesave.workflow', $entityData);
+
 						$focusrel[$mod]->saveentity($mod);
+
+						$em->triggerEvent('corebos.aftersave.workflow', $entityData);
+						$em->triggerEvent('corebos.aftersave.workflow.final', $entityData);
 					}
 				}
 			}
@@ -121,7 +130,7 @@ class VTUpdateFieldsTask extends VTTask {
 		}
 		$util->revertUser();
 		$from_wf = false;
-		$logbg->info('Exiting workflow task VTUpdateFieldsTask');
+		$logbg->debug('< VTUpdateFieldsTask');
 	}
 }
 ?>

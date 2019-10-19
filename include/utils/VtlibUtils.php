@@ -94,16 +94,21 @@ function vtlib_prefetchModuleActiveInfo($force = true) {
  * Check if module is set active (or enabled)
  */
 function vtlib_isModuleActive($module) {
-	global $__cache_module_activeinfo;
+	global $__cache_module_activeinfo, $adb;
 
 	if (in_array($module, vtlib_moduleAlwaysActive())) {
 		return true;
 	}
 
 	if (!isset($__cache_module_activeinfo[$module])) {
-		include 'tabdata.php';
-		$presence = isset($tab_info_array[$module])? 0: 1;
-		$__cache_module_activeinfo[$module] = $presence;
+		$tabid = getTabId($module);
+		if (!is_null($tabid)) {
+			$result = $adb->pquery('select presence from vtiger_tab where tabid=?', array($tabid));
+			$presence = $adb->query_result($result, 0, 'presence');
+			$__cache_module_activeinfo[$module] = $presence;
+		} else {
+			$presence = 1;
+		}
 	} else {
 		$presence = $__cache_module_activeinfo[$module];
 	}
@@ -120,13 +125,8 @@ function vtlib_isModuleActive($module) {
  * Recreate user privileges files.
  */
 function vtlib_RecreateUserPrivilegeFiles() {
-	global $adb;
-	$userres = $adb->query('SELECT id FROM vtiger_users WHERE deleted = 0');
-	if ($userres && $adb->num_rows($userres)) {
-		while ($userrow = $adb->fetch_array($userres)) {
-			createUserPrivilegesfile($userrow['id']);
-		}
-	}
+	require_once 'modules/Users/UserPrivilegesWriter.php';
+	UserPrivilegesWriter::flushAllPrivileges();
 }
 
 /**
@@ -500,7 +500,9 @@ function vtlib_purify($input, $ignore = false) {
  */
 function vtlib_process_widget($widgetLinkInfo, $context = false) {
 	if (preg_match("/^block:\/\/(.*)/", $widgetLinkInfo->linkurl, $matches)) {
-		list($widgetControllerClass, $widgetControllerClassFile) = explode(':', $matches[1]);
+		$widgetInfo = explode(':', $matches[1]);
+		$widgetControllerClass = $widgetInfo[0];
+		$widgetControllerClassFile = $widgetInfo[1];
 		if (!class_exists($widgetControllerClass)) {
 			checkFileAccessForInclusion($widgetControllerClassFile);
 			include_once $widgetControllerClassFile;
@@ -509,6 +511,13 @@ function vtlib_process_widget($widgetLinkInfo, $context = false) {
 			$widgetControllerInstance = new $widgetControllerClass;
 			$widgetInstance = $widgetControllerInstance->getWidget($widgetLinkInfo->linklabel);
 			if ($widgetInstance) {
+				if (isset($widgetInfo[2])) {
+					parse_str($widgetInfo[2], $widgetContext);
+					if (!$context) {
+						$context = [];
+					}
+					$context = array_merge($context, $widgetContext);
+				}
 				return $widgetInstance->process($context);
 			}
 		}

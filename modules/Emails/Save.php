@@ -10,8 +10,9 @@
 
 //check for mail server configuration through ajax
 if (isset($_REQUEST['server_check']) && $_REQUEST['server_check'] == 'true') {
-	$emailcfg = $adb->pquery('select 1 from vtiger_systems where server_type = ?', array('email'));
-	if ($adb->num_rows($emailcfg)>0) {
+	list($systemEmailClassName, $systemEmailClassPath) = cbEventHandler::do_filter('corebos.filter.systemEmailClass.getname', array('Emails', 'modules/Emails/Emails.php'));
+	require_once $systemEmailClassPath;
+	if (call_user_func(array($systemEmailClassName, 'emailServerCheck'))) {
 		$upload_file_path = decideFilePath();
 		if (!is_writable($upload_file_path)) {
 			echo 'FAILURESTORAGE';
@@ -27,8 +28,6 @@ if (isset($_REQUEST['server_check']) && $_REQUEST['server_check'] == 'true') {
 require_once 'modules/Emails/Emails.php';
 require_once 'include/logging.php';
 require_once 'include/database/PearDatabase.php';
-
-$local_log = LoggerManager::getLogger('index');
 
 $focus = new Emails();
 
@@ -95,7 +94,7 @@ if ((isset($_REQUEST['deletebox']) && $_REQUEST['deletebox'] != null) && $_REQUE
 
 function checkIfContactExists($mailid) {
 	global $log;
-	$log->debug("Entering checkIfContactExists(".$mailid.") method ...");
+	$log->debug('> checkIfContactExists '.$mailid);
 	global $adb;
 	$sql = 'select contactid
 		from vtiger_contactdetails
@@ -104,10 +103,10 @@ function checkIfContactExists($mailid) {
 	$result = $adb->pquery($sql, array($mailid));
 	$numRows = $adb->num_rows($result);
 	if ($numRows > 0) {
-		$log->debug('Exiting checkIfContactExists method ...');
+		$log->debug('< checkIfContactExists');
 		return $adb->query_result($result, 0, 'contactid');
 	} else {
-		$log->debug('Exiting checkIfContactExists method ...');
+		$log->debug('< checkIfContactExists');
 		return -1;
 	}
 }
@@ -177,8 +176,6 @@ if (isset($_REQUEST['return_id']) && $_REQUEST['return_id'] != "") {
 if (isset($_REQUEST['filename']) && $_REQUEST['filename'] != "") {
 	$filename = vtlib_purify($_REQUEST['filename']);
 }
-
-$local_log->debug('Saved record with id of '.$return_id);
 
 if (isset($_REQUEST['send_mail']) && $_REQUEST['send_mail'] && $_REQUEST['parent_id'] == '') {
 	if ($_REQUEST['parent_name'] != '' && isset($_REQUEST['parent_name'])) {

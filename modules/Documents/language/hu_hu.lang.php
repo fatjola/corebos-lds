@@ -37,6 +37,7 @@ $mod_strings = array(
 	'LBL_FILENAME' => 'Melléklet:',
 	'Template'=>'Template',
 	'Template For' => 'Template For',
+	'Merge Template' => 'Merge Template',
 	'LBL_NOTE_INFORMATION' => 'Dokumentum adatai',
 	'File Information' => 'Fájl adatok',
 	'LBL_TOOL_FORM_TITLE' => 'Dokumentumok Eszközök',
@@ -124,5 +125,7 @@ $mod_strings = array(
 	'Free' => 'Available Disk Space',
 	'NewSize' => 'New Size',
 	'accept_charge' => 'I accept the license change and the associated charge it may have',
+	'LBL_DOCUMENTS_MASSUPLOAD' => 'Mass Upload Documents',
+	'LBL_MASSUPLOAD_DESCRIPTION' => 'Activate and deactivate the document mass upload widget on each module.',
 );
 ?>

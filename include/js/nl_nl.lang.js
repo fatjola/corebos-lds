@@ -108,6 +108,7 @@ var alert_arr = {
 	'GREATER_OR_EQUALS':'meer dan of gelijk aan',
 	'DOES_NOT_START_WITH':'begint niet met',
 	'DOES_NOT_END_WITH':'eindigt niet met',
+	'Widget_Deleted_Sucessfully':'Widget deleted sucessfully',
 
 	'NO_SPECIAL_CHARS':'Speciale tekens zijn niet toegestaan in factuur',
 	'PLS_SELECT_VALID_FILE':'Kies alstublieft een bestanden met de volgende extensies:\n',
@@ -290,6 +291,7 @@ var alert_arr = {
 	'Default': 'Standaard',
 	'Notebook': 'Notitieblok',
 	'ReportCharts': 'Rapport grafieken',
+	'CustomWidget': 'Aggregate Filter',
 	'SPECIAL_CHARS':'\\ / < > + \' " ',
 
 	'BETWEEN': 'tussen',
@@ -418,5 +420,7 @@ var alert_arr = {
 	'SHOWING' : 'Toont nu',
 	'OF' : 'van',
 	'ERR_Massedit' : 'Fout tijdens massa wijzig',
-	'ProcessFINISHED' : 'Proces beëindigd'
+	'ProcessFINISHED' : 'Proces beëindigd',
+	'duplicatednotallowed' : 'Duplicated Modules Not Allowed',
+	'HAS_THIS_AS_NTH_CHILD' : 'Heeft dit record als Xste kind'
 };

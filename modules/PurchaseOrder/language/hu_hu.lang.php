@@ -48,6 +48,7 @@ $mod_strings = array(
 	'LBL_CUSTOM_INFORMATION' => 'Egyedi Információ',
 	'LBL_BILLING_ADDRESS' => 'Számlázási cím:',
 	'LBL_SHIPPING_ADDRESS' => 'Szállítási cím:',
+	'LBL_PurchaseOrder_FINANCIALINFO' => 'Financial Information',
 	'LBL_ANY_ADDRESS' => 'Bármilyen cím:',
 	'LBL_CITY' => 'Város:',
 	'LBL_STATE' => 'Állam/Megye:',
@@ -157,6 +158,10 @@ $mod_strings = array(
 	'PurchaseOrder No' => 'Beszerzés No.',
 	'SINGLE_PurchaseOrder' => 'Beszerzés',
 	'PurchaseOrder ID' => 'Beszerzés AZ',
-	'Order Id' => 'Beszerzés AZ'
+	'Order Id' => 'Beszerzés AZ',
+	'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+	'Amount Due'=>'Amount Due',
+	'Amount Paid'=>'Amount Paid',
+	'Total Amount'=>'Total Amount',
 );
 ?>

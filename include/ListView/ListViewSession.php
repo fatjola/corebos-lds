@@ -21,8 +21,7 @@ class ListViewSession {
 
 	/**initializes ListViewSession */
 	public function __construct() {
-		global $log,$currentModule;
-		$log->debug('Entering ListViewSession() method ...');
+		global $currentModule;
 		$this->module = $currentModule;
 		$this->sortby = 'ASC';
 		$this->start =1;
@@ -111,7 +110,7 @@ class ListViewSession {
 					$order_by = $instance->getOrderByForFolder($folderId);
 					$sorder = $instance->getSortOrderForFolder($folderId);
 					$tablename = getTableNameForField($currentModule, $order_by);
-					$tablename = (($tablename != '')?($tablename."."):'');
+					$tablename = (($tablename != '')?($tablename.'.'):'');
 					if (!empty($order_by)) {
 						$list_query .= ' ORDER BY '.$tablename.$order_by.' '.$sorder;
 					}
@@ -162,14 +161,14 @@ class ListViewSession {
 		global $adb;
 		$list_max_entries_per_page = GlobalVariable::getVariable('Application_ListView_PageSize', 20, $currentModule);
 		$start = 1;
-		if (isset($_REQUEST['query']) && $_REQUEST['query'] == 'true' && (empty($_REQUEST['start']) || $_REQUEST['start']!="last")) {
+		if (isset($_REQUEST['query']) && $_REQUEST['query'] == 'true' && (empty($_REQUEST['start']) || $_REQUEST['start']!='last')) {
 			return ListViewSession::getRequestStartPage();
 		}
 		if (!empty($_REQUEST['start'])) {
 			$start = $_REQUEST['start'];
 			if ($start == 'last') {
 				$count_result = $adb->query(mkCountQuery($query));
-				$noofrows = $adb->query_result($count_result, 0, "count");
+				$noofrows = $adb->query_result($count_result, 0, 'count');
 				if ($noofrows > 0) {
 					$start = ceil($noofrows/$list_max_entries_per_page);
 				}

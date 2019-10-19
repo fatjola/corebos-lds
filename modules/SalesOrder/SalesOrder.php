@@ -9,7 +9,8 @@
  ************************************************************************************/
 require_once 'data/CRMEntity.php';
 require_once 'data/Tracker.php';
-require 'user_privileges/default_module_view.php';
+require 'modules/Vtiger/default_module_view.php';
+require_once 'modules/Invoice/Invoice.php';
 require_once 'modules/InventoryDetails/InventoryDetails.php';
 
 class SalesOrder extends CRMEntity {
@@ -23,6 +24,8 @@ class SalesOrder extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = false;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-logging', 'class' => 'slds-icon', 'icon'=>'logging');
+
 	/**
 	 * Mandatory table for supporting custom fields.
 	 */
@@ -202,7 +205,7 @@ class SalesOrder extends CRMEntity {
 	 */
 	public function get_invoices($id) {
 		global $log,$singlepane_view;
-		$log->debug("Entering get_invoices(".$id.") method ...");
+		$log->debug('> get_invoices '.$id);
 		require_once 'modules/Invoice/Invoice.php';
 
 		$focus = new Invoice();
@@ -228,7 +231,7 @@ class SalesOrder extends CRMEntity {
 			left join vtiger_groups on vtiger_groups.groupid=vtiger_crmentity.smownerid
 			where vtiger_crmentity.deleted=0 and vtiger_salesorder.salesorderid=".$id;
 
-		$log->debug('Exiting get_invoices method ...');
+		$log->debug('< get_invoices');
 		return GetRelatedList('SalesOrder', 'Invoice', $focus, $query, $button, $returnset);
 	}
 
@@ -239,7 +242,7 @@ class SalesOrder extends CRMEntity {
 	 */
 	public function get_sostatushistory($id) {
 		global $log, $adb, $app_strings, $current_user;
-		$log->debug('Entering get_sostatushistory('.$id.') method ...');
+		$log->debug('> get_sostatushistory '.$id);
 
 		$query = 'select vtiger_sostatushistory.*, vtiger_salesorder.salesorder_no
 			from vtiger_sostatushistory
@@ -281,7 +284,7 @@ class SalesOrder extends CRMEntity {
 		}
 
 		$return_data = array('header'=>$header,'entries'=>$entries_list,'navigation'=>array('',''));
-		$log->debug('Exiting get_sostatushistory method ...');
+		$log->debug('< get_sostatushistory');
 		return $return_data;
 	}
 
@@ -369,6 +372,7 @@ class SalesOrder extends CRMEntity {
 		);
 		return isset($rel_tables[$secmodule]) ? $rel_tables[$secmodule] : '';
 	}
+	public $popup_function = 'salesordersetvalue_from_popup';
 
 	// Function to unlink an entity with given Id from another entity
 	public function unlinkRelationship($id, $return_module, $return_id) {
@@ -430,7 +434,7 @@ class SalesOrder extends CRMEntity {
 	*/
 	public function create_export_query($where) {
 		global $log, $current_user;
-		$log->debug('Entering create_export_query('.$where.') method ...');
+		$log->debug('> create_export_query '.$where);
 
 		include 'include/utils/ExportUtils.php';
 
@@ -468,7 +472,7 @@ class SalesOrder extends CRMEntity {
 			$query .= ' where '.$where_auto;
 		}
 
-		$log->debug('Exiting create_export_query method ...');
+		$log->debug('< create_export_query');
 		return $query;
 	}
 }

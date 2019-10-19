@@ -55,6 +55,7 @@ $mod_strings = array(
 'LBL_COUNTRY'=>'Land:',
 'LBL_DESCRIPTION_INFORMATION'=>'Zusatzinformationen',
 'LBL_TERMS_INFORMATION'=>'Liefer- und Zahlungsbedingungen',
+'LBL_PurchaseOrder_FINANCIALINFO' => 'Financial Information',
 'LBL_DESCRIPTION'=>'Beschreibung:',
 'NTC_COPY_BILLING_ADDRESS'=>'kopiere Rechnungsadressea auf Lieferadresse',
 'NTC_COPY_SHIPPING_ADDRESS'=>'kopiere Lieferadresse auf Rechnungsadresse',
@@ -103,7 +104,7 @@ $mod_strings = array(
 'Excise Duty'=>'Abgaben',
 'Total'=>'Total',
 'Product Name'=>'Produkt',
-'Assigned To'=>'zuständig',
+'Assigned To'=>'Zuständig',
 'Billing Address'=>'Rechnungsadresse Strasse',
 'Shipping Address'=>'Lieferadresse Strasse',
 'Billing City'=>'Rechnungsadresse Ort',
@@ -120,8 +121,8 @@ $mod_strings = array(
 'State'=>'Bundesland',
 'Code'=>'PLZ',
 'Country'=>'Land',
-'Created Time'=>'erstellt',
-'Modified Time'=>'geändert',
+'Created Time'=>'Erstellt',
+'Modified Time'=>'Geändert',
 'Description'=>'Beschreibung',
 'Potential Name'=>'Verkaufspotential',
 'Customer No'=>'Kundennummer',
@@ -173,5 +174,10 @@ $mod_strings = array(
 'PurchaseOrder ID'=>'Einkaufsbestellungs-ID',
 
 'Terms & Conditions'=>'Geschäftsbedingungen',
+
+'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+'Amount Due'=>'Amount Due',
+'Amount Paid'=>'Amount Paid',
+'Total Amount'=>'Total Amount',
 );
 ?>

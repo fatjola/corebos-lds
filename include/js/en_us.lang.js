@@ -108,6 +108,7 @@ var alert_arr = {
 	'GREATER_OR_EQUALS':'greater or equal',
 	'DOES_NOT_START_WITH':'does not start with',
 	'DOES_NOT_END_WITH':'does not end with',
+	'Widget_Deleted_Sucessfully':'Widget deleted sucessfully',
 
 	'NO_SPECIAL_CHARS':'Special Characters are not allowed in Invoice String',
 	'PLS_SELECT_VALID_FILE':'Please select a file with the following extension:\n',
@@ -290,6 +291,7 @@ var alert_arr = {
 	'Default': 'Default',
 	'Notebook': 'Notebook',
 	'ReportCharts': 'Report Charts',
+	'CustomWidget': 'Aggregate Filter',
 	'SPECIAL_CHARS':'\\ / < > + \' " ',
 
 	'BETWEEN': 'between',
@@ -418,5 +420,7 @@ var alert_arr = {
 	'SHOWING' : 'Showing',
 	'OF' : 'of',
 	'ERR_Massedit' : 'Error on Mass Edit',
-	'ProcessFINISHED' : 'Process Finished'
+	'ProcessFINISHED' : 'Process Finished',
+	'duplicatednotallowed' : 'Duplicated Modules Not Allowed',
+	'HAS_THIS_AS_NTH_CHILD' : 'Has this record as nth child'
 };

@@ -57,6 +57,7 @@ $mod_strings = array (
   'LBL_POSTAL_CODE' => 'CAP:',
   'LBL_COUNTRY' => 'Stato:',
   'LBL_DESCRIPTION_INFORMATION' => 'Informazioni Descrittive:',
+  'LBL_Invoice_FINANCIALINFO' => 'Financial Information',
   'LBL_DESCRIPTION' => 'Descrizione:',
   'LBL_TERMS_INFORMATION' => 'Termini e Condizioni',
   'NTC_COPY_BILLING_ADDRESS' => 'Copia indirizzo fatturazione nell`indirizzo spedizione',
@@ -162,5 +163,9 @@ $mod_strings = array (
 'Documents' => 'Documenti',
 'SINGLE_Invoice'=>'Fattura',
 'Invoice ID'=>'ID Fattura',
+	'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+	'Amount Due'=>'Amount Due',
+	'Amount Paid'=>'Amount Paid',
+	'Total Amount'=>'Total Amount',
 );
 ?>

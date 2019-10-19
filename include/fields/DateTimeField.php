@@ -11,7 +11,7 @@ require_once 'include/utils/utils.php';
 
 class DateTimeField {
 
-	static protected $databaseTimeZone = null;
+	protected static $databaseTimeZone = null;
 	protected $datetime;
 
 	/**
@@ -33,7 +33,7 @@ class DateTimeField {
 	 */
 	public function getDBInsertDateValue($user = null) {
 		global $log;
-		$log->debug("Entering getDBInsertDateValue(" . $this->datetime . ") method ...");
+		$log->debug('> getDBInsertDateValue '.$this->datetime);
 		$value = explode(' ', $this->datetime);
 		if (count($value) == 2) {
 			$value[0] = self::convertToUserFormat($value[0], $user);
@@ -45,7 +45,7 @@ class DateTimeField {
 		} else {
 			$insert_date = self::convertToDBFormat($value[0], $user);
 		}
-		$log->debug("Exiting getDBInsertDateValue method ...");
+		$log->debug('< getDBInsertDateValue');
 		return $insert_date;
 	}
 
@@ -394,10 +394,10 @@ class DateTimeField {
 	 */
 	public function getDBInsertTimeValue($user = null) {
 		global $log;
-		$log->debug("Entering getDBInsertTimeValue(" . $this->datetime . ") method ...");
+		$log->debug('> getDBInsertTimeValue '.$this->datetime);
 		$date = self::convertToDBTimeZone($this->datetime, $user);
-		$log->debug("Exiting getDBInsertTimeValue method ...");
-		return $date->format("H:i:s");
+		$log->debug('< getDBInsertTimeValue');
+		return $date->format('H:i:s');
 	}
 
 	/**
@@ -408,7 +408,7 @@ class DateTimeField {
 	 */
 	public function getDisplayDate($user = null) {
 		global $log;
-		$log->debug("Entering getDisplayDate(" . $this->datetime . ") method ...");
+		$log->debug('> getDisplayDate '.$this->datetime);
 
 		$date_value = explode(' ', $this->datetime);
 		if (isset($date_value[1]) && $date_value[1] != '') {
@@ -417,16 +417,16 @@ class DateTimeField {
 		}
 
 		$display_date = self::convertToUserFormat($date_value, $user);
-		$log->debug("Exiting getDisplayDate method ...");
+		$log->debug('< getDisplayDate');
 		return $display_date;
 	}
 
 	public function getDisplayTime($user = null) {
 		global $log;
-		$log->debug("Entering getDisplayTime(" . $this->datetime . ") method ...");
+		$log->debug('> getDisplayTime '.$this->datetime);
 		$date = self::convertToUserTimeZone($this->datetime, $user);
 		$time = $date->format("H:i:s");
-		$log->debug("Exiting getDisplayTime method ...");
+		$log->debug('< getDisplayTime');
 		return $time;
 	}
 
@@ -492,5 +492,113 @@ class DateTimeField {
 			}
 		}
 		return $value;
+	}
+
+/**
+ * @param string $startFrom startFrom date
+ * @param string $endFrom endFrom date
+ * @param string $format of the date
+ * @return array Return an array with all weekend dates between $startFrom and $endFrom
+ */
+	public static function getWeekendDates($startFrom, $endFrom, $format) {
+		$weekendDates = array();
+		$emptyArray = [];
+		//Check if format is not empty
+		if (trim($format) === '') {
+			$format = 'Y-m-d';
+		}
+		$checkStartDate = self::validateDate($startFrom, $format);
+		$checkEndDate = self::validateDate($endFrom, $format);
+
+		//First we check if startFrom or endFrom is empty
+		if ((trim($startFrom) === '') || (trim($endFrom) === '')) {
+			// echo "One or both of dates input parameters is empty" ;
+			return $emptyArray;
+		} elseif (($checkStartDate === false) || ($checkEndDate === false)) {
+			// echo "The format of datestart or dateEnd is not a valid date format !! " . $startFrom . "------" . $endFrom;
+			return $emptyArray;
+		} else {
+			$interval_d1 = new DateInterval('P1D');
+			$interval_d6 = new DateInterval('P6D');
+			$startDate = new DateTime($startFrom);
+			$endDate = new DateTime($endFrom);
+			$start_time = strtotime($startFrom);
+			$end_time = strtotime($endFrom);
+			if (strtotime($startFrom) > strtotime($endFrom)) {
+				// echo $startDate->format($format). " is bigger than " . $endDate->format($format);
+				$weekendDates = [];
+			} else {
+				// echo $startDate->format($format). " is smaller or equal to " . $endDate->format($format) . "\n";
+				$dt1 = strtotime($startDate->format($format));
+				$dt2 = date("l", $dt1);
+				$dt3 = strtolower($dt2);
+				if ($dt3 == "saturday") {
+					// echo $startDate->format($format). " is saturday " . "\n";
+					while ($start_time <= $end_time) {
+						//Add Saturday
+						$weekendDates[] = $startDate->format($format);
+						//Increment of 1 day
+						$startDate->add($interval_d1);
+						$current_time = strtotime($startDate->format($format));
+
+						if ($current_time <= $end_time) {
+							//Add Sunday
+							$weekendDates[] = $startDate->format($format);
+							//Increment of 6 days
+							$startDate->add($interval_d6);
+							$current_time = strtotime($startDate->format($format));
+						}
+						$start_time = $current_time;
+					}
+				} elseif ($dt3 == "sunday") {
+					// echo $startDate->format($format). " is sunday " . "\n";
+					while ($start_time <= $end_time) {
+						//Add Sunday
+						$weekendDates[] = $startDate->format($format);
+						//Increment of 6 day
+						$startDate->add($interval_d6);
+						$current_time = strtotime($startDate->format($format));
+						if ($current_time <= $end_time) {
+							//Add next Saturday
+							$weekendDates[] = $startDate->format($format);
+							//Increment of 6 days
+							$startDate->add($interval_d1);
+							$current_time = strtotime($startDate->format($format));
+						}
+						$start_time = $current_time;
+					}
+				} else {
+					$date = $startDate->modify('next Saturday');
+					while ($start_time <= $end_time) {
+						$start = strtotime($date->format($format));
+						if ($start <= $end_time) {
+							//Add Saturday
+							$weekendDates[] = $date->format($format);
+							//Incremento by one day
+							$date->add($interval_d1);
+							$start = strtotime($date->format($format));
+							if ($start <= $end_time) {
+								//Add Sunday
+								$weekendDates[] = $date->format($format);
+								//Increment by 6 days
+								$date->add($interval_d6);
+							}
+						}
+						$start_time = $start;
+					}
+				}
+			}
+			return $weekendDates;
+		}
+	}
+
+/**
+ * @param string $date
+ * @param string $format of the date
+ * @return boolean Return true if $date is a valid date format false otherwise
+ */
+	public static function validateDate($date, $format = 'Y-m-d') {
+		$d = DateTime::createFromFormat($format, $date);
+		return $d && $d->format($format) === $date;
 	}
 }

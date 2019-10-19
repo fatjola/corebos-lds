@@ -7,7 +7,7 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ************************************************************************************/
-@include 'user_privileges/default_module_view.php';
+@include 'modules/Vtiger/default_module_view.php';
 
 global $currentModule;
 $idlist            = isset($_REQUEST['idlist']) ? vtlib_purify($_REQUEST['idlist']) : '';
@@ -24,7 +24,7 @@ if (isset($override_action)) {
 }
 
 $focus = CRMEntity::getInstance($currentModule);
-
+$errinfo='';
 if ($mode == 'delete') {
 	// Split the string of ids
 	$ids = explode(';', trim($idlist, ';'));
@@ -32,6 +32,8 @@ if ($mode == 'delete') {
 		$focus->delete_related_module($currentModule, $forCRMRecord, $destinationModule, $ids);
 	}
 } else {
+	coreBOS_Settings::delSetting('RLERRORMESSAGE');
+	coreBOS_Settings::delSetting('RLERRORMESSAGECLASS');
 	if (!empty($idlist)) {
 		$ids = explode(';', trim($idlist, ';'));
 	} elseif (!empty($_REQUEST['entityid'])) {
@@ -40,6 +42,13 @@ if ($mode == 'delete') {
 	if (!empty($ids)) {
 		relateEntities($focus, $currentModule, $forCRMRecord, $destinationModule, $ids);
 	}
+	$emsg = coreBOS_Settings::getSetting('RLERRORMESSAGE', '');
+	if ($emsg!='') {
+		$emsgclass = coreBOS_Settings::getSetting('RLERRORMESSAGECLASS', '');
+		$errinfo = '&error_msg='.urlencode($emsg).'&error_msgclass='.urlencode($emsgclass);
+	}
+	coreBOS_Settings::delSetting('RLERRORMESSAGE');
+	coreBOS_Settings::delSetting('RLERRORMESSAGECLASS');
 }
-header('Location: index.php?module='.urlencode($currentModule).'&record='.urlencode($forCRMRecord)."&action=$action");
+header('Location: index.php?module='.urlencode($currentModule).'&record='.urlencode($forCRMRecord)."&action=$action".$errinfo);
 ?>

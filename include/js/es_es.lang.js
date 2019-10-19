@@ -286,6 +286,7 @@ var alert_arr = {
 	'Default': 'Defecto',
 	'Notebook': 'Bloc Notas',
 	'ReportCharts': 'Informe Gráfico',
+	'CustomWidget': 'Agregación Filtro',
 	'SPECIAL_CHARS':'\\ / < > + \' " ',
 
 	'BETWEEN': 'entre',
@@ -365,6 +366,7 @@ var alert_arr = {
 	'LBL_DOES_NOT_END_WITH' : 'no acaba por',
 	'DOES_NOT_START_WITH':'no empieza por',
 	'DOES_NOT_END_WITH':'no acaba por',
+	'Widget_Deleted_Sucessfully':'Widget eliminado correctamente',
 	'LBL_BEFORE' : 'antes',
 	'LBL_AFTER' : 'después',
 	'LBL_IS_TODAY' : 'es hoy',
@@ -416,5 +418,7 @@ var alert_arr = {
 	'SHOWING' : 'Mostrando',
 	'OF' : 'de',
 	'ERR_Massedit' : 'Error en Edición Masiva',
-	'ProcessFINISHED' : 'Proceso Terminado'
+	'ProcessFINISHED' : 'Proceso Terminado',
+	'duplicatednotallowed' : 'No se permiten módulos duplicados',
+	'HAS_THIS_AS_NTH_CHILD' : 'Tiene este niño como una'
 };

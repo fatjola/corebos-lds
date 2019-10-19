@@ -26,12 +26,7 @@ class FieldDependency extends processcbMap {
 	private $mapping = array();
 
 	public function processMap($arguments) {
-		$mapping=$this->convertMap2Array();
-		return $mapping;
-	}
-
-	public function getCompleteMapping() {
-		return $this->mapping;
+		return $this->convertMap2Array();
 	}
 
 	public function readResponsibleField() {
@@ -125,6 +120,19 @@ class FieldDependency extends processcbMap {
 		$this->mapping = $mapping;
 	}
 
+	private function expandConditionColumn($conditions, $module) {
+		if (!empty($conditions)) {
+			$conds = json_decode($conditions, true);
+			foreach ($conds as &$cond) {
+				if (strpos($cond['columnname'], ':')===false) {
+					$cond['columnname'] = CustomView::getFilterFieldDefinition($cond['columnname'], $module);
+				}
+			}
+			$conditions = json_encode($conds);
+		}
+		return $conditions;
+	}
+
 	public function convertMap2Array() {
 		global $current_user;
 		$xml = $this->getXMLContent();
@@ -133,7 +141,7 @@ class FieldDependency extends processcbMap {
 		$target_fields = array();
 		foreach ($xml->dependencies->dependency as $k => $v) {
 			$fieldname = (String)$v->field;
-			$conditions = (String)$v->condition;
+			$conditions = $this->expandConditionColumn((String)$v->condition, $mapping['origin']);
 			$actions=array();
 			foreach ($v->actions->change as $key => $action) {
 				$actions['change'][] = array('field'=>(String)$action->field,'value'=>(String)$action->value);
@@ -195,7 +203,15 @@ class FieldDependency extends processcbMap {
 				$target_fields[(String)$fld][] = array('conditions'=>$conditions,'actions'=>$actions);
 			}
 		}
-		$mapping['fields'] = array_merge(Vtiger_DependencyPicklist::getMapPicklistDependencyDatasource($mapping['origin']), $target_fields);
+		$picklistdep = Vtiger_DependencyPicklist::getMapPicklistDependencyDatasource($mapping['origin']);
+		foreach ($picklistdep as $key => $value) {
+			if (array_key_exists($key, $target_fields)) {
+				$target_fields[$key] = array_merge($value, $target_fields[$key]);
+			} else {
+				$target_fields[$key] = $value;
+			}
+		}
+		$mapping['fields'] = $target_fields;
 		return $mapping;
 	}
 }

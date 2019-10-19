@@ -15,8 +15,7 @@
 
 function getRelatedModulesInfomation($module, $user) {
 	include_once 'include/Webservices/GetFilterFields.php';
-	global $log, $adb;
-	$log->debug('Entering getRelatedModulesInfomation(' . $module . ') method ...');
+	global $adb;
 	$types = vtws_listtypes(null, $user);
 	if (!in_array($module, $types['types'])) {
 		throw new WebServiceException(WebServiceErrorCode::$ACCESSDENIED, 'Permission to perform the operation is denied');
@@ -30,6 +29,13 @@ function getRelatedModulesInfomation($module, $user) {
 		$label = $adb->query_result($result, $i, 'label');
 		$actions = $adb->query_result($result, $i, 'actions');
 		$relationId = $adb->query_result($result, $i, 'relation_id');
+		$relationfieldid = $adb->query_result($result, $i, 'relationfieldid');
+		if (empty($relationfieldid)) {
+			$relationfield = null;
+		} else {
+			$rs = $adb->pquery('select fieldname from vtiger_field where fieldid=?', array($relationfieldid));
+			$relationfield = $rs->fields['fieldname'];
+		}
 		if ($rel_tab_id != 0) {
 			$relModuleName = getTabModuleName($rel_tab_id);
 			if (!in_array($relModuleName, $types['types'])) {
@@ -42,6 +48,7 @@ function getRelatedModulesInfomation($module, $user) {
 				'labeli18n' =>getTranslatedString($label, $relModuleName),
 				'actions' => $actions,
 				'relationId' => $relationId,
+				'relatedfield' => $relationfield,
 				'filterFields'=> vtws_getfilterfields($relModuleName, $user),
 			);
 		} else {
@@ -52,6 +59,7 @@ function getRelatedModulesInfomation($module, $user) {
 				'labeli18n' =>getTranslatedString($label, $module),
 				'actions' => $actions,
 				'relationId' => $relationId,
+				'relatedfield' => $relationfield,
 				'filterFields'=> vtws_getfilterfields($module, $user),
 			);
 		}

@@ -55,31 +55,22 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 
 <div id="lstRecordLayout" class="layerPopup" style="display:none;width:325px;height:300px;"></div>
 
-{if $MODULE eq 'Accounts' || $MODULE eq 'Contacts' || $MODULE eq 'Leads'}
+{if $MODULE eq 'Accounts' || $MODULE eq 'Contacts'}
 	{if $MODULE eq 'Accounts'}
-		{assign var=address1 value='$MOD.LBL_BILLING_ADDRESS'}
-		{assign var=address2 value='$MOD.LBL_SHIPPING_ADDRESS'}
+		{assign var=address1 value=$MOD.LBL_BILLING_ADDRESS}
+		{assign var=address2 value=$MOD.LBL_SHIPPING_ADDRESS}
 	{/if}
 	{if $MODULE eq 'Contacts'}
-		{assign var=address1 value='$MOD.LBL_PRIMARY_ADDRESS'}
-		{assign var=address2 value='$MOD.LBL_ALTERNATE_ADDRESS'}
+		{assign var=address1 value=$MOD.LBL_PRIMARY_ADDRESS}
+		{assign var=address2 value=$MOD.LBL_ALTERNATE_ADDRESS}
 	{/if}
-	<div id="locateMap" onMouseOut="fninvsh('locateMap')" onMouseOver="fnvshNrm('locateMap')">
-		<table bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0" width="100%">
-			<tr>
-				<td>
-					{if $MODULE eq 'Accounts'}
-						<a href="javascript:;" onClick="fninvsh('locateMap'); searchMapLocation( 'Main' );" class="calMnu">{$MOD.LBL_BILLING_ADDRESS}</a>
-						<a href="javascript:;" onClick="fninvsh('locateMap'); searchMapLocation( 'Other' );" class="calMnu">{$MOD.LBL_SHIPPING_ADDRESS}</a>
-					{/if}
-					{if $MODULE eq 'Contacts'}
-						<a href="javascript:;" onClick="fninvsh('locateMap'); searchMapLocation( 'Main' );" class="calMnu">{$MOD.LBL_PRIMARY_ADDRESS}</a>
-						<a href="javascript:;" onClick="fninvsh('locateMap'); searchMapLocation( 'Other' );" class="calMnu">{$MOD.LBL_ALTERNATE_ADDRESS}</a>
-					{/if}
-
-				</td>
-			</tr>
-		</table>
+	<div class="slds-card" id="locateMap" onMouseOut="fninvsh('locateMap')" onMouseOver="fnvshNrm('locateMap')">
+		<div class="slds-card__body slds-card__body_inner">
+			<a href="javascript:;" onClick="fninvsh('locateMap'); searchMapLocation( 'Main' );" class="calMnu">{$address1}</a>
+		</div>
+		<div class="slds-card__body slds-card__body_inner">
+			<a href="javascript:;" onClick="fninvsh('locateMap'); searchMapLocation( 'Main' );" class="calMnu">{$address2}</a>
+		</div>
 	</div>
 {/if}
 
@@ -87,7 +78,7 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 	<tr>
 		<td class="detailview_wrapper_cell">
 
-			{include file='Buttons_List.tpl'}
+			{include file='Buttons_List.tpl' isDetailView=true}
 
 			<!-- Contents -->
 			<table border=0 cellspacing=0 cellpadding=0 width=98% align=center>
@@ -96,23 +87,6 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 					<td class="showPanelBg" valign=top width=100%>
 						<!-- PUBLIC CONTENTS STARTS-->
 						<div class="small" style="padding:14px" onclick="hndCancelOutsideClick();";>
-
-						<table align="center" border="0" cellpadding="0" cellspacing="0" width="95%">
-							<tr><td>
-								{* Module Record numbering, used MOD_SEQ_ID instead of ID *}
-								{assign var="USE_ID_VALUE" value=$MOD_SEQ_ID}
-								{if $USE_ID_VALUE eq ''} {assign var="USE_ID_VALUE" value=$ID} {/if}
-								<span class="dvHeaderText">[ {$USE_ID_VALUE} ] {$NAME} -  {$SINGLE_MOD|@getTranslatedString:$MODULE} {$APP.LBL_INFORMATION}</span>&nbsp;&nbsp;&nbsp;<span class="small">{$UPDATEINFO}</span>
-								&nbsp;
-								<span id="vtbusy_info" style="display:none;" valign="bottom">
-								<div role="status" class="slds-spinner slds-spinner_brand slds-spinner_x-small" style="position:relative; top:6px;">
-									<div class="slds-spinner__dot-a"></div>
-									<div class="slds-spinner__dot-b"></div>
-								</div>
-								</span>
-							</td></tr>
-						</table>
-						<br>
 						{include file='applicationmessage.tpl'}
 						<!-- Entity and More information tabs -->
 						<table border=0 cellspacing=0 cellpadding=0 width=95% align=center>
@@ -126,12 +100,12 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 													{include file='RelatedPanes.tpl' tabposition='top' RETURN_RELATEDPANE=''}
 												{else}
 												<div class="detailview_utils_table_tab detailview_utils_table_tab_unselected detailview_utils_table_tab_unselected_top" onmouseout="fnHideDrop('More_Information_Modules_List');" onmouseover="fnDropDown(this,'More_Information_Modules_List');">
-													<a href="index.php?action=CallRelatedList&module={$MODULE}&record={$ID}&parenttab={$CATEGORY}">{$APP.LBL_MORE} {$APP.LBL_INFORMATION}</a>
+													<a href="index.php?action=CallRelatedList&module={$MODULE}&record={$ID}">{$APP.LBL_MORE} {$APP.LBL_INFORMATION}</a>
 													<div onmouseover="fnShowDrop('More_Information_Modules_List')" onmouseout="fnHideDrop('More_Information_Modules_List')"
 														 id="More_Information_Modules_List" class="drop_mnu" style="left: 502px; top: 76px; display: none;">
 														<table border="0" cellpadding="0" cellspacing="0" width="100%">
 															{foreach key=_RELATION_ID item=_RELATED_MODULE from=$IS_REL_LIST}
-																<tr><td><a class="drop_down" href="index.php?action=CallRelatedList&module={$MODULE}&record={$ID}&parenttab={$CATEGORY}&selected_header={$_RELATED_MODULE}&relation_id={$_RELATION_ID}#tbl_{$MODULE}_{$_RELATED_MODULE}">{$_RELATED_MODULE|@getTranslatedString:$_RELATED_MODULE}</a></td></tr>
+																<tr><td><a class="drop_down" href="index.php?action=CallRelatedList&module={$MODULE}&record={$ID}&selected_header={$_RELATED_MODULE}&relation_id={$_RELATION_ID}#tbl_{$MODULE}_{$_RELATED_MODULE}">{$_RELATED_MODULE|@getTranslatedString:$_RELATED_MODULE}</a></td></tr>
 															{/foreach}
 														</table>
 													</div>
@@ -151,7 +125,7 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 													<input title="{$APP.LBL_DELETE_BUTTON_TITLE}" accessKey="{$APP.LBL_DELETE_BUTTON_KEY}" class="crmbutton small delete" onclick="DetailView.return_module.value='{$MODULE}'; DetailView.return_action.value='index'; {if $MODULE eq 'Accounts'} var confirmMsg = '{$APP.NTC_ACCOUNT_DELETE_CONFIRMATION}' {else} var confirmMsg = '{$APP.NTC_DELETE_CONFIRMATION}' {/if}; submitFormForActionWithConfirmation('DetailView', 'Delete', confirmMsg);" type="button" name="Delete" value="{$APP.LBL_DELETE_BUTTON_LABEL}">&nbsp;
 												{/if}
 												{if $privrecord neq ''}
-													<span class="detailview_utils_prev" onclick="location.href='index.php?module={$MODULE}&viewtype={if isset($VIEWTYPE)}{$VIEWTYPE}{/if}&action=DetailView&record={$privrecord}&parenttab={$CATEGORY}&start={$privrecordstart}'" title="{$APP.LNK_LIST_PREVIOUS}"><img align="absmiddle" title="{$APP.LNK_LIST_PREVIOUS}" accessKey="{$APP.LNK_LIST_PREVIOUS}"  name="privrecord" value="{$APP.LNK_LIST_PREVIOUS}" src="{'rec_prev.gif'|@vtiger_imageurl:$THEME}"></span>&nbsp;
+													<span class="detailview_utils_prev" onclick="location.href='index.php?module={$MODULE}&action=DetailView&record={$privrecord}&start={$privrecordstart}'" title="{$APP.LNK_LIST_PREVIOUS}"><img align="absmiddle" title="{$APP.LNK_LIST_PREVIOUS}" accessKey="{$APP.LNK_LIST_PREVIOUS}"  name="privrecord" value="{$APP.LNK_LIST_PREVIOUS}" src="{'rec_prev.gif'|@vtiger_imageurl:$THEME}"></span>&nbsp;
 												{else}
 													<img align="absmiddle" title="{$APP.LNK_LIST_PREVIOUS}" src="{'rec_prev_disabled.gif'|@vtiger_imageurl:$THEME}">
 												{/if}
@@ -159,7 +133,7 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 													<span class="detailview_utils_jumpto" id="jumpBtnIdTop" onclick="var obj = this;var lhref = getListOfRecords(obj, '{$MODULE}',{$ID},'{$CATEGORY}');" title="{$APP.LBL_JUMP_BTN}"><img align="absmiddle" title="{$APP.LBL_JUMP_BTN}" accessKey="{$APP.LBL_JUMP_BTN}" name="jumpBtnIdTop" id="jumpBtnIdTop" src="{'rec_jump.gif'|@vtiger_imageurl:$THEME}"></span>&nbsp;
 												{/if}
 												{if $nextrecord neq ''}
-													<span class="detailview_utils_next" onclick="location.href='index.php?module={$MODULE}&viewtype={if isset($VIEWTYPE)}{$VIEWTYPE}{/if}&action=DetailView&record={$nextrecord}&parenttab={$CATEGORY}&start={$nextrecordstart}'" title="{$APP.LNK_LIST_NEXT}"><img align="absmiddle" title="{$APP.LNK_LIST_NEXT}" accessKey="{$APP.LNK_LIST_NEXT}"  name="nextrecord" src="{'rec_next.gif'|@vtiger_imageurl:$THEME}"></span>&nbsp;
+													<span class="detailview_utils_next" onclick="location.href='index.php?module={$MODULE}&action=DetailView&record={$nextrecord}&start={$nextrecordstart}'" title="{$APP.LNK_LIST_NEXT}"><img align="absmiddle" title="{$APP.LNK_LIST_NEXT}" accessKey="{$APP.LNK_LIST_NEXT}"  name="nextrecord" src="{'rec_next.gif'|@vtiger_imageurl:$THEME}"></span>&nbsp;
 												{else}
 													<img align="absmiddle" title="{$APP.LNK_LIST_NEXT}" src="{'rec_next_disabled.gif'|@vtiger_imageurl:$THEME}">&nbsp;
 												{/if}
@@ -180,10 +154,10 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 													<tr valign=top>
 														<td style="padding:5px">
 															<!-- Command Buttons -->
+															<form action="index.php" method="post" name="DetailView" id="formDetailView">
+																<input type="hidden" id="hdtxt_IsAdmin" value="{if isset($hdtxt_IsAdmin)}{$hdtxt_IsAdmin}{else}0{/if}">
+																{include file='DetailViewHidden.tpl'}
 															<table border=0 cellspacing=0 cellpadding=0 width=100%>
-																<form action="index.php" method="post" name="DetailView" id="formDetailView">
-																	<input type="hidden" id="hdtxt_IsAdmin" value="{if isset($hdtxt_IsAdmin)}{$hdtxt_IsAdmin}{else}0{/if}">
-																	{include file='DetailViewHidden.tpl'}
 																	{foreach key=header item=detail from=$BLOCKS name=BLOCKS}
 																		<tr><td style="padding:5px">
 																				<!-- Detailed View Code starts here-->
@@ -273,7 +247,7 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 																											{assign var=_readonly value=$data.readonly}
 																											{assign var=extendedfieldinfo value=$data.extendedfieldinfo}
 
-																											{if $label ne ''}
+																											{if $label ne '' && ($keyid ne 83 || count($TAX_DETAILS)>0)}
 																												<td class="dvtCellLabel" align=right width=25% style="white-space: normal;">{strip}
 																												{if $keycntimage ne ''}
 																													{$keycntimage}
@@ -357,46 +331,59 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 
 												{* vtlib customization: Custom links on the Detail view basic links *}
 												{if $CUSTOM_LINKS && $CUSTOM_LINKS.DETAILVIEWBASIC}
-													<table width="100%" border="0" cellpadding="5" cellspacing="0">
+													<ul>
 														{foreach item=CUSTOMLINK from=$CUSTOM_LINKS.DETAILVIEWBASIC}
-															<tr class="actionlink actionlink_customlink actionlink_{$CUSTOMLINK->linklabel|lower|replace:' ':'_'}">
-																<td align="left" style="padding-left:10px;">
-																	{assign var="customlink_href" value=$CUSTOMLINK->linkurl}
-																	{assign var="customlink_label" value=$CUSTOMLINK->linklabel}
-																	{if $customlink_label eq ''}
-																		{assign var="customlink_label" value=$customlink_href}
-																	{else}
-																		{* Pickup the translated label provided by the module *}
-																		{assign var="customlink_label" value=$customlink_label|@getTranslatedString:$CUSTOMLINK->module()}
-																	{/if}
+															<li class="actionlink actionlink_customlink actionlink_{$CUSTOMLINK->linklabel|lower|replace:' ':'_'}">
+																{assign var="customlink_href" value=$CUSTOMLINK->linkurl}
+																{assign var="customlink_label" value=$CUSTOMLINK->linklabel}
+																{if $customlink_label eq ''}
+																	{assign var="customlink_label" value=$customlink_href}
+																{else}
+																	{* Pickup the translated label provided by the module *}
+																	{assign var="customlink_label" value=$customlink_label|@getTranslatedString:$CUSTOMLINK->module()}
+																{/if}
+																{if $customlink_href=='ACTIONSUBHEADER'}
+																	<span class="genHeaderSmall slds-truncate">{$customlink_label}</span>
+																{else}
 																	{if $CUSTOMLINK->linkicon}
-																		<a class="webMnu" href="{$customlink_href}"><img hspace=5 align="absmiddle" border=0 src="{$CUSTOMLINK->linkicon}"></a>
+																		{if strpos($CUSTOMLINK->linkicon, '}')>0}
+																			{assign var="customlink_iconinfo" value=$CUSTOMLINK->linkicon|json_decode:true}
+																			<span class="slds-icon_container slds-icon-{$customlink_iconinfo.library}-{$customlink_iconinfo.icon}" title="{$customlink_label}">
+																			<svg class="slds-icon slds-icon-text-default slds-icon_x-small" aria-hidden="true">
+																				<use xlink:href="include/LD/assets/icons/{$customlink_iconinfo.library}-sprite/svg/symbols.svg#{$customlink_iconinfo.icon}"></use>
+																			</svg>
+																			<span class="slds-assistive-text">{$customlink_label}</span>
+																			</span>
+																		{else}
+																			<a class="webMnu" href="{$customlink_href}"><img hspace=5 align="absmiddle" border=0 src="{$CUSTOMLINK->linkicon}"></a>
+																		{/if}
 																	{else}
 																		<a class="webMnu" href="{$customlink_href}"><img hspace=5 align="absmiddle" border=0 src="themes/images/no_icon.png"></a>
 																	{/if}
-																	<a class="webMnu" href="{$customlink_href}">{$customlink_label}</a>
-																</td>
-															</tr>
+																	&nbsp;<a class="slds-text-link_reset" href="{$customlink_href}">{$customlink_label}</a>
+																{/if}
+															</li>
 														{/foreach}
-													</table>
+													</ul>
 												{/if}
 
 												{* vtlib customization: Custom links on the Detail view *}
 												{if $CUSTOM_LINKS && $CUSTOM_LINKS.DETAILVIEW}
 													<br>
 													{if !empty($CUSTOM_LINKS.DETAILVIEW)}
-														<table width="100%" border="0" cellpadding="5" cellspacing="0">
-															<tr><td align="left" class="dvtUnSelectedCell dvtCellLabel">
-																	<a href="javascript:;" onmouseover="fnvshobj(this,'vtlib_customLinksLay');" onclick="fnvshobj(this,'vtlib_customLinksLay');"><b>{$APP.LBL_MORE} {$APP.LBL_ACTIONS} &#187;</b></a>
-																</td></tr>
+														<table>
+															<tr><td class="dvtUnSelectedCell" style="background-color: rgb(204, 204, 204); padding: 5px;">
+																<a href="javascript:;" onmouseover="fnvshobj(this,'vtlib_customLinksLay');" onclick="fnvshobj(this,'vtlib_customLinksLay');"><b>{$APP.LBL_MORE} {$APP.LBL_ACTIONS} &#187;</b></a>
+															</td></tr>
 														</table>
 														<br>
-														<div style="display: none; left: 193px; top: 106px;width:155px; position:absolute;" id="vtlib_customLinksLay"
+														<div style="display: none; left: 193px; top: 106px;width:215px; position:absolute;" class="slds-box_border slds-card" id="vtlib_customLinksLay"
 															 onmouseout="fninvsh('vtlib_customLinksLay')" onmouseover="fnvshNrm('vtlib_customLinksLay')">
-															<table bgcolor="#ffffff" border="0" cellpadding="0" cellspacing="0" width="100%">
+															<table class="slds-p-around_xx-small">
 																<tr><td style="border-bottom: 1px solid rgb(204, 204, 204); padding: 5px;"><b>{$APP.LBL_MORE} {$APP.LBL_ACTIONS} &#187;</b></td></tr>
 																<tr>
-																	<td>
+																	<td class="slds-p-around_xx-small">
+																	<ul>
 																		{foreach item=CUSTOMLINK from=$CUSTOM_LINKS.DETAILVIEW}
 																			{assign var="customlink_href" value=$CUSTOMLINK->linkurl}
 																			{assign var="customlink_label" value=$CUSTOMLINK->linklabel}
@@ -406,8 +393,26 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 																				{* Pickup the translated label provided by the module *}
 																				{assign var="customlink_label" value=$customlink_label|@getTranslatedString:$CUSTOMLINK->module()}
 																			{/if}
-																			<a href="{$customlink_href}" class="drop_down">{$customlink_label}</a>
+																			<li>
+																			{if $CUSTOMLINK->linkicon}
+																				{if strpos($CUSTOMLINK->linkicon, '}')>0}
+																					{assign var="customlink_iconinfo" value=$CUSTOMLINK->linkicon|json_decode:true}
+																					<span class="slds-icon_container slds-icon-{$customlink_iconinfo.library}-{$customlink_iconinfo.icon}" title="{$customlink_label}">
+																					<svg class="slds-icon slds-icon-text-default slds-icon_x-small" aria-hidden="true">
+																						<use xlink:href="include/LD/assets/icons/{$customlink_iconinfo.library}-sprite/svg/symbols.svg#{$customlink_iconinfo.icon}"></use>
+																					</svg>
+																					<span class="slds-assistive-text">{$customlink_label}</span>
+																					</span>
+																				{else}
+																					<a class="webMnu" href="{$customlink_href}"><img hspace=5 align="absmiddle" border=0 src="{$CUSTOMLINK->linkicon}"></a>
+																				{/if}
+																			{else}
+																				<a class="webMnu" href="{$customlink_href}"><img hspace=5 align="absmiddle" border=0 src="themes/images/no_icon.png"></a>
+																			{/if}
+																			&nbsp;<a class="slds-text-link_reset" href="{$customlink_href}">{$customlink_label}</a>
+																			</li>
 																		{/foreach}
+																		</ul>
 																	</td>
 																</tr>
 															</table>
@@ -418,31 +423,6 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 												<!-- Action links END -->
 
 												{include file="TagCloudDisplay.tpl"}
-												<!-- Mail Merge-->
-												<br>
-												{if isset($MERGEBUTTON) && $MERGEBUTTON eq 'permitted'}
-													<form action="index.php" method="post" name="TemplateMerge" id="form">
-														<input type="hidden" name="module" value="{$MODULE}">
-														<input type="hidden" name="parenttab" value="{$CATEGORY}">
-														<input type="hidden" name="record" value="{$ID}">
-														<input type="hidden" name="action">
-														<table border=0 cellspacing=0 cellpadding=0 width=100% class="rightMailMerge">
-															<tr>
-																<td class="rightMailMergeHeader"><b>{$WORDTEMPLATEOPTIONS}</b></td>
-															</tr>
-															<tr style="height:25px">
-																<td class="rightMailMergeContent">
-																	{if $TEMPLATECOUNT neq 0}
-																		<select name="mergefile">{foreach key=templid item=tempflname from=$TOPTIONS}<option value="{$templid}">{$tempflname}</option>{/foreach}</select>
-																		<input class="crmbutton small create" value="{$APP.LBL_MERGE_BUTTON_LABEL}" onclick="this.form.action.value='Merge';" type="submit"></input>
-																	{else}
-																		<a href=index.php?module=Settings&action=upload&tempModule={$MODULE}&parenttab=Settings>{$APP.LBL_CREATE_MERGE_TEMPLATE}</a>
-																	{/if}
-																</td>
-															</tr>
-														</table>
-													</form>
-												{/if}
 
 												{if !empty($CUSTOM_LINKS.DETAILVIEWWIDGET)}
 													{foreach key=CUSTOMLINK_NO item=CUSTOMLINK from=$CUSTOM_LINKS.DETAILVIEWWIDGET}
@@ -490,7 +470,7 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 												{if $HASRELATEDPANES eq 'true'}
 													{include file='RelatedPanes.tpl' tabposition='bottom' RETURN_RELATEDPANE=''}
 												{else}
-												<div class="detailview_utils_table_tab detailview_utils_table_tab_unselected detailview_utils_table_tab_unselected_bottom"><a href="index.php?action=CallRelatedList&module={$MODULE}&record={$ID}&parenttab={$CATEGORY}">{$APP.LBL_MORE} {$APP.LBL_INFORMATION}</a></div>
+												<div class="detailview_utils_table_tab detailview_utils_table_tab_unselected detailview_utils_table_tab_unselected_bottom"><a href="index.php?action=CallRelatedList&module={$MODULE}&record={$ID}">{$APP.LBL_MORE} {$APP.LBL_INFORMATION}</a></div>
 												{/if}
 											{/if}
 										</div>
@@ -507,7 +487,7 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 												{/if}
 
 												{if $privrecord neq ''}
-													<img align="absmiddle" title="{$APP.LNK_LIST_PREVIOUS}" accessKey="{$APP.LNK_LIST_PREVIOUS}" onclick="location.href='index.php?module={$MODULE}&viewtype={if isset($VIEWTYPE)}{$VIEWTYPE}{/if}&action=DetailView&record={$privrecord}&parenttab={$CATEGORY}'" name="privrecord" value="{$APP.LNK_LIST_PREVIOUS}" src="{'rec_prev.gif'|@vtiger_imageurl:$THEME}">&nbsp;
+													<img align="absmiddle" title="{$APP.LNK_LIST_PREVIOUS}" accessKey="{$APP.LNK_LIST_PREVIOUS}" onclick="location.href='index.php?module={$MODULE}&action=DetailView&record={$privrecord}'" name="privrecord" value="{$APP.LNK_LIST_PREVIOUS}" src="{'rec_prev.gif'|@vtiger_imageurl:$THEME}">&nbsp;
 												{else}
 													<img align="absmiddle" title="{$APP.LNK_LIST_PREVIOUS}" src="{'rec_prev_disabled.gif'|@vtiger_imageurl:$THEME}">
 												{/if}
@@ -515,7 +495,7 @@ function showHideStatus(sId,anchorImgId, sImagePath) {
 													<img align="absmiddle" title="{$APP.LBL_JUMP_BTN}" accessKey="{$APP.LBL_JUMP_BTN}" onclick="var obj = this;var lhref = getListOfRecords(obj, '{$MODULE}',{$ID},'{$CATEGORY}');" name="jumpBtnIdBottom" id="jumpBtnIdBottom" src="{'rec_jump.gif'|@vtiger_imageurl:$THEME}">&nbsp;
 												{/if}
 												{if $nextrecord neq ''}
-													<img align="absmiddle" title="{$APP.LNK_LIST_NEXT}" accessKey="{$APP.LNK_LIST_NEXT}" onclick="location.href='index.php?module={$MODULE}&viewtype={if isset($VIEWTYPE)}{$VIEWTYPE}{/if}&action=DetailView&record={$nextrecord}&parenttab={$CATEGORY}'" name="nextrecord" src="{'rec_next.gif'|@vtiger_imageurl:$THEME}">&nbsp;
+													<img align="absmiddle" title="{$APP.LNK_LIST_NEXT}" accessKey="{$APP.LNK_LIST_NEXT}" onclick="location.href='index.php?module={$MODULE}&action=DetailView&record={$nextrecord}'" name="nextrecord" src="{'rec_next.gif'|@vtiger_imageurl:$THEME}">&nbsp;
 												{else}
 													<img align="absmiddle" title="{$APP.LNK_LIST_NEXT}" src="{'rec_next_disabled.gif'|@vtiger_imageurl:$THEME}">&nbsp;
 												{/if}

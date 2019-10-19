@@ -22,6 +22,8 @@ class SMSNotifier extends SMSNotifierBase {
 		return ($provider !== false);
 	}
 
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-sms', 'class' => 'slds-icon', 'icon'=>'sms');
+
 	/**
 	 * Send SMS (Creates SMS Entity record, links it with related CRM record and triggers provider to send sms)
 	 *
@@ -88,15 +90,15 @@ class SMSNotifier extends SMSNotifierBase {
 
 		// Calculate the related module access (similar to getRelatedList API in DetailViewUtils.php)
 		if ($result && $adb->num_rows($result)) {
-			require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+			$userprivs = $current_user->getPrivileges();
 			while ($resultrow = $adb->fetch_array($result)) {
 				$accessCheck = false;
 				$relatedTabId = getTabid($resultrow['setype']);
 				if ($relatedTabId == 0) {
 					$accessCheck = true;
 				} else {
-					if ($profileTabsPermission[$relatedTabId] == 0) {
-						if ($profileActionPermission[$relatedTabId][3] == 0) {
+					if ($userprivs->hasModuleAccess($relatedTabId)) {
+						if ($userprivs->hasModulePermission($relatedTabId, 3)) {
 							$accessCheck = true;
 						}
 					}

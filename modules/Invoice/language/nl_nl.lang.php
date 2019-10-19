@@ -56,6 +56,7 @@ $mod_strings = array(
 	'LBL_SHIPPING_ADDRESS' => 'Afleveradres:',
 	'LBL_ANY_ADDRESS' => 'Bezoekadres:',
 	'LBL_CITY' => 'Plaats:',
+	'LBL_Invoice_FINANCIALINFO' => 'Financial Information',
 	'LBL_STATE' => 'Provincie:',
 	'LBL_POSTAL_CODE' => 'Postcode:',
 	'LBL_COUNTRY' => 'Land:',
@@ -183,5 +184,10 @@ $mod_strings = array(
 	'Net Total' => 'Netto totaal voor korting',
 	'VAT' => 'BTW',
 	'Grand Total' => 'Eindtotaal',
+	'Add Payment' => 'Voeg een betaling toe',
+	'LBL_PARTIAL_PAYMENTS_INFO' => 'Betalingsinformatie',
+	'Amount Due' => 'Openstaand bedrag',
+	'Amount Paid' => 'Bedrag betaald',
+	'Total Amount' => 'Totaalbedrag',
 );
 ?>

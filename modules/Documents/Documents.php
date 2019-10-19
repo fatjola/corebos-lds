@@ -22,6 +22,7 @@ class Documents extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = false;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-document', 'class' => 'slds-icon', 'icon'=>'document');
 
 	public $customFieldTable = array('vtiger_notescf', 'notesid');
 
@@ -136,17 +137,17 @@ class Documents extends CRMEntity {
 		} elseif ($this->column_fields[$filetype_fieldname] == 'E') {
 			$filelocationtype = 'E';
 			$filename = $this->column_fields[$filename_fieldname];
-			// If filename does not has the protocol prefix, default it to http://
+			// If filename does not has the protocol prefix, default it to https://
 			// Protocol prefix could be like (https://, smb://, file://, \\, smb:\\,...)
 			if (!empty($filename) && !preg_match('/^\w{1,5}:\/\/|^\w{0,3}:?\\\\\\\\/', trim($filename))) {
-				$filename = "http://$filename";
+				$filename = "https://$filename";
 			}
 			$filetype = '';
 			$filesize = 0;
 			$filedownloadcount = null;
 		}
 		$query = 'UPDATE vtiger_notes SET filename = ? ,filesize = ?, filetype = ? , filelocationtype = ? , filedownloadcount = ? WHERE notesid = ?';
-		$adb->pquery($query, array($filename, $filesize, $filetype, $filelocationtype, $filedownloadcount, $this->id));
+		$adb->pquery($query, array(decode_html($filename), $filesize, $filetype, $filelocationtype, $filedownloadcount, $this->id));
 		//Inserting into attachments table
 		if ($filelocationtype == 'I') {
 			$this->insertIntoAttachment($this->id, 'Documents');
@@ -233,7 +234,7 @@ class Documents extends CRMEntity {
 	*/
 	public function insertIntoAttachment($id, $module, $direct_import = false) {
 		global $log;
-		$log->debug("Entering into insertIntoAttachment($id,$module) method.");
+		$log->debug('> insertIntoAttachment '.$id.','.$module);
 		$file_saved = false;
 		if (isset($_FILES)) {
 			foreach ($_FILES as $fileindex => $files) {
@@ -243,7 +244,7 @@ class Documents extends CRMEntity {
 				}
 			}
 		}
-		$log->debug("Exiting from insertIntoAttachment($id,$module) method.");
+		$log->debug('< insertIntoAttachment');
 	}
 
 	/**
@@ -269,44 +270,6 @@ class Documents extends CRMEntity {
 		} else { // just call parent method
 			parent::save_related_module($module, $crmid, $with_module, $with_crmid);
 		}
-	}
-
-	/** Function used to get the sort order for Documents listview
-	* @return string  $sorder - first check the $_REQUEST['sorder'] if request value is empty then check in the $_SESSION['NOTES_SORT_ORDER']
-	* 	 if this session value is empty then default sort order will be returned.
-	*/
-	public function getSortOrder() {
-		global $log;
-		$log->debug('Entering getSortOrder() method ...');
-		if (isset($_REQUEST['sorder'])) {
-			$sorder = $this->db->sql_escape_string($_REQUEST['sorder']);
-		} else {
-			$sorder = (!empty($_SESSION['NOTES_SORT_ORDER']) ? $this->db->sql_escape_string($_SESSION['NOTES_SORT_ORDER']) : $this->default_sort_order);
-		}
-		$log->debug('Exiting getSortOrder() method ...');
-		return $sorder;
-	}
-
-	/** Function used to get the order by value for Documents listview
-	* @return string  $order_by  - first check the $_REQUEST['order_by'] if request value is empty then check in the $_SESSION['NOTES_ORDER_BY']
-	* 	 if this session value is empty then default order by will be returned.
-	*/
-	public function getOrderBy() {
-		global $currentModule,$log;
-		$log->debug('Entering getOrderBy() method ...');
-		$use_default_order_by = '';
-		if (GlobalVariable::getVariable('Application_ListView_Default_Sorting', 0, $currentModule)) {
-			$use_default_order_by = $this->default_order_by;
-		}
-		if (isset($_REQUEST['order_by'])) {
-			$order_by = $this->db->sql_escape_string($_REQUEST['order_by']);
-		} elseif (isset($_SESSION[$currentModule.'_Order_By'])) {
-			$order_by = $this->db->sql_escape_string($_SESSION[$currentModule.'_Order_By']);
-		} else {
-			$order_by = (!empty($_SESSION['NOTES_ORDER_BY']) ? $this->db->sql_escape_string($_SESSION['NOTES_ORDER_BY']) : $use_default_order_by);
-		}
-		$log->debug('Exiting getOrderBy method ...');
-		return $order_by;
 	}
 
 	/**
@@ -335,6 +298,9 @@ class Documents extends CRMEntity {
 		}
 		if (isset($_REQUEST['order_by']) && $_REQUEST['folderid'] == $folderId) {
 			$order_by = $this->db->sql_escape_string($_REQUEST['order_by']);
+			if ($order_by == 'notes_title') {
+				$order_by = 'title';
+			}
 		} elseif (!empty($_SESSION['NOTES_FOLDER_ORDER_BY']) && is_array($_SESSION['NOTES_FOLDER_ORDER_BY']) && !empty($_SESSION['NOTES_FOLDER_ORDER_BY'][$folderId])) {
 			$order_by = $_SESSION['NOTES_FOLDER_ORDER_BY'][$folderId];
 		} else {
@@ -349,7 +315,7 @@ class Documents extends CRMEntity {
 	*/
 	public function create_export_query($where) {
 		global $log,$current_user;
-		$log->debug("Entering create_export_query(". $where.") method ...");
+		$log->debug('> create_export_query '. $where);
 
 		include "include/utils/ExportUtils.php";
 		//To get the Permitted fields query and the permitted fields list
@@ -371,13 +337,13 @@ class Documents extends CRMEntity {
 				LEFT JOIN vtiger_users as vtigerCreatedBy ON vtiger_crmentity.smcreatorid = vtigerCreatedBy.id and vtigerCreatedBy.status='Active'
 				LEFT JOIN vtiger_groups ON vtiger_crmentity.smownerid=vtiger_groups.groupid ";
 		$query .= getNonAdminAccessControlQuery('Documents', $current_user);
-		$where_auto=" vtiger_crmentity.deleted=0";
+		$where_auto=' vtiger_crmentity.deleted=0';
 		if ($where != "") {
 			$query .= " WHERE ($where) AND ".$where_auto;
 		} else {
 			$query .= " WHERE ".$where_auto;
 		}
-		$log->debug("Exiting create_export_query method ...");
+		$log->debug('< create_export_query');
 		return $query;
 	}
 
@@ -564,7 +530,7 @@ class Documents extends CRMEntity {
 
 	public function getEntities($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $adb, $app_strings;
-		$log->debug("Entering getEntities($id, $cur_tab_id, $rel_tab_id, $actions) method ...");
+		$log->debug("> getEntities $id, $cur_tab_id, $rel_tab_id, $actions");
 
 		//Form the header columns
 		$header[] = $app_strings['LBL_ENTITY_NAME'];
@@ -614,7 +580,7 @@ class Documents extends CRMEntity {
 			$entries_list[] = $entries;
 		}
 		$return_data = array('header'=>$header,'entries'=>$entries_list,'CUSTOM_BUTTON' => $button,'navigation'=>array('',''));
-		$log->debug("Exiting getEntities method ...");
+		$log->debug('< getEntities');
 		return $return_data;
 	}
 }

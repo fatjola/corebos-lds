@@ -18,7 +18,7 @@
  *  Proud member of the coreBOS family!  http://corebos.org
  *************************************************************************************************/
 
-if (version_compare(phpversion(), '5.4.0') < 0 || version_compare(phpversion(), '7.2.0') >= 0) {
+if (version_compare(phpversion(), '5.4.0') < 0 || version_compare(phpversion(), '7.4.0') >= 0) {
 	echo 'NOK: incorrect PHP version';
 	die();
 }
@@ -67,13 +67,6 @@ if ($result && $adb->num_rows($result)==1) {
 
 if (!is_file('modules/Users/Users.php')) {
 	echo 'NOK: missing program file: users';
-	exit();
-}
-
-require_once 'modules/Users/Users.php';
-$user = Users::getActiveAdminUser();
-if (!is_file('user_privileges/user_privileges_'.$user->id.'.php')) {
-	echo 'NOK: missing admin user file';
 	exit();
 }
 

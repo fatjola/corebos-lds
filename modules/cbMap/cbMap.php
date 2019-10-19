@@ -23,6 +23,8 @@ class cbMap extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = true;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'custom', 'containerClass' => 'slds-icon_container slds-icon-custom-custom108', 'class' => 'slds-icon', 'icon'=>'custom108');
+
 	/**
 	 * Mandatory table for supporting custom fields.
 	 */
@@ -191,11 +193,11 @@ class cbMap extends CRMEntity {
 	 */
 	//public function get_dependents_list($id, $cur_tab_id, $rel_tab_id, $actions=false) { }
 
-	public function retrieve_entity_info($cbmapid, $mname, $deleted = false) {
+	public function retrieve_entity_info($cbmapid, $mname, $deleted = false, $from_wf = false) {
 		global $current_user;
 		$holduser = $current_user;
 		$current_user = Users::getActiveAdminUser();
-		parent::retrieve_entity_info($cbmapid, $mname, $deleted);
+		parent::retrieve_entity_info($cbmapid, $mname, $deleted, $from_wf);
 		$current_user = $holduser;
 	}
 
@@ -272,6 +274,8 @@ class cbMap extends CRMEntity {
 	public function getvtlib_open_popup_window_function($fieldname, $basemodule) {
 		if ($fieldname=='brmap' && $basemodule=='BusinessActions') {
 			return 'openBRMapInBA';
+		} elseif ($fieldname=='cbmapid' && $basemodule=='DiscountLine') {
+			return 'mapCaptureOncbMap';
 		} else {
 			return 'vtlib_open_popup_window';
 		}

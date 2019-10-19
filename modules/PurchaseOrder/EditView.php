@@ -38,6 +38,7 @@ if (coreBOS_Session::has('ME1x1Info')) {
 	$smarty->assign('ERROR_MESSAGE_CLASS', 'cb-alert-info');
 	$memsg = getTranslatedString('LBL_MASS_EDIT').':&nbsp;'.getTranslatedString('LBL_RECORD').(count($ME1x1Info['processed'])+1).'/'.count($ME1x1Info['complete']);
 	$smarty->assign('ERROR_MESSAGE', $memsg);
+	$smarty->assign('gobackBTN', count($ME1x1Info['processed'])==0);
 } else {
 	$smarty->assign('MED1x1MODE', 0);
 }
@@ -142,7 +143,6 @@ if (!empty($_REQUEST['save_error']) && $_REQUEST['save_error'] == "true") {
 }
 if (isset($_REQUEST['product_id']) && $_REQUEST['product_id'] !='') {
 	$focus->column_fields['product_id'] = $_REQUEST['product_id'];
-	$log->debug('Purchase Order EditView: Product Id from the request is '.$_REQUEST['product_id']);
 	$associated_prod = getAssociatedProducts("Products", $focus, $focus->column_fields['product_id']);
 	for ($i=1; $i<=count($associated_prod); $i++) {
 		$associated_prod_id = $associated_prod[$i]['hdnProductId'.$i];
@@ -160,7 +160,6 @@ if (isset($_REQUEST['product_id']) && $_REQUEST['product_id'] !='') {
 if (!empty($_REQUEST['parent_id']) && !empty($_REQUEST['return_module'])) {
 	if ($_REQUEST['return_module'] == 'Services') {
 		$focus->column_fields['product_id'] = vtlib_purify($_REQUEST['parent_id']);
-		$log->debug("Service Id from the request is " . vtlib_purify($_REQUEST['parent_id']));
 		$associated_prod = getAssociatedProducts("Services", $focus, $focus->column_fields['product_id']);
 		for ($i=1; $i<=count($associated_prod); $i++) {
 			$associated_prod_id = $associated_prod[$i]['hdnProductId'.$i];
@@ -233,12 +232,15 @@ if ($focus->mode == 'edit') {
 }
 $cbMap = cbMap::getMapByName($currentModule.'InventoryDetails', 'MasterDetailLayout');
 $smarty->assign('moreinfofields', '');
-if ($cbMap!=null) {
+if ($cbMap!=null && isPermitted('InventoryDetails', 'EditView')=='yes') {
 	$cbMapFields = $cbMap->MasterDetailLayout();
 	$smarty->assign('moreinfofields', "'".implode("','", $cbMapFields['detailview']['fieldnames'])."'");
 	if (empty($associated_prod) && $isduplicate != 'true') { // creating
 		$product_Detail = $col_fields = array();
 		foreach ($cbMapFields['detailview']['fields'] as $mdfield) {
+			if ($mdfield['fieldinfo']['name']=='id') {
+				continue;
+			}
 			$col_fields[$mdfield['fieldinfo']['name']] = '';
 			$foutput = getOutputHtml(
 				$mdfield['fieldinfo']['uitype'],

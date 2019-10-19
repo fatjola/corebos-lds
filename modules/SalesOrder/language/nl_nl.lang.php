@@ -46,6 +46,7 @@ $mod_strings = array(
 'LBL_ANNUAL_REVENUE'=>'Jaaromzet:',
 'LBL_ADDRESS_INFORMATION'=>'Adresinformatie',
 'LBL_Quote_INFORMATION'=>'Accountinformatie',
+'LBL_SalesOrder_FINANCIALINFO' => 'Financial Information',
 'LBL_CUSTOM_INFORMATION'=>'Informatie',
 'LBL_BILLING_ADDRESS'=>'Postadres:',
 'LBL_SHIPPING_ADDRESS'=>'Afleveradres:',
@@ -173,6 +174,7 @@ $mod_strings = array(
 
 'Recurring Invoice Information' => 'Periodiek factureren',
 'RecurringInvoice' => 'Periodiek Factureren',
+'Recommended frequency for RecurringInvoice is 12 hours' => 'Recommended frequency for Recurring Invoice is 12 hours',
 'Enable Recurring' => 'Activeer periodiek factureren',
 'Frequency' => 'Frequentie',
 'Start Period' => 'Start Periode',
@@ -211,5 +213,10 @@ $mod_strings = array(
 'Net Total' => 'Netto totaal voor korting',
 'VAT' => 'BTW',
 'Grand Total' => 'Eindtotaal',
+'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+'Amount Due'=>'Amount Due',
+'Amount Paid'=>'Amount Paid',
+'Total Amount'=>'Total Amount',
+'Invoiced' => 'Invoiced',
 );
 ?>

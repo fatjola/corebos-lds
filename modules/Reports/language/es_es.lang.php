@@ -198,10 +198,11 @@ $mod_strings = array(
 
 'LBL_GENERATE_NOW'=>'Generar',
 'Totals'=>'Totales',
-'SUM'=>'SUM',
-'AVG'=>'AVG',
+'SUM'=>'SUMA',
+'AVG'=>'MEDIA',
 'MAX'=>'MAX',
 'MIN'=>'MIN',
+'COUNT'=>'CUENTA',
 'LBL_CUSTOM_REPORTS'=>'Informes Personalizados',
 
 'ticketid'=>'Id de Ticket',
@@ -260,6 +261,7 @@ $mod_strings = array(
 'Monthly'=>'Mensual',
 'Annually'=>'Anual',
 'LBL_SCHEDULE_REPORT'=>'Programar Informe',
+'Recommended frequency for ScheduleReports is 15 mins' => 'La frecuencia recomendada para Informes Programados es de 15 minutos',
 'ScheduleReports'=>'Programar Informe',
 'LBL_SCHEDULE_FREQUENCY'=>'Frecuencia',
 'OPTION_SCHEDULE_EMAIL_CHOOSE'=>'Elige ..... ',

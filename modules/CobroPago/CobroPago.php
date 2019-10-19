@@ -22,6 +22,8 @@ class CobroPago extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = true;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'utility', 'containerClass' => 'slds-icon_container slds-icon-standard-contract', 'class' => 'slds-icon slds-box--xx-small ', 'icon'=>'money');
+
 	/**
 	 * Mandatory table for supporting custom fields.
 	 */
@@ -113,7 +115,7 @@ class CobroPago extends CRMEntity {
 			if ($this->mode != 'edit') {
 				$update_after = true;
 				$update_log = getTranslatedString('Payment Paid', 'CobroPago').$current_user->user_name.getTranslatedString('PaidOn', 'CobroPago');
-				$update_log .= date("l dS F Y h:i:s A").'--//--';
+				$update_log .= date('Y-m-d H:i:s').'--//--';
 			} else {
 				$result = $adb->pquery('SELECT paid,update_log FROM vtiger_cobropago WHERE cobropagoid=?', array($this->id));
 				$old_paid = $adb->query_result($result, 0, 'paid');
@@ -121,7 +123,7 @@ class CobroPago extends CRMEntity {
 					$update_after = true;
 					$update_log = $adb->query_result($result, 0, 'update_log');
 					$update_log .= getTranslatedString('Payment Paid', 'CobroPago').$current_user->user_name.getTranslatedString('PaidOn', 'CobroPago');
-					$update_log .= date("l dS F Y h:i:s A").'--//--';
+					$update_log .= date('Y-m-d H:i:s').'--//--';
 				}
 			}
 		}
@@ -149,7 +151,9 @@ class CobroPago extends CRMEntity {
 		$rate = $rate_symbol['rate'];
 		$value=0;
 		if (isset($data['amount']) && isset($data['cost'])) {
-			$value = CurrencyField::convertToDollar($data['amount']-$data['cost'], $rate);
+			$am = CurrencyField::convertToDBFormat($data['amount']);
+			$ct = CurrencyField::convertToDBFormat($data['cost']);
+			$value = CurrencyField::convertToDollar($am-$ct, $rate);
 		}
 		$adb->pquery('update vtiger_cobropago set benefit=? where cobropagoid=?', array($value, $cypid));
 
@@ -401,6 +405,11 @@ class CobroPago extends CRMEntity {
 			// TODO Handle actions before this module is updated.
 		} elseif ($event_type == 'module.postupdate') {
 			// TODO Handle actions after this module is updated.
+			global $adb;
+			$module = Vtiger_Module::getInstance($modulename);
+			$field = Vtiger_Field::getInstance('reference', $module);
+			$adb->query("update vtiger_field set uitype=4, typeofdata='V~O' where fieldid={$field->id}");
+			BusinessActions::addLink(getTabid('CobroPago'), 'DETAILVIEWBASIC', 'Pay', 'notifications.php?type=Pay&cpid=$RECORD$', 'themes/images/Opportunities.gif', 0, null, false, 0);
 		}
 	}
 
@@ -439,7 +448,7 @@ class CobroPago extends CRMEntity {
 	 */
 	public function get_payment_history($id) {
 		global $log, $adb, $app_strings;
-		$log->debug("Entering get_stage_history(".$id.") method ...");
+		$log->debug('> get_stage_history '.$id);
 
 		$query = 'select vtiger_potstagehistory.*, vtiger_cobropago.reference
 			from vtiger_potstagehistory
@@ -482,13 +491,13 @@ class CobroPago extends CRMEntity {
 
 		$return_data = array('header'=>$header,'entries'=>$entries_list,'navigation'=>array('',''));
 
-		$log->debug('Exiting get_stage_history method ...');
+		$log->debug('< get_stage_history');
 		return $return_data;
 	}
 
 	public function get_history_cobropago($cobropagoid) {
 		global $log, $adb;
-		$log->debug("Entering into get_history_cobropago($cobropagoid) method ...");
+		$log->debug('> get_history_cobropago '.$cobropagoid);
 
 		$result=$adb->pquery('select reference,update_log from vtiger_cobropago where cobropagoid=?', array($cobropagoid));
 		$update_log = $adb->query_result($result, 0, 'update_log');
@@ -499,7 +508,7 @@ class CobroPago extends CRMEntity {
 
 		$return_value = array('header'=>$header,'entries'=>$splitval,'navigation'=>array('',''));
 
-		$log->debug("Exiting from get_history_cobropago($cobropagoid) method ...");
+		$log->debug('< get_history_cobropago');
 		return $return_value;
 	}
 
@@ -532,7 +541,7 @@ class CobroPago extends CRMEntity {
 	**/
 	public function permissiontoedit() {
 		global $log,$current_user,$adb;
-		$log->debug('Entering permissiontoedit() method ...');
+		$log->debug('> permissiontoedit');
 
 		$res = $adb->pquery('select block_paid from vtiger_cobropagoconfig', array());
 		$Block_paid = $adb->query_result($res, 0, 'block_paid');
@@ -546,7 +555,7 @@ class CobroPago extends CRMEntity {
 		} else {
 			$permiso = true;
 		}
-		$log->debug('Exiting permissiontoedit method ...');
+		$log->debug('< permissiontoedit');
 		return $permiso;
 	}
 }

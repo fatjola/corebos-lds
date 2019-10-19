@@ -61,9 +61,24 @@ if (isset($_REQUEST['record']) && $_REQUEST['record'] !='') {
 	}
 	$smarty->assign('TO_MAIL', $to_add);
 	$smarty->assign('IDLISTS', $mailids['idlists']);
-	$Users_Default_Send_Email_Template = GlobalVariable::getVariable('Users_Default_Send_Email_Template', 0);
+	if (!empty($mailids['idlists'])) {
+		$crmidsinfo = explode('|', trim($mailids['idlists'], '|'));
+		if (count($crmidsinfo)==1) {
+			list($crmid, $fldinfo) = explode('@', $crmidsinfo[0]);
+		} else {
+			$crmid = null;
+		}
+	} else {
+		$crmid = null;
+	}
+	if (!empty($_REQUEST['templatename'])) {
+		$Users_Default_Send_Email_Template = vtlib_purify($_REQUEST['templatename']);
+		$crmid = (int)vtlib_purify($_REQUEST['idlist']);
+	} else {
+		$Users_Default_Send_Email_Template = GlobalVariable::getVariable('Users_Default_Send_Email_Template', 0, $_REQUEST['pmodule']);
+	}
 	if (!empty($Users_Default_Send_Email_Template)) {
-		$emltpl = getTemplateDetails($Users_Default_Send_Email_Template);
+		$emltpl = getTemplateDetails($Users_Default_Send_Email_Template, $crmid);
 		if (count($emltpl)>0) {
 			$focus->column_fields['subject'] = $emltpl[2];
 			$focus->column_fields['description'] = $emltpl[1];
@@ -141,7 +156,8 @@ if (isset($_REQUEST['internal_mailer']) && $_REQUEST['internal_mailer'] == 'true
 	} elseif ($rec_type == 'email_addy') {
 		$email1 = vtlib_purify($_REQUEST['email_addy']);
 	}
-	$smarty->assign('TO_MAIL', trim($email1, ',').',');
+	$tm = trim($email1, ',');
+	$smarty->assign('TO_MAIL', $tm.($tm == '' ? '' : ','));
 }
 
 //handled for replying emails
@@ -213,8 +229,6 @@ if (isset($_REQUEST['filename']) && (empty($_REQUEST['isDuplicate']) || $_REQUES
 		$focus->parent_type = 'Contacts';
 	}
 }
-
-$log->info('Email detail view');
 
 // Pass on the authenticated user language
 global $current_language;

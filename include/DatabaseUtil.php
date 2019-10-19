@@ -8,8 +8,7 @@
  * All Rights Reserved.
  ********************************************************************************/
 
-//Added to check database charset and $default_charset are set to UTF8.
-//If both are not set to be UTF-8, Then we will show an alert message.
+// check database charset and collation are set to UTF8.
 function check_db_utf8_support($conn) {
 	$dbvarRS = $conn->Execute("show variables like '%_database'");
 	$db_character_set = null;
@@ -47,23 +46,57 @@ function get_db_charset($conn) {
 	return $db_character_set;
 }
 
-//Make a count query
-function mkCountQuery($query) {
+function mkXQuery($query, $expression) {
 	// Remove all the \n, \r and white spaces to keep the space between the words consistent.
 	// This is required for proper pattern matching for words like ' FROM ', 'ORDER BY', 'GROUP BY' as they depend on the spaces between the words.
 	$query = preg_replace("/[\n\r\s]+/", ' ', $query);
+	// Strip off the current SELECT fields and replace them with expression
+	return "SELECT $expression".substr($query, stripos($query, ' FROM '), strlen($query));
+}
 
-	//Strip of the current SELECT fields and replace them by "select count(*) as count"
-	// Space across FROM has to be retained here so that we do not have a clash with string "from" found in select clause
-	$query = "SELECT count(*) AS count " . substr($query, stripos($query, ' FROM '), strlen($query));
+function mkMaxQuery($query, $field) {
+	return mkXQuery($query, 'max('.$field.') as max');
+}
 
-	//Strip of any "GROUP BY" clause
-	if (stripos($query, 'GROUP BY') > 0) {
-		$query = substr($query, 0, stripos($query, 'GROUP BY'));
+function mkMinQuery($query, $field) {
+	return mkXQuery($query, 'min('.$field.') as min');
+}
+
+function mkSumQuery($query, $field) {
+	return mkXQuery($query, 'sum('.$field.') as sum');
+}
+
+function mkAvgQuery($query, $field) {
+	return mkXQuery($query, 'avg('.$field.') as avg');
+}
+
+function mkTotQuery($query, $column) {
+	$query = mkXQuery($query, 'sum('.$column.') AS total');
+
+	// Strip off any "GROUP BY" clause
+	if (strpos($query, ' GROUP BY ') > 0) {
+		$query = substr($query, 0, strpos($query, ' GROUP BY '));
 	}
-	//Strip of any "ORDER BY" clause
-	if (stripos($query, 'ORDER BY') > 0) {
-		$query = substr($query, 0, stripos($query, 'ORDER BY'));
+
+	// Strip off any "ORDER BY" clause
+	if (strpos($query, ' ORDER BY ') > 0) {
+		$query = substr($query, 0, strpos($query, ' ORDER BY '));
+	}
+
+	return $query;
+}
+
+//Make a count query
+function mkCountQuery($query) {
+	$query = mkXQuery($query, 'count(*) AS count');
+
+	// Strip off any "GROUP BY" clause
+	if (stripos($query, ' GROUP BY ') > 0) {
+		$query = substr($query, 0, stripos($query, ' GROUP BY '));
+	}
+	// Strip off any "ORDER BY" clause
+	if (stripos($query, ' ORDER BY ') > 0) {
+		$query = substr($query, 0, stripos($query, ' ORDER BY '));
 	}
 	return ($query);
 }
@@ -74,9 +107,9 @@ function mkCountWithFullQuery($query) {
 	// This is required for proper pattern matching for words like ' FROM ', 'ORDER BY', 'GROUP BY' as they depend on the spaces between the words.
 	$query = preg_replace("/[\n\r\s]+/", ' ', $query);
 
-	//Strip of any "ORDER BY" clause
-	if (stripos($query, 'ORDER BY') > 0) {
-		$query = substr($query, 0, stripos($query, 'ORDER BY'));
+	// Strip off any "ORDER BY" clause
+	if (stripos($query, ' ORDER BY ') > 0) {
+		$query = substr($query, 0, stripos($query, ' ORDER BY '));
 	}
 	return "SELECT count(*) AS count FROM ($query) as sqlcount";
 }

@@ -56,6 +56,7 @@ $mod_strings = array(
 'LBL_ADDRESS_INFORMATION'=>'Información de la Dirección',
 'LBL_Quote_INFORMATION'=>'Información de la Empresa',
 'LBL_CUSTOM_INFORMATION'=>'Información personalizada',
+'LBL_Invoice_FINANCIALINFO' => 'Información Financiera',
 'LBL_BILLING_ADDRESS'=>'Dirección (Factura):',
 'LBL_SHIPPING_ADDRESS'=>'Dirección (Envío):',
 'LBL_ANY_ADDRESS'=>'Dirección (Alternativa):',
@@ -173,5 +174,10 @@ $mod_strings = array(
 
 'Documents'=>'Documentos',
 'Invoice ID'=>'Id Factura',
+
+'LBL_PARTIAL_PAYMENTS_INFO' => 'Información Pagos Parciales',
+'Amount Due'=>'Pendiente a Pagar',
+'Amount Paid'=>'Total Pagado',
+'Total Amount'=>'Total a Pagar',
 );
 ?>

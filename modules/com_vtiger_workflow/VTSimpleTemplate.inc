@@ -7,13 +7,15 @@
  * Portions created by vtiger are Copyright (C) vtiger.
  * All Rights Reserved.
  ************************************************************************************/
+require_once 'modules/Users/UserPrivileges.php';
 include_once 'modules/Users/authTypes/TwoFactorAuth/autoload.php';
 use \RobThree\Auth\TwoFactorAuth;
 
 class VTSimpleTemplate {
 
-	public function __construct($templateString) {
+	public function __construct($templateString, $keepvariable = false) {
 		$this->template = $templateString;
+		$this->keepvariable = $keepvariable;
 	}
 
 	public function render($entityCache, $entityId, $void = array()) {
@@ -51,7 +53,11 @@ class VTSimpleTemplate {
 					$result = $data[$fieldname];
 				}
 			} else {
-				$result ='';
+				if ($this->keepvariable) {
+					$result = '$'.$fieldname;
+				} else {
+					$result = '';
+				}
 			}
 		} else {
 			list($full, $referenceField, $referenceModule, $fieldname) = $matches;
@@ -102,10 +108,18 @@ class VTSimpleTemplate {
 									$result = $data[$fieldname];
 								}
 							} else {
-								$result = '';
+								if ($this->keepvariable) {
+									$result = '$'.$fieldname;
+								} else {
+									$result = '';
+								}
 							}
 						} else {
-							$result = '';
+							if ($this->keepvariable) {
+								$result = '$'.$fieldname;
+							} else {
+								$result = '';
+							}
 						}
 					} catch (Exception $e) {
 						$result = '';
@@ -151,7 +165,7 @@ class VTSimpleTemplate {
 		$datefmtuserid = $this->parent->get('assigned_user_id');
 		if (!empty($datefmtuserid)) {
 			list($void,$dfuid) = explode('x', $datefmtuserid);
-			if (file_exists('user_privileges/user_privileges_' . $dfuid . '.php')) {
+			if (UserPrivileges::hasPrivileges($dfuid)) {
 				$datefmtuser = new Users();
 				$datefmtuser->retrieveCurrentUserInfoFromFile($dfuid);
 			} else {
@@ -411,22 +425,24 @@ class VTSimpleTemplate {
 
 	public function parseTemplate() {
 		global $current_user;
-		$data = $this->parent->getData();
 		$backCurrentUser = $current_user;
-		list($wsId,$assigned_user_id) = explode('x', $data['assigned_user_id']);
-		if (vtws_getOwnerType($assigned_user_id) == 'Groups') {
-			require_once 'include/utils/GetGroupUsers.php';
-			$ggu = new GetGroupUsers();
-			$ggu->getAllUsersInGroup($assigned_user_id);
-			$users = $ggu->group_users;
-			if (!empty($users)) {
-				$assigned_user_id = $users[0];
-			} else {
-				$assigned_user_id = $backCurrentUser->id;
+		$data = $this->parent->getData();
+		if (!empty($data['assigned_user_id'])) {
+			list($wsId,$assigned_user_id) = explode('x', $data['assigned_user_id']);
+			if (vtws_getOwnerType($assigned_user_id) == 'Groups') {
+				require_once 'include/utils/GetGroupUsers.php';
+				$ggu = new GetGroupUsers();
+				$ggu->getAllUsersInGroup($assigned_user_id);
+				$users = $ggu->group_users;
+				if (!empty($users)) {
+					$assigned_user_id = $users[0];
+				} else {
+					$assigned_user_id = $backCurrentUser->id;
+				}
 			}
+			$current_user = new Users();
+			$current_user->retrieveCurrentUserInfoFromFile($assigned_user_id);
 		}
-		$current_user = new Users();
-		$current_user->retrieveCurrentUserInfoFromFile($assigned_user_id);
 		$return = preg_replace_callback(
 			'/\\$(\w+?|\(general : \(__WorkflowFunction__\) (.+?) \)[ |&._\-\]}<>\/!"%ºª?,;]|\((\w+) : \(([_\w]+)\) (.+)\))/U',
 			array($this, 'matchHandler'),
@@ -486,8 +502,7 @@ class VTSimpleTemplate {
 			}
 		}
 		if (substr($fieldname, 0, 10) == 'scanQRCode') {
-			$field = substr($fieldname, 16);
-			$fieldname = 'scanQRCode';
+			list($fieldname, $field) = explode('->', decode_html($fieldname));
 		}
 		if (substr($fieldname, 0, 16)=='inventorydetails') {
 			$inventoryspec = explode('_', $fieldname);
@@ -566,14 +581,18 @@ class VTSimpleTemplate {
 				$moduleName = $this->parent->getModuleName();
 				$focus = CRMEntity::getInstance($moduleName);
 				$focus->retrieve_entity_info($recordId, $moduleName);
-				$fieldValue = $focus->column_fields[$field];
-				$tfa = new TwoFactorAuth('emailwfqrcode');
-				$qrcodeprovider = $tfa->getQrCodeProvider();
-				$img = $qrcodeprovider->getQRCodeImage($fieldValue, 150);
-				$fname = uniqid('qrcode');
-				@unlink('cache/images/'.$fname.'.png');
-				file_put_contents('cache/images/'.$fname.'.png', $img);
-				return '<img src="cid:'.$fname.'" />';
+				if (!empty($focus->column_fields[$field])) {
+					$fieldValue = $focus->column_fields[$field];
+					$tfa = new TwoFactorAuth('emailwfqrcode');
+					$qrcodeprovider = $tfa->getQrCodeProvider();
+					$img = $qrcodeprovider->getQRCodeImage($fieldValue, 150);
+					$fname = uniqid('qrcode');
+					@unlink('cache/images/'.$fname.'.png');
+					file_put_contents('cache/images/'.$fname.'.png', $img);
+					return '<img src="cid:'.$fname.'" />';
+				} else {
+					return '';
+				}
 			default:
 				'';
 		}

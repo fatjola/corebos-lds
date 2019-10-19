@@ -99,7 +99,7 @@ global $current_user;
 $sql_error = false;
 $queryGenerator = new QueryGenerator($currentModule, $current_user);
 try {
-	if ($viewid != "0") {
+	if ($viewid != '0') {
 		$queryGenerator->initForCustomViewById($viewid);
 	} else {
 		$queryGenerator->initForDefaultCustomView();
@@ -255,26 +255,13 @@ if ($sql_error) {
 	//Added to select Multiple records in multiple pages
 		$smarty->assign('SELECTEDIDS', isset($_REQUEST['selobjs']) ? vtlib_purify($_REQUEST['selobjs']) : '');
 		$smarty->assign('ALLSELECTEDIDS', isset($_REQUEST['selobjs']) ? vtlib_purify($_REQUEST['allselobjs']) : '');
-		$smarty->assign('CURRENT_PAGE_BOXES', implode(array_keys($listview_entries), ';'));
+		$smarty->assign('CURRENT_PAGE_BOXES', implode(';', array_keys($listview_entries)));
 		ListViewSession::setSessionQuery($currentModule, $list_query, $viewid);
 
 	// Gather the custom link information to display
 		include_once 'vtlib/Vtiger/Link.php';
 		$customlink_params = array('MODULE'=>$currentModule, 'ACTION'=>vtlib_purify($_REQUEST['action']), 'CATEGORY'=> $category);
 		$smarty->assign('CUSTOM_LINKS', Vtiger_Link::getAllByType(getTabid($currentModule), array('LISTVIEWBASIC','LISTVIEW'), $customlink_params));
-	// END
-
-		if (isPermitted($currentModule, 'Merge') == 'yes' && file_exists("modules/$currentModule/Merge.php")) {
-			$wordTemplates = array();
-			$wordTemplateResult = fetchWordTemplateList($currentModule);
-			$tempCount = $adb->num_rows($wordTemplateResult);
-			$tempVal = $adb->fetch_array($wordTemplateResult);
-			for ($templateCount = 0; $templateCount < $tempCount; $templateCount++) {
-				$wordTemplates[$tempVal['templateid']] = $tempVal['filename'];
-				$tempVal = $adb->fetch_array($wordTemplateResult);
-			}
-			$smarty->assign('WORDTEMPLATES', $wordTemplates);
-		}
 	}
 } // try query
 $smarty->assign('IS_ADMIN', is_admin($current_user));

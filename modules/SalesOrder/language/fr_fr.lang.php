@@ -45,6 +45,7 @@ $mod_strings = array (
 	'LBL_ADDRESS_INFORMATION' => 'Information adresse',
 	'LBL_Quote_INFORMATION' => 'Information compte',
 	'LBL_CUSTOM_INFORMATION' => 'Informations personnalisées',
+	'LBL_SalesOrder_FINANCIALINFO' => 'Financial Information',
 	'LBL_BILLING_ADDRESS' => 'Adresse (facturation) :',
 	'LBL_SHIPPING_ADDRESS' => 'Adresse (livraison) :',
 	'LBL_ANY_ADDRESS' => 'Adresse (alt.) :',
@@ -157,6 +158,7 @@ $mod_strings = array (
 	'SalesOrder No' => 'Bon de commande n°',
 	'Recurring Invoice Information' => 'Facturation récurrente',
 	'RecurringInvoice' => 'Facturation Récurrente',
+	'Recommended frequency for RecurringInvoice is 12 hours' => 'Recommended frequency for Recurring Invoice is 12 hours',
 	'Enable Recurring' => 'Activer la récurrence',
 	'Frequency' => 'Fréquence',
 	'Start Period' => 'Début',
@@ -179,5 +181,10 @@ $mod_strings = array (
 	'4years' => '4 ans',
 	'5years' => '5 ans',
 	'SalesOrder ID' => 'Bon de commande ID',
+	'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+	'Amount Due'=>'Amount Due',
+	'Amount Paid'=>'Amount Paid',
+	'Total Amount'=>'Total Amount',
+	'Invoiced' => 'Invoiced',
 );
 ?>

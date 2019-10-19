@@ -35,6 +35,7 @@ if (coreBOS_Session::has('ME1x1Info')) {
 	$smarty->assign('ERROR_MESSAGE_CLASS', 'cb-alert-info');
 	$memsg = getTranslatedString('LBL_MASS_EDIT').':&nbsp;'.getTranslatedString('LBL_RECORD').(count($ME1x1Info['processed'])+1).'/'.count($ME1x1Info['complete']);
 	$smarty->assign('ERROR_MESSAGE', $memsg);
+	$smarty->assign('gobackBTN', count($ME1x1Info['processed'])==0);
 } else {
 	$smarty->assign('MED1x1MODE', 0);
 }
@@ -258,9 +259,5 @@ $smarty->assign('SandRActive', GlobalVariable::getVariable('Application_SaveAndR
 $cbMapFDEP = Vtiger_DependencyPicklist::getFieldDependencyDatasource($currentModule);
 $smarty->assign('FIELD_DEPENDENCY_DATASOURCE', json_encode($cbMapFDEP));
 
-if ($focus->mode == 'edit') {
-	$smarty->display('Inventory/InventoryEditView.tpl');
-} else {
-	$smarty->display('Inventory/InventoryCreateView.tpl');
-}
+$smarty->display('Inventory/InventoryEditView.tpl');
 ?>

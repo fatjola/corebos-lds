@@ -51,7 +51,8 @@ class ReportRun extends CRMEntity {
 						'Quotes_Total', 'Quotes_Sub_Total', 'Quotes_S&H_Amount', 'Quotes_Discount_Amount', 'Quotes_Adjustment',
 						'SalesOrder_Total', 'SalesOrder_Sub_Total', 'SalesOrder_S&H_Amount', 'SalesOrder_Discount_Amount', 'SalesOrder_Adjustment',
 						'PurchaseOrder_Total', 'PurchaseOrder_Sub_Total', 'PurchaseOrder_S&H_Amount', 'PurchaseOrder_Discount_Amount', 'PurchaseOrder_Adjustment',
-						'Issuecards_Total', 'Issuecards_Sub_Total', 'Issuecards_S&H_Amount', 'Issuecards_Discount_Amount', 'Issuecards_Adjustment',
+						'Issuecards_Total', 'Issuecards_Sub_Total', 'Issuecards_S&H_Amount', 'Issuecards_Discount_Amount', 'Issuecards_Adjustment','Invoice_SandH_Amount',
+						'Quotes_SandH_Amount','SalesOrder_SandH_Amount','PurchaseOrder_SandH_Amount','Issuecards_SandH_Amount',
 						);
 	public $ui10_fields = array();
 	public $ui101_fields = array();
@@ -105,6 +106,8 @@ class ReportRun extends CRMEntity {
 		$result = $adb->pquery($ssql, array($reportid));
 		$permitted_fields = array();
 		$columnslist = array();
+		$userprivs = $current_user->getPrivileges();
+		$hasGlobalReadPermission = $userprivs->hasGlobalReadPermission();
 		while ($columnslistrow = $adb->fetch_array($result)) {
 			$fieldname = '';
 			$fieldcolname = decode_html($columnslistrow['columnname']);
@@ -116,16 +119,14 @@ class ReportRun extends CRMEntity {
 			list($module, $field) = explode('_', $module_field, 2);
 			$inventory_fields = array('quantity', 'listprice', 'serviceid', 'productid', 'discount', 'comment');
 			$inventory_modules = getInventoryModules();
-			require 'user_privileges/user_privileges_'.$current_user->id.'.php';
-			if ((!isset($permitted_fields[$module]) || count($permitted_fields[$module]) == 0) &&
-					$is_admin == false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+			if ((!isset($permitted_fields[$module]) || count($permitted_fields[$module]) == 0) && !$userprivs->hasGlobalReadPermission()) {
 				$permitted_fields[$module] = $this->getaccesfield($module);
 			}
 			if (in_array($module, $inventory_modules) && isset($permitted_fields[$module]) && is_array($permitted_fields[$module])) {
 				$permitted_fields[$module] = array_merge($permitted_fields[$module], $inventory_fields);
 			}
 			$selectedfields = explode(':', $fieldcolname);
-			if ($is_admin == false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1 && !in_array($selectedfields[3], $permitted_fields[$module])) {
+			if (!$hasGlobalReadPermission && !in_array($selectedfields[3], $permitted_fields[$module])) {
 				//user has no access to this field, skip it.
 				continue;
 			}
@@ -276,7 +277,7 @@ class ReportRun extends CRMEntity {
 		// Save the information
 		$this->_columnslist[$outputformat] = $columnslist;
 
-		$log->info('ReportRun :: Successfully returned getQueryColumnsList'.$reportid);
+		$log->debug('ReportRun :: getQueryColumnsList'.$reportid);
 		return $columnslist;
 	}
 
@@ -406,7 +407,7 @@ class ReportRun extends CRMEntity {
 		}
 		$sSQL .= implode(",", $sSQLList);
 
-		$log->info("ReportRun :: Successfully returned getSelectedColumnsList".$reportid);
+		$log->debug('ReportRun :: getSelectedColumnsList'.$reportid);
 		return $sSQL;
 	}
 
@@ -487,7 +488,7 @@ class ReportRun extends CRMEntity {
 			$rtvalue = str_replace("'", '', $rtvalue);
 			$rtvalue = str_replace("\\", '', $rtvalue);
 		}
-		$log->info('ReportRun :: Successfully returned getAdvComparator');
+		$log->debug('ReportRun :: getAdvComparator');
 		return $rtvalue;
 	}
 
@@ -802,7 +803,7 @@ class ReportRun extends CRMEntity {
 		// Save the information
 		$this->_advfiltersql = $advfiltersql;
 
-		$log->info('ReportRun :: Successfully returned getAdvFilterSql'.$reportid);
+		$log->debug('ReportRun :: getAdvFilterSql'.$reportid);
 		return $advfiltersql;
 	}
 
@@ -893,7 +894,7 @@ class ReportRun extends CRMEntity {
 		// Save the information
 		$this->_stdfilterlist = $stdfilterlist;
 
-		$log->info("ReportRun :: Successfully returned getStdFilterList".$reportid);
+		$log->debug('ReportRun :: getStdFilterList'.$reportid);
 		return $stdfilterlist;
 	}
 
@@ -1075,7 +1076,7 @@ class ReportRun extends CRMEntity {
 				$this->queryPlanner->addTable($selectedfields[0]);
 			}
 		}
-		$log->info("ReportRun :: Successfully returned getStandardCriterialSql".$reportid);
+		$log->debug('ReportRun :: getStandardCriterialSql'.$reportid);
 		return $sSQL;
 	}
 
@@ -1164,7 +1165,7 @@ class ReportRun extends CRMEntity {
 		// Save the information
 		$this->_groupinglist = $grouplist;
 
-		$log->info("ReportRun :: Successfully returned getGroupingList".$reportid);
+		$log->debug('ReportRun :: getGroupingList'.$reportid);
 		return $grouplist;
 	}
 
@@ -1221,7 +1222,7 @@ class ReportRun extends CRMEntity {
 				$this->orderbylistsql .= $selectedfields[0].'.'.$selectedfields[1].' '.$selectedfields[2];
 			}
 		}
-		$log->info('ReportRun :: Successfully returned getSelectedOrderbyList'.$reportid);
+		$log->debug('ReportRun :: getSelectedOrderbyList'.$reportid);
 		return $sSQL;
 	}
 
@@ -1243,7 +1244,7 @@ class ReportRun extends CRMEntity {
 				$query .= getNonAdminAccessControlQuery($value, $current_user, $value);
 			}
 		}
-		$log->info('ReportRun :: Successfully returned getRelatedModulesQuery'.$secmodule);
+		$log->debug('ReportRun :: getRelatedModulesQuery'.$secmodule);
 		return $query;
 	}
 
@@ -1348,8 +1349,8 @@ class ReportRun extends CRMEntity {
 			$query .= " ".$this->getRelatedModulesQuery($module, $this->secondarymodule, $type, $where_condition).
 				getNonAdminAccessControlQuery($this->primarymodule, $current_user).
 				" where vtiger_crmentity.deleted=0 ";
-		} //For this Product - we can related Accounts, Contacts (Also Leads, Potentials)
-		elseif ($module == "Products") {
+		} elseif ($module == "Products") {
+			//For this Product - we can related Accounts, Contacts (Also Leads, Potentials)
 			$focus = CRMEntity::getInstance($module);
 			$query = $focus->generateReportsQuery($module, $this->queryPlanner);
 			if ($this->queryPlanner->requireTable("vtiger_vendorRelProducts")) {
@@ -1686,7 +1687,7 @@ class ReportRun extends CRMEntity {
 					' WHERE vtiger_crmentity.deleted=0';
 			}
 		}
-		$log->info("ReportRun :: Successfully returned getReportsQuery".$module);
+		$log->debug('ReportRun :: getReportsQuery'.$module);
 
 		return $query;
 	}
@@ -1868,7 +1869,7 @@ class ReportRun extends CRMEntity {
 			$this->queryPlanner->initializeTempTables();
 			$this->_tmptablesinitialized = true;
 		}
-		$log->info("ReportRun :: Successfully returned sGetSQLforReport".$reportid);
+		$log->debug('ReportRun :: sGetSQLforReport '.$reportid);
 		if (GlobalVariable::getVariable('Debug_Report_Query', '0')=='1') {
 			$log->fatal('Report Query for '.$this->reportname." ($reportid)");
 			$log->fatal($reportquery);
@@ -1890,7 +1891,7 @@ class ReportRun extends CRMEntity {
 	// Performance Optimization: Added parameter directOutput to avoid building big-string!
 	public function GenerateReport($outputformat, $filtersql, $directOutput = false, &$returnfieldinfo = array()) {
 		global $adb, $current_user, $php_max_execution_time, $modules, $app_strings, $mod_strings;
-		require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+		$userprivs = $current_user->getPrivileges();
 		$picklistarray = array();
 		$modules_selected = array();
 		$modules_selected[] = $this->primarymodule;
@@ -1945,7 +1946,7 @@ class ReportRun extends CRMEntity {
 				echo '<table cellpadding="5" cellspacing="0" align="center" class="rptTable"><tr>';
 			}
 
-			if ($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+			if (!$userprivs->hasGlobalReadPermission()) {
 				$picklistarray = $this->getAccessPickListValues();
 			}
 			if ($result) {
@@ -2243,7 +2244,7 @@ class ReportRun extends CRMEntity {
 				}
 			}
 
-			if ($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+			if (!$userprivs->hasGlobalReadPermission()) {
 				$picklistarray = $this->getAccessPickListValues();
 			}
 			if ($result) {
@@ -2353,7 +2354,7 @@ class ReportRun extends CRMEntity {
 				$sSQL = $this->sGetSQLforReport($this->reportid, $filtersql);
 				$result = $adb->pquery($sSQL, array());
 			}
-			if ($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+			if (!$userprivs->hasGlobalReadPermission()) {
 				$picklistarray = $this->getAccessPickListValues();
 			}
 			if ($result) {
@@ -2671,7 +2672,7 @@ class ReportRun extends CRMEntity {
 		} elseif ($outputformat == "PRINT") {
 			$sSQL = $this->sGetSQLforReport($this->reportid, $filtersql);
 			$result = $adb->query($sSQL);
-			if ($is_admin==false && $profileGlobalPermission[1] == 1 && $profileGlobalPermission[2] == 1) {
+			if (!$userprivs->hasGlobalReadPermission()) {
 				$picklistarray = $this->getAccessPickListValues();
 			}
 
@@ -2950,7 +2951,7 @@ class ReportRun extends CRMEntity {
 				$field_columnalias = $module_name."_".$fieldlist[3];
 				$field_columnalias = decode_html($field_columnalias);
 				$query_columnalias = substr($field_columnalias, 0, strrpos($field_columnalias, '_'));
-				$query_columnalias = str_replace(array(' ','&'), '_', $query_columnalias);
+				$query_columnalias = str_replace(array(' ','&','(',')'), '_', $query_columnalias);
 				$sckey = $field_tablename.':'.$field_columnname.':'.$query_columnalias.':'.$field_columnname.':N'; // vtiger_invoice:subject:Invoice_Subject:subject:V
 				$scval = $field_tablename.'.'.$field_columnname." AS '".$query_columnalias."'"; // vtiger_invoice.subject AS 'Invoice_Subject'
 				$seltotalcols[$sckey] = $scval;
@@ -2971,14 +2972,14 @@ class ReportRun extends CRMEntity {
 					}
 					if (($field_tablename == 'vtiger_invoice' || $field_tablename == 'vtiger_quotes' || $field_tablename == 'vtiger_purchaseorder' || $field_tablename == 'vtiger_salesorder' || $field_tablename == 'vtiger_issuecards')
 							&& ($field_columnname == 'total' || $field_columnname == 'subtotal' || $field_columnname == 'discount_amount' || $field_columnname == 's_h_amount')) {
-						$query_columnalias = ' '.$query_columnalias.'/'.$module_name.'_Conversion_Rate ';
+						$query_columnalias = $query_columnalias.'`/`'.$module_name.'_Conversion_Rate';
 						$seltotalcols[$field_tablename.':conversion_rate:'.$module_name.'_Conversion_Rate:conversion_rate:N'] = "$field_tablename.conversion_rate AS $module_name".'_Conversion_Rate ';
 					}
 					if ($fieldlist[4] == 2) {
 						if ($fieldlist[2]=='totaltime') {
 							$stdfilterlist[$fieldcolname] = "sec_to_time(sum(time_to_sec(".$query_columnalias."))) '".$field_columnalias."'";
 						} else {
-							$stdfilterlist[$fieldcolname] = "sum($query_columnalias) '".$field_columnalias."'";
+							$stdfilterlist[$fieldcolname] = "sum(`$query_columnalias`) '".$field_columnalias."'";
 						}
 					}
 					if ($fieldlist[4] == 3) {
@@ -2987,21 +2988,21 @@ class ReportRun extends CRMEntity {
 						if ($fieldlist[2]=='totaltime') {
 							$stdfilterlist[$fieldcolname] = 'sec_to_time(sum(time_to_sec('.$query_columnalias."))/count(*)) '".$field_columnalias."'";
 						} else {
-							$stdfilterlist[$fieldcolname] = "(sum($query_columnalias)/count(*)) '".$field_columnalias."'";
+							$stdfilterlist[$fieldcolname] = "(sum(`$query_columnalias`)/count(*)) '".$field_columnalias."'";
 						}
 					}
 					if ($fieldlist[4] == 4) {
 						if ($fieldlist[2]=='totaltime') {
 							$stdfilterlist[$fieldcolname] = 'sec_to_time(min(time_to_sec('.$query_columnalias."))) '".$field_columnalias."'";
 						} else {
-							$stdfilterlist[$fieldcolname] = "min($query_columnalias) '".$field_columnalias."'";
+							$stdfilterlist[$fieldcolname] = "min(`$query_columnalias`) '".$field_columnalias."'";
 						}
 					}
 					if ($fieldlist[4] == 5) {
 						if ($fieldlist[2]=='totaltime') {
 							$stdfilterlist[$fieldcolname] = 'sec_to_time(max(time_to_sec('.$query_columnalias."))) '".$field_columnalias."'";
 						} else {
-							$stdfilterlist[$fieldcolname] = "max($query_columnalias) '".$field_columnalias."'";
+							$stdfilterlist[$fieldcolname] = "max(`$query_columnalias`) '".$field_columnalias."'";
 						}
 					}
 				}
@@ -3011,7 +3012,7 @@ class ReportRun extends CRMEntity {
 		$this->_columnstotallist = $stdfilterlist;
 		$stc = array_diff($seltotalcols, $selectlist);
 		$this->_columnstotallistaddtoselect = $stc;
-		$log->info('ReportRun :: Successfully returned getColumnsTotal'.$reportid);
+		$log->debug('ReportRun :: getColumnsTotal'.$reportid);
 		return $stdfilterlist;
 	}
 
@@ -3051,7 +3052,7 @@ class ReportRun extends CRMEntity {
 		if (isset($sSQLList)) {
 			$sSQL = implode(',', $sSQLList);
 		}
-		$log->info('ReportRun :: Successfully returned getColumnsToTotalColumns'.$reportid);
+		$log->debug('ReportRun :: getColumnsToTotalColumns'.$reportid);
 		return $sSQL;
 	}
 
@@ -3209,7 +3210,6 @@ class ReportRun extends CRMEntity {
 		$pdf->setHeaderFont(array(PDF_FONT_NAME_MAIN, '', PDF_FONT_SIZE_MAIN));
 		$pdf->setFooterFont(array(PDF_FONT_NAME_DATA, '', PDF_FONT_SIZE_DATA));
 		//$pdf->setLanguageArray($l);
-		//echo '<pre>';print_r($columnlength);echo '</pre>';
 		$pdf->AddPage();
 
 		$pdf->SetFillColor(224, 235, 255);
@@ -3304,21 +3304,25 @@ class ReportRun extends CRMEntity {
 							break;
 						case 'date':
 						case 'time':
-							if ($value!='-') {
-								if (strpos($value, ':')>0 && (strpos($value, '-')===false)) {
-									// only time, no date
-									$dt = new DateTime("1970-01-01 $value");
-								} elseif (strpos($value, ':')>0 && (strpos($value, '-')>0)) {
-									// date and time
-									$dt = new DateTime($value);
-									$datetime = true;
+							try {
+								if ($value!='-') {
+									if (strpos($value, ':')>0 && (strpos($value, '-')===false)) {
+										// only time, no date
+										$dt = new DateTime("1970-01-01 $value");
+									} elseif (strpos($value, ':')>0 && (strpos($value, '-')>0)) {
+										// date and time
+										$dt = new DateTime($value);
+										$datetime = true;
+									} else {
+										$value = DateTimeField::__convertToDBFormat($value, $current_user->date_format);
+										$dt = new DateTime($value);
+									}
+									$value = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel($dt);
+									$celltype = \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC;
 								} else {
-									$value = DateTimeField::__convertToDBFormat($value, $current_user->date_format);
-									$dt = new DateTime($value);
+									$celltype = \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING;
 								}
-								$value = \PhpOffice\PhpSpreadsheet\Shared\Date::PHPToExcel($dt);
-								$celltype = \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC;
-							} else {
+							} catch (Exception $e) {
 								$celltype = \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING;
 							}
 							break;
@@ -3465,9 +3469,9 @@ class ReportRun extends CRMEntity {
 		$sortFieldResult= $adb->pquery($sortFieldQuery, array($reportid));
 		if ($adb->num_rows($sortFieldResult)>0) {
 			$fieldcolname = $adb->query_result($sortFieldResult, 0, 'columnname');
-			list($tablename,$colname,$module_field,$fieldname,$typeOfData) = explode(":", $fieldcolname);
+			list($tablename,$colname,$module_field,$fieldname,$typeOfData) = explode(':', $fieldcolname);
 			list($modulename,$fieldlabel) = explode('_', $module_field, 2);
-			$groupByField = '`'.$module_field.'`';
+			$groupByField = '`'.ReportRun::replaceSpecialChar($module_field).'`';
 			if ($typeOfData == 'D') {
 				$groupCriteria = $adb->query_result($sortFieldResult, 0, 'dategroupbycriteria');
 				if (strtolower($groupCriteria)!='none') {
@@ -3478,7 +3482,7 @@ class ReportRun extends CRMEntity {
 						}
 					}
 					$groupByCondition[] = $this->GetTimeCriteriaCondition($groupCriteria, $groupByField);
-					$groupByField = implode(", ", $groupByCondition);
+					$groupByField = implode(', ', $groupByCondition);
 				}
 			} elseif (CheckFieldPermission($fieldname, $modulename) != 'true') {
 				if ((strpos($tablename, 'vtiger_inventoryproductrel') === false && ($colname != 'productid' || $colname != 'serviceid'))) {

@@ -12,11 +12,9 @@ $mod_strings = array(
 	'cbCalendar' => 'To Dos',
 	'SINGLE_cbCalendar' => 'To Do',
 	'cbCalendar ID' => 'To Do ID',
-
 	'LBL_CUSTOM_INFORMATION' => 'Custom Information',
 	'LBL_TASK_INFORMATION' => 'To Do Information',
 	'EventAdvancedOptions' => 'Advanced Information',
-
 	'Subject' => 'Subject',
 	'Start Date Time' => 'Start Date Time',
 	'End Date Time' => 'End Date Time',
@@ -37,6 +35,7 @@ $mod_strings = array(
 	'Location' => 'Location',
 	'Send Reminder' => 'Send Reminder',
 	'LBL_SENDREMINDER' => 'Send Reminder',
+	'Recommended frequency for SendReminder is 15 mins' => 'Recommended frequency for Send Reminder is 15 mins',
 	'Recurrence' => 'Recurrence',
 	'No Time' => 'All Day',
 	'LBL_RELATEDTO' => 'Related To',

@@ -74,10 +74,9 @@ function vtws_getVtigerVersion() {
 
 function vtws_getUserAccessibleGroups($moduleId, $user) {
 	global $adb;
-	require 'user_privileges/user_privileges_'.$user->id.'.php';
-	require 'user_privileges/sharing_privileges_'.$user->id.'.php';
+	$userprivs = $user->getPrivileges();
 	$tabName = getTabname($moduleId);
-	if ($is_admin==false && $profileGlobalPermission[2] == 1 && ($defaultOrgSharingPermission[$moduleId] == 3 || $defaultOrgSharingPermission[$moduleId] == 0)) {
+	if (!$userprivs->hasGlobalWritePermission() && !$userprivs->hasModuleWriteSharing($moduleId)) {
 		$result=get_current_user_access_groups($tabName);
 	} else {
 		$result = get_group_options();
@@ -300,7 +299,7 @@ function vtws_addModuleTypeWebserviceEntity($moduleName, $filePath, $className) 
 	);
 	if ($checkres && $adb->num_rows($checkres) == 0) {
 		$isModule=1;
-		$entityId = $adb->getUniqueID("vtiger_ws_entity");
+		$entityId = $adb->getUniqueID('vtiger_ws_entity');
 		$adb->pquery(
 			'insert into vtiger_ws_entity(id,name,handler_path,handler_class,ismodule) values (?,?,?,?,?)',
 			array($entityId,$moduleName,$filePath,$className,$isModule)

@@ -55,6 +55,7 @@ $mod_strings = array(
 'LBL_POSTAL_CODE'=>'Postal Code:',
 'LBL_COUNTRY'=>'Country:',
 'LBL_DESCRIPTION_INFORMATION'=>'Description Information',
+'LBL_SalesOrder_FINANCIALINFO' => 'Financial Information',
 'LBL_TERMS_INFORMATION'=>'Terms & Conditions',
 'LBL_DESCRIPTION'=>'Description:',
 'NTC_COPY_BILLING_ADDRESS'=>'Copy billing address to shipping address',
@@ -173,6 +174,7 @@ $mod_strings = array(
 
 'Recurring Invoice Information' => 'Recurring Invoice Information',
 'RecurringInvoice' => 'Recurring Invoice',
+'Recommended frequency for RecurringInvoice is 12 hours' => 'Recommended frequency for Recurring Invoice is 12 hours',
 'Enable Recurring' => 'Enable Recurring Billing',
 'Frequency' => 'Billing Frequency',
 'Start Period' => 'Billing Period Starts On',
@@ -195,5 +197,11 @@ $mod_strings = array(
 '3years' => '3 Years',
 '4years' => '4 Years',
 '5years' => '5 Years',
+
+'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+'Amount Due'=>'Amount Due',
+'Amount Paid'=>'Amount Paid',
+'Total Amount'=>'Total Amount',
+'Invoiced' => 'Invoiced',
 );
 ?>

@@ -9,6 +9,7 @@
  ********************************************************************************/
 -->*}
 {if isset($LVCSearchActive) && $LVCSearchActive!=0}
+<script>AutocompleteSetup();</script>
 <tr bgcolor='white' name='customAdvanceSearch' id='customAdvanceSearch'>
 	<td>&nbsp;
 		<a onclick="clearAllField()">
@@ -29,7 +30,7 @@
 		<input type="hidden" name="customval_{$val}" value="" />
 		<input type="hidden" name="type_{$val}" value="{$arr.fieldtype}" />
 		{if $arr.fieldtype eq 'checkbox'}
-		<table>
+		<table style="width:100%;">
 			<tr>
 				<td width="80%">
 				<select name="tks_{$arr.fieldname}" id="tks_{$arr.fieldname}" class="small" multiple="multiple">
@@ -45,10 +46,10 @@
 			</tr>
 		</table>
 		{elseif $arr.fieldtype eq 'owner'}
-		<table>
+		<table style="width:100%;">
 			<tr>
 				<td width="80%">
-					<select name="tks_{$arr.fieldname}" id="tks_{$arr.fieldname}" multiple="multiple">
+					<select name="tks_{$arr.fieldname}" id="tks_{$arr.fieldname}" multiple="multiple" style="width:100%;">
 						<optgroup id='Users' label='Users'>
 						{foreach from=$arr.pickdata.users key=k item=v}
 							<option value ='{$v}'>{$v}</option>
@@ -69,10 +70,10 @@
 			</tr>
 		</table>
 		{elseif $arr.fieldtype eq 'select'}
-		<table>
+		<table style="width:100%;">
 			<tr>
 				<td width="80%">
-					 <select name="tks_{$arr.fieldname}" id="tks_{$arr.fieldname}" class="small" multiple="multiple">
+					<select name="tks_{$arr.fieldname}" id="tks_{$arr.fieldname}" class="small" multiple="multiple" style="width:100%;">
 						{foreach from=$arr.pickdata key=k item=v}
 							<option value ='{$k}'>{$v}</option>
 						{/foreach}
@@ -86,7 +87,7 @@
 			</tr>
 		</table>
 		{elseif $arr.fieldtype eq 'date' || $arr.fieldtype eq 'datetime'}
-		<table>
+		<table style="width:100%;">
 			<tr>
 				<td>
 					<input name="tks_{$arr.fieldname}_date1" id="jscal_field_{$arr.fieldname}_date1"
@@ -131,10 +132,30 @@
 			</tr>
 		</table>
 		{else}
-		<table>
+		<table style="width:100%;">
 			<tr>
 				<td width="70%">
-					<input type="text" id="tks_{$arr.fieldname}" name="tks_{$arr.fieldname}" value="" width:"100%" onkeypress="return disableEnterKey(event,'{$MODULE}')" />
+					<input
+						type="text"
+						id="tks_{$arr.fieldname}"
+						name="tks_{$arr.fieldname}"
+						value=""
+						style="width:100%;"
+						onkeypress="return disableEnterKey(event,'{$MODULE}')"
+						autocomplete="off"
+						class="autocomplete-input"
+						data-autocomp='{
+							"searchmodule":"{$arr.pickdata.module}",
+							"searchfields":"{$arr.pickdata.fieldname}",
+							"searchcondition":"contains",
+							"entityfield":"{$arr.pickdata.fieldname}",
+							"showfields":"{$arr.pickdata.fieldname}",
+							"fillfields":"tks_{$arr.fieldname}={$arr.pickdata.fieldname}"
+						}'
+					/>
+					<div id="listbox-unique-id{$val}" role="listbox" class="">
+						<ul class="slds-listbox slds-listbox_vertical slds-dropdown slds-dropdown_fluid relation-autocomplete__target" style="opacity: 0; list-style-type: none; width: 70%; max-width: none;" role="presentation"></ul>
+					</div>
 				</td>
 				<td align="right">
 					<a onblur="disableDiv('div_{$arr.fieldname}')" onclick="enableDiv('div_{$arr.fieldname}')">

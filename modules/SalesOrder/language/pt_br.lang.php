@@ -49,6 +49,7 @@ $mod_strings = array(
 'LBL_ADDRESS_INFORMATION'=>'Dados do Endereço',
 'LBL_Quote_INFORMATION'=>'Dados da Cotação',
 'LBL_CUSTOM_INFORMATION'=>'Informação Personalizada',
+'LBL_SalesOrder_FINANCIALINFO' => 'Informação financeira',
 'LBL_BILLING_ADDRESS'=>'Endereço de Faturação:',
 'LBL_SHIPPING_ADDRESS'=>'Endereço de Entrega:',
 'LBL_ANY_ADDRESS'=>'Outro Endereço:',
@@ -176,6 +177,7 @@ $mod_strings = array(
 
 'Recurring Invoice Information' => 'Informação Fatura Recorrente',
 'RecurringInvoice' => 'Fatura Recorrente',
+'Recommended frequency for RecurringInvoice is 12 hours' => 'Recommended frequency for Recurring Invoice is 12 hours',
 'Enable Recurring' => 'Habilitar Recorrência',
 'Frequency' => 'Frequencia',
 'Start Period' => 'Início Período',
@@ -204,5 +206,6 @@ $mod_strings = array(
 'Amount Due'=>'Total em falta',
 'Amount Paid'=>'Total pago',
 'Total Amount'=>'Total',
+'Invoiced' => 'Invoiced',
 );
 ?>

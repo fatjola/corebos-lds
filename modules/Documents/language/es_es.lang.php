@@ -41,7 +41,7 @@ $mod_strings = array(
 
 'Template'=>'Plantilla',
 'Template For' => 'Plantilla Para',
-
+'Merge Template' => 'Plantilla Combinación',
 'LBL_FILENAME'=>'Adjunto:',
 'LBL_NOTE_INFORMATION'=>'Información Documento',
 'File Information'=>'Información Archivo',
@@ -136,5 +136,7 @@ $mod_strings = array(
 'Free' => 'Espacio disponible',
 'NewSize' => 'Nuevo Tamaño',
 'accept_charge' => 'Acepto el cambio de licencia y el recargo que pueda llevar asociado',
+'LBL_DOCUMENTS_MASSUPLOAD' => 'Subida Masiva de Documentos',
+'LBL_MASSUPLOAD_DESCRIPTION' => 'Activa y desctiva el componente de subida masiva de documentos en cada módulo.',
 );
 ?>

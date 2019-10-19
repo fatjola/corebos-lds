@@ -16,7 +16,6 @@
  */
 function SavePortal($portalname, $portalurl) {
 	global $adb;
-	$adb->println('just entered the SavePortal method');
 	$portalid=$adb->getUniqueID('vtiger_portal');
 	$params=array($portalid, $portalname, $portalurl, 0, 0);
 	$adb->pquery('insert into vtiger_portal values(?,?,?,?,?)', $params);
@@ -32,9 +31,15 @@ function SavePortal($portalname, $portalurl) {
  */
 function UpdatePortal($portalname, $portalurl, $portalid) {
 	global $adb;
-	$adb->println('just entered the SavePortal method');
 	$params=array($portalname, $portalurl, $portalid);
 	$adb->pquery('update vtiger_portal set portalname=? ,portalurl=? where portalid=?', $params);
 	return $portalid;
+}
+
+require_once 'data/CRMEntity.php';
+require_once 'data/Tracker.php';
+
+class Portal extends CRMEntity {
+	public $moduleIcon = array('library' => 'action', 'containerClass' => 'slds-icon_container slds-icon-standard-account', 'class' => 'slds-icon', 'icon'=>'web_link');
 }
 ?>

@@ -44,6 +44,7 @@ $mod_strings = array(
 	'LBL_ADDRESS_INFORMATION' => 'Détail adresse',
 	'LBL_Quote_INFORMATION' => 'Compte',
 	'LBL_CUSTOM_INFORMATION' => 'Informations personnalisées',
+	'LBL_PurchaseOrder_FINANCIALINFO' => 'Financial Information',
 	'LBL_BILLING_ADDRESS' => 'Adresse (facturation) :',
 	'LBL_SHIPPING_ADDRESS' => 'Adresse (livraison) :',
 	'LBL_ANY_ADDRESS' => 'Adresse (alt.) :',
@@ -155,5 +156,10 @@ $mod_strings = array(
 	'PurchaseOrder No' => 'Commande n°',
 'SINGLE_PurchaseOrder'=>'Cammande fournisseur',
 'PurchaseOrder ID'=>'Cammande fournisseur ID',
+
+'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+'Amount Due'=>'Amount Due',
+'Amount Paid'=>'Amount Paid',
+'Total Amount'=>'Total Amount',
 );
 ?>

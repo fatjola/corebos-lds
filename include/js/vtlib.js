@@ -37,7 +37,7 @@ function vtlib_setvalue_from_popup(recordid, value, target_fieldname, formname) 
 		}
 		if (domnode_id) {
 			domnode_id.value = recordid;
-			window.opener.document.getElementById(target_fieldname).dispatchEvent(new Event('change'));
+			domnode_id.dispatchEvent(new Event('change'));
 		}
 		if (domnode_display) {
 			domnode_display.value = value;
@@ -320,47 +320,19 @@ function convertArrayOfJsonObjectsToString(arrayofjson) {
 	return rdo;
 }
 
-function GlobalVariable_getVariable(gvname, gvdefault, gvmodule, gvuserid) {
-	var baseurl = 'index.php?action=GlobalVariableAjax&file=SearchGlobalVar&module=GlobalVariable';
-	if (gvuserid==undefined || gvuserid=='') {
-		gvuserid = gVTUserID;
-	} // current connected user
-	if (gvmodule==undefined || gvmodule=='') {
-		gvmodule = gVTModule;
-	} // current module
-	// Return a new promise avoiding jquery and prototype
-	return new Promise(function (resolve, reject) {
-		var url = baseurl + '&gvname='+gvname+'&gvuserid='+gvuserid+'&gvmodule='+gvmodule+'&gvdefault='+gvdefault+'&returnvalidation=0';
-		var req = new XMLHttpRequest();
-		req.open('GET', url, true);  // make call asynchronous
-
-		req.onload = function () {
-			// check the status
-			if (req.status == 200) {
-				// Resolve the promise with the response text
-				try {
-					JSON.parse(req.response);
-					resolve(req.response);
-				} catch (e) {
-					resolve('{"'+gvname+'":"'+gvdefault+'"}');
-				}
-			} else {
-				// Otherwise reject with the status text which will hopefully be a meaningful error
-				reject(Error(req.statusText));
-			}
-		};
-
-		// Handle errors
-		req.onerror = function () {
-			reject(Error('Network/Script Error'));
-		};
-
-		// Make the request
-		req.send();
-	});
-}
-
 function ExecuteFunctions(functiontocall, params) {
+	// params += `&${csrfMagicName}=${csrfMagicToken}`;
+	// return fetch(
+	// 	'index.php?module=Utilities&action=UtilitiesAjax&file=ExecuteFunctions&functiontocall='+functiontocall,
+	// 	{
+	// 		method: 'post',
+	// 		headers: {
+	// 			'Content-type': 'application/x-www-form-urlencoded; charset=UTF-8'
+	// 		},
+	// 		credentials: "same-origin",
+	// 		body: params
+	// 	}
+	// ).then(response => response.text());
 	var baseurl = 'index.php?module=Utilities&action=UtilitiesAjax&file=ExecuteFunctions';
 
 	// Return a new promise avoiding jquery and prototype
@@ -376,13 +348,13 @@ function ExecuteFunctions(functiontocall, params) {
 				resolve(req.response);
 			} else {
 				// Otherwise reject with the status text which will hopefully be a meaningful error
-				reject(Error(req.statusText));
+				reject(new Error(req.statusText));
 			}
 		};
 
 		// Handle errors
 		req.onerror = function () {
-			reject(Error('Network/Script Error'));
+			reject(new Error('Network/Script Error'));
 		};
 
 		// Make the request

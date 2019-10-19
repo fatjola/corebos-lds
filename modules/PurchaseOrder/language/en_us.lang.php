@@ -54,6 +54,7 @@ $mod_strings = array(
 'LBL_POSTAL_CODE'=>'Postal Code:',
 'LBL_COUNTRY'=>'Country:',
 'LBL_DESCRIPTION_INFORMATION'=>'Description Information',
+'LBL_PurchaseOrder_FINANCIALINFO' => 'Financial Information',
 'LBL_TERMS_INFORMATION'=>'Terms & Conditions',
 'LBL_DESCRIPTION'=>'Description:',
 'NTC_COPY_BILLING_ADDRESS'=>'Copy billing address to shipping address',
@@ -171,5 +172,10 @@ $mod_strings = array(
 
 'SINGLE_PurchaseOrder'=>'Purchase Order',
 'PurchaseOrder ID'=>'Purchase Order ID',
+
+'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+'Amount Due'=>'Amount Due',
+'Amount Paid'=>'Amount Paid',
+'Total Amount'=>'Total Amount',
 );
 ?>

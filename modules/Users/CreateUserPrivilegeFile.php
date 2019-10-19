@@ -32,9 +32,9 @@ function createUserPrivilegesfile($userid) {
 		$newbuf .="\n";
 		$newbuf .= "//This is the access privilege file\n";
 		$user_focus= new Users();
-		$user_focus->retrieve_entity_info($userid, "Users");
+		$user_focus->retrieve_entity_info($userid, 'Users');
 		$userInfo=array();
-		$user_focus->column_fields["id"] = '';
+		$user_focus->column_fields['id'] = '';
 		$user_focus->id = $userid;
 		foreach ($user_focus->column_fields as $field => $value_iter) {
 			if (isset($user_focus->$field)) {
@@ -54,7 +54,6 @@ function createUserPrivilegesfile($userid) {
 
 			$globalPermissionArr=getCombinedUserGlobalPermissions($userid);
 			$tabsPermissionArr=getCombinedUserTabsPermissions($userid);
-			//$tabsPermissionArr=getCombinedUserTabsPermissions($userid);
 			$actionPermissionArr=getCombinedUserActionPermissions($userid);
 			$user_role=fetchUserRole($userid);
 			$user_role_info=getRoleInformation($user_role);
@@ -170,9 +169,6 @@ function createUserSharingPrivilegesfile($userid) {
 			$account_share_read_per=$account_share_per_array['read'];
 			$account_share_write_per=$account_share_per_array['write'];
 			$account_sharingrule_members=$account_share_per_array['sharingrules'];
-			/*echo '<pre>';
-			print_r($account_share_read_per['GROUP']);
-			echo '</pre>';*/
 			$newbuf .= "\$Accounts_share_read_permission=array('ROLE'=>".constructTwoDimensionalCharIntSingleValueArray($account_share_read_per['ROLE']).",'GROUP'=>".constructTwoDimensionalValueArray($account_share_read_per['GROUP']).");\n\n";
 			$newbuf .= "\$Accounts_share_write_permission=array('ROLE'=>".constructTwoDimensionalCharIntSingleValueArray($account_share_write_per['ROLE']).",'GROUP'=>".constructTwoDimensionalValueArray($account_share_write_per['GROUP']).");\n\n";
 
@@ -372,7 +368,7 @@ function createUserSharingPrivilegesfile($userid) {
 	}
 }
 
-/** Gives an array which contains the information for what all roles, groups and user data is to be shared with the spcified user for the specified module
+/** Gives an array which contains the information for what all roles, groups and user data is to be shared with the specified user for the specified module
   * @param $module -- module name:: Type varchar
   * @param $userid -- user id:: Type integer
   * @param $def_org_share -- default organization sharing permission array:: Type array

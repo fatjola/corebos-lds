@@ -223,11 +223,11 @@ class PearDatabase {
 
 	public function println($msg) {
 		require_once 'include/logging.php';
-		$log1 = LoggerManager::getLogger('VT');
+		$log1 = LoggerManager::getLogger('DB');
 		if (is_array($msg)) {
-			$log1->info('PearDatabase ->'.print_r($msg, true));
+			$log1->info('DB >'.print_r($msg, true));
 		} else {
-			$log1->info('PearDatabase ->'.$msg);
+			$log1->info('DB >'.$msg);
 		}
 		return $msg;
 	}
@@ -286,6 +286,10 @@ class PearDatabase {
 
 	public function hasFailedTransaction() {
 		return $this->database->HasFailedTrans();
+	}
+
+	public function getErrorMsg() {
+		return $this->database->ErrorMsg();
 	}
 
 	public function checkError($msg = '', $dieOnError = false) {
@@ -403,11 +407,11 @@ class PearDatabase {
 		if ($this->isCacheEnabled()) {
 			$fromcache = $this->getCacheInstance()->getCacheResult($sql);
 			if ($fromcache) {
-				$log->debug("Using query result from cache: $sql");
+				$log->debug(">< query result from cache: $sql");
 				return $fromcache;
 			}
 		}
-		$log->debug('query being executed : '.$sql);
+		$log->debug('> query '.$sql);
 		$this->checkConnection();
 
 		$this->executeSetNamesUTF8SQL();
@@ -471,12 +475,12 @@ class PearDatabase {
 		if ($this->isCacheEnabled()) {
 			$fromcache = $this->getCacheInstance()->getCacheResult($sql, $params);
 			if ($fromcache) {
-				$log->debug("Using query result from cache: $sql");
+				$log->debug("> pquery result from cache: $sql");
 				return $fromcache;
 			}
 		}
 		// END
-		$log->debug('Prepared sql query being executed : '.$sql);
+		$log->debug('> pquery '.$sql);
 		$this->checkConnection();
 
 		$this->executeSetNamesUTF8SQL();
@@ -484,7 +488,7 @@ class PearDatabase {
 		$sql_start_time = microtime(true);
 		$params = $this->flatten_array($params);
 		if (!is_null($params) && count($params) > 0) {
-			$log->debug('Prepared sql query parameters : [' . implode(",", $params) . ']');
+			$log->debug('> pquery parameters [' . implode(',', $params) . ']');
 		}
 
 		if ($this->avoidPreparedSql || empty($params)) {
@@ -566,7 +570,7 @@ class PearDatabase {
 
 	public function limitQuery($sql, $start, $count, $dieOnError = false, $msg = '') {
 		global $log;
-		$log->debug(' limitQuery sql = '.$sql .' st = '.$start .' co = '.$count);
+		$log->debug('> limitQuery '.$sql .','.$start .','.$count);
 		$this->checkConnection();
 
 		$this->executeSetNamesUTF8SQL();
@@ -685,18 +689,18 @@ class PearDatabase {
 
 	public function sql_quote($data) {
 		if (is_array($data)) {
-			switch ($data{'type'}) {
+			switch ($data['type']) {
 				case 'text':
 				case 'numeric':
 				case 'integer':
 				case 'oid':
-					return $this->quote($data{'value'});
+					return $this->quote($data['value']);
 				break;
 				case 'timestamp':
-					return $this->formatDate($data{'value'});
+					return $this->formatDate($data['value']);
 				break;
 				default:
-					throw new Exception("unhandled type: ".serialize($cur));
+					throw new Exception('unhandled type: '.serialize($cur));
 			}
 		} else {
 			return $this->quote($data);
@@ -725,7 +729,7 @@ class PearDatabase {
 	public function run_insert_data($table, $data) {
 		$query = $this->sql_insert_data($table, $data);
 		$res = $this->query($query);
-		$this->query("commit;");
+		$this->query('commit;');
 	}
 
 	public function run_query_record($query) {
@@ -753,7 +757,7 @@ class PearDatabase {
 	public function run_query_field($query, $field = '') {
 		$rowdata = $this->run_query_record($query);
 		if (isset($field) && $field != '') {
-			return $rowdata{$field};
+			return $rowdata[$field];
 		} else {
 			return array_shift($rowdata);
 		}
@@ -762,7 +766,7 @@ class PearDatabase {
 	public function run_query_list($query, $field) {
 		$records = $this->run_query_allrecords($query);
 		foreach ($records as $walk => $cur) {
-			$list[] = $cur{$field};
+			$list[] = $cur[$field];
 		}
 	}
 
@@ -801,7 +805,7 @@ class PearDatabase {
 			throw new Exception("empty arrays not allowed");
 		}
 		foreach ($a as $walk => $cur) {
-			$l .= ($l?',':'').$this->quote($cur{$field});
+			$l .= ($l?',':'').$this->quote($cur[$field]);
 		}
 		return ' ( '.$l.' ) ';
 	}
@@ -874,9 +878,9 @@ class PearDatabase {
 
 	public function getAffectedRowCount(&$result) {
 		global $log;
-		$log->debug('getAffectedRowCount');
+		$log->debug('> getAffectedRowCount');
 		$rows =$this->database->Affected_Rows();
-		$log->debug('getAffectedRowCount rows = '.$rows);
+		$log->debug('< getAffectedRowCount '.$rows);
 		return $rows;
 	}
 
@@ -930,8 +934,6 @@ class PearDatabase {
 	}
 
 	public function getNextRow(&$result, $encode = true) {
-		global $log;
-		$log->info('getNextRow');
 		if (isset($result)) {
 			$row = $this->change_key_case($result->FetchRow());
 			if ($row && $encode && is_array($row)) {

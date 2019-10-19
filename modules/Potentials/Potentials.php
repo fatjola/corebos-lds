@@ -15,7 +15,7 @@ require_once 'modules/Calendar/Activity.php';
 require_once 'modules/Documents/Documents.php';
 require_once 'modules/Emails/Emails.php';
 require_once 'include/utils/utils.php';
-require 'user_privileges/default_module_view.php';
+require 'modules/Vtiger/default_module_view.php';
 
 class Potentials extends CRMEntity {
 	public $db;
@@ -28,6 +28,8 @@ class Potentials extends CRMEntity {
 	/** Indicator if this is a custom module or standard module */
 	public $IsCustomModule = false;
 	public $HasDirectImageField = false;
+	public $moduleIcon = array('library' => 'standard', 'containerClass' => 'slds-icon_container slds-icon-standard-opportunity', 'class' => 'slds-icon', 'icon'=>'opportunity');
+
 	/**
 	 * Mandatory table for supporting custom fields.
 	 */
@@ -111,14 +113,15 @@ class Potentials extends CRMEntity {
 	public function save($module, $fileid = '') {
 		global $adb;
 		if ($this->mode=='edit') {
-			$rs = $adb->pquery('select sales_stage from vtiger_potential where potentialid = ?', array($this->id));
+			$rs = $adb->pquery('select sales_stage,convertedfromlead from vtiger_potential where potentialid = ?', array($this->id));
 			$this->sales_stage = $adb->query_result($rs, 0, 'sales_stage');
+			$this->column_fields['convertedfromlead'] = $adb->query_result($rs, 0, 'convertedfromlead');
 		}
 		parent::save($module, $fileid);
 	}
 
 	public function save_module($module) {
-		global $adb;
+		global $adb, $current_user;
 		if ($this->HasDirectImageField) {
 			$this->insertIntoAttachment($this->id, $module);
 		}
@@ -129,12 +132,19 @@ class Potentials extends CRMEntity {
 				$this->column_fields['closingdate'] :
 				$closingDateField->getDBInsertDateValue();
 			$sql = 'insert into vtiger_potstagehistory (potentialid, amount, stage, probability, expectedrevenue, closedate, lastmodified) values (?,?,?,?,?,?,?)';
+			$amountField = empty($this->column_fields['amount']) ? 0 : $this->column_fields['amount'];
+			$amountField = new CurrencyField($amountField);
+			$amountField = $amountField->getDBInsertedValue($current_user, false);
+			$prbField = empty($this->column_fields['probability']) ? 0 : $this->column_fields['probability'];
+			$prbField = new CurrencyField($prbField);
+			$prbField = $prbField->getDBInsertedValue($current_user, false);
+			$forecast_amount = ($amountField==0 || $prbField==0) ? 0 : ($amountField * $prbField / 100);
 			$params = array(
 				$this->id,
-				$this->column_fields['amount'],
+				$amountField,
 				decode_html($this->sales_stage),
-				$this->column_fields['probability'],
-				$this->column_fields['forecast_amount'],
+				$prbField,
+				$forecast_amount,
 				$adb->formatDate($closingdate, true),
 				$adb->formatDate($date_var, true)
 			);
@@ -171,7 +181,7 @@ class Potentials extends CRMEntity {
 	/** Returns a list of the associated contacts */
 	public function get_contacts($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $adb,$log, $singlepane_view,$currentModule;
-		$log->debug("Entering get_contacts(".$id.") method ...");
+		$log->debug('> get_contacts '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -249,7 +259,7 @@ class Potentials extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug("Exiting get_contacts method ...");
+		$log->debug('< get_contacts');
 		return $return_value;
 	}
 
@@ -260,7 +270,7 @@ class Potentials extends CRMEntity {
 	 */
 	public function get_products($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view, $currentModule;
-		$log->debug("Entering get_products(".$id.") method ...");
+		$log->debug('> get_products '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -314,7 +324,7 @@ class Potentials extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug('Exiting get_products method ...');
+		$log->debug('< get_products');
 		return $return_value;
 	}
 
@@ -325,7 +335,7 @@ class Potentials extends CRMEntity {
 	 */
 	public function get_stage_history($id) {
 		global $log, $adb, $app_strings, $current_user;
-		$log->debug("Entering get_stage_history(".$id.") method ...");
+		$log->debug('> get_stage_history '.$id);
 
 		$query = 'select vtiger_potstagehistory.*, vtiger_potential.potentialname
 			from vtiger_potstagehistory
@@ -362,7 +372,7 @@ class Potentials extends CRMEntity {
 		}
 
 		$return_data = array('header'=>$header, 'entries'=>$entries_list, 'navigation'=>array('',''));
-		$log->debug('Exiting get_stage_history method ...');
+		$log->debug('< get_stage_history');
 		return $return_data;
 	}
 
@@ -373,7 +383,7 @@ class Potentials extends CRMEntity {
 	 */
 	public function get_quotes($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view,$currentModule,$current_user;
-		$log->debug("Entering get_quotes(".$id.") method ...");
+		$log->debug('> get_quotes '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -425,7 +435,7 @@ class Potentials extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug("Exiting get_quotes method ...");
+		$log->debug('< get_quotes');
 		return $return_value;
 	}
 
@@ -436,7 +446,7 @@ class Potentials extends CRMEntity {
 	 */
 	public function get_salesorder($id, $cur_tab_id, $rel_tab_id, $actions = false) {
 		global $log, $singlepane_view,$currentModule,$current_user;
-		$log->debug("Entering get_salesorder(".$id.") method ...");
+		$log->debug('> get_salesorder '.$id);
 		$this_module = $currentModule;
 
 		$related_module = vtlib_getModuleNameById($rel_tab_id);
@@ -491,7 +501,7 @@ class Potentials extends CRMEntity {
 		}
 		$return_value['CUSTOM_BUTTON'] = $button;
 
-		$log->debug("Exiting get_salesorder method ...");
+		$log->debug('< get_salesorder');
 		return $return_value;
 	}
 
@@ -503,17 +513,23 @@ class Potentials extends CRMEntity {
 	 */
 	public function transferRelatedRecords($module, $transferEntityIds, $entityId) {
 		global $adb,$log;
-		$log->debug("Entering function transferRelatedRecords ($module, $transferEntityIds, $entityId)");
+		$log->debug('> transferRelatedRecords '.$module.','.print_r($transferEntityIds, true).','.$entityId);
 		parent::transferRelatedRecords($module, $transferEntityIds, $entityId);
-		$rel_table_arr = array("Contacts"=>"vtiger_contpotentialrel","Products"=>"vtiger_seproductsrel",
-						"Attachments"=>"vtiger_seattachmentsrel","Quotes"=>"vtiger_quotes","SalesOrder"=>"vtiger_salesorder");
-
-		$tbl_field_arr = array("vtiger_contpotentialrel"=>"contactid","vtiger_seproductsrel"=>"productid",
-						"vtiger_seattachmentsrel"=>"attachmentsid","vtiger_quotes"=>"quoteid","vtiger_salesorder"=>"salesorderid");
-
-		$entity_tbl_field_arr = array("vtiger_contpotentialrel"=>"potentialid","vtiger_seproductsrel"=>"crmid",
-						"vtiger_seattachmentsrel"=>"crmid","vtiger_quotes"=>"potentialid","vtiger_salesorder"=>"potentialid");
-
+		$rel_table_arr = array(
+			'Contacts'=>'vtiger_contpotentialrel',
+			'Products'=>'vtiger_seproductsrel',
+			'Attachments'=>'vtiger_seattachmentsrel',
+		);
+		$tbl_field_arr = array(
+			'vtiger_contpotentialrel'=>'contactid',
+			'vtiger_seproductsrel'=>'productid',
+			'vtiger_seattachmentsrel'=>'attachmentsid',
+		);
+		$entity_tbl_field_arr = array(
+			'vtiger_contpotentialrel'=>'potentialid',
+			'vtiger_seproductsrel'=>'crmid',
+			'vtiger_seattachmentsrel'=>'crmid',
+		);
 		foreach ($transferEntityIds as $transferId) {
 			foreach ($rel_table_arr as $rel_table) {
 				$id_field = $tbl_field_arr[$rel_table];
@@ -532,7 +548,7 @@ class Potentials extends CRMEntity {
 				}
 			}
 		}
-		$log->debug("Exiting transferRelatedRecords...");
+		$log->debug('< transferRelatedRecords');
 	}
 
 	/*

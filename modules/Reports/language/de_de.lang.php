@@ -195,6 +195,7 @@ $mod_strings = array(
 	'AVG'=>'Durchschnitt',
 	'MAX'=>'Maximum',
 	'MIN'=>'Minimum',
+	'COUNT'=>'COUNT',
 	'LBL_CUSTOM_REPORTS'=>'benutzerdefinierte Berichte',
 
 	'ticketid'=>'Ticket ID',
@@ -254,6 +255,7 @@ $mod_strings = array(
 	'Monthly'=>'Monatlich',
 	'Annually'=>'Jährlich',
 	'LBL_SCHEDULE_REPORT'=>'Zeitplanung',
+	'Recommended frequency for ScheduleReports is 15 mins' => 'Recommended frequency for ScheduleReports is 15 mins',
 	'ScheduleReports'=>'Zeitplanung',
 	'LBL_SCHEDULE_FREQUENCY'=>'Frequenz',
 	'OPTION_SCHEDULE_EMAIL_CHOOSE'=>'Wählen ..... ',

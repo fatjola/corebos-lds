@@ -55,6 +55,8 @@ $mod_strings = array(
 'LBL_DATE_FORMAT'=>'Date Format',
 
 'LBL_ERROR'=>'Error:',
+'FORM_TOKEN_EXPIRED'=>'Edit token has expired. Try again.',
+'ERR_CANNOTEDITUSER' => 'Not Permitted. You cannot edit this User',
 'LBL_PASSWORD'=>'Password',
 'LBL_USER_NAME'=>'User Name',
 'LBL_2FACODE' => 'Code',
@@ -214,9 +216,9 @@ $mod_strings = array(
 'LBL_VIEWING'=>'Viewing',
 'LBL_PROPERTIES'=>'Properties of',
 
-'LBL_ASTERISKEXTENSIONS_EXIST' => 'Asterisk Extension Already Exists!',
+'LBL_ASTERISKEXTENSIONS_EXIST' => 'Asterisk Extension Already Exists',
 'LBL_CURRENCY_SEPARATORS_INCORRECT' => 'Decimal Separator and Digit Grouping Separator cannot be the same.',
-
+'LBL_FORUSER' => ' for User ',
 // Added fields in createnewgroup.php
 'LBL_CREATE_NEW_GROUP'=>'Create New Group',
 'LBL_NEW_GROUP'=>'New Group',
@@ -345,6 +347,8 @@ $mod_strings = array(
 'LBL_EMAIL_SCHDS_DESC'=>'The following is the list of notifications that are activated automatically when the corresponding event has happened.',
 'LBL_ACTIVE'=>'Active',
 'LBL_INACTIVE'=>'Inactive',
+'LBL_ON'=>'On',
+'LBL_OFF'=>'Off',
 'LBL_NOTIFICATION'=>'Notification',
 'LBL_DESCRIPTION'=>'Description',
 'LBL_TASK_NOTIFICATION'=>'Delayed Task Notification',
@@ -789,11 +793,11 @@ $mod_strings = array(
 'LBL_USERLOGGEDOUTOK' => 'The user has been logged out correctly.',
 'LBL_USERLOGGEDOUTNOK' => 'The user could not be logged out.',
 'LBL_UNBLOCK_USR' => 'Unblock the session to login?',
+'LOGGED IN' => 'Logged In',
 
 // LDAP
 'LBL_QUERY' => 'Query',
 'LBL_FORE_LASTNAME' => 'First or Last name',
 'LBL_NO_LDAP_MATCHES' => 'No matches found on the LDAP server!',
-
 );
 ?>

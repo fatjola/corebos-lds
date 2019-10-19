@@ -9,11 +9,10 @@
  ********************************************************************************/
 require_once 'include/utils/utils.php';
 require_once 'include/logging.php';
-global $current_language, $ids;
-require_once "modules/Dashboard/DashboardCharts.php";
+global $current_language, $ids, $current_user;
+require_once 'modules/Dashboard/DashboardCharts.php';
 $current_module_strings = return_module_language($current_language, 'Dashboard');
-require 'user_privileges/sharing_privileges_'.$current_user->id.'.php';
-require 'user_privileges/user_privileges_'.$current_user->id.'.php';
+$userprivs = $current_user->getPrivileges();
 
 // Get _dom arrays from Database
 $comboFieldNames = array('leadsource'=>'lead_source_dom');
@@ -35,15 +34,9 @@ $datax = array();
 //get list of sales stage keys to display
 if (isset($_SESSION['pbls_lead_sources']) && count($_SESSION['pbls_lead_sources']) > 0 && !isset($_REQUEST['pbls_lead_sources'])) {
 	$tempx = $_SESSION['pbls_lead_sources'];
-	$log->debug("_SESSION['pbls_lead_sources'] is:");
-	$log->debug($_SESSION['pbls_lead_sources']);
 } elseif (isset($_REQUEST['pbls_lead_sources']) && count($_REQUEST['pbls_lead_sources']) > 0) {
 	$tempx = $_REQUEST['pbls_lead_sources'];
 	$current_user->setPreference('pbls_lead_sources', $_REQUEST['pbls_lead_sources']);
-	$log->debug("_REQUEST['pbls_lead_sources'] is:");
-	$log->debug($_REQUEST['pbls_lead_sources']);
-	$log->debug("_SESSION['pbls_lead_sources'] is:");
-	$log->debug($_SESSION['pbls_lead_sources']);
 }
 
 //set $datax using selected sales stage keys
@@ -63,15 +56,9 @@ if (isset($_REQUEST['showmypipeline'])) {
 	$ids = array($_REQUEST['showpipelineof']);
 } elseif (isset($_SESSION['pbls_ids']) && count($_SESSION['pbls_ids']) != 0 && !isset($_REQUEST['pbls_ids'])) {
 	$ids = $_SESSION['pbls_ids'];
-	$log->debug("_SESSION['pbls_ids'] is:");
-	$log->debug($_SESSION['pbls_ids']);
 } elseif (isset($_REQUEST['pbls_ids']) && count($_REQUEST['pbls_ids']) > 0) {
 	$ids = $_REQUEST['pbls_ids'];
 	$current_user->setPreference('pbls_ids', $ids);
-	$log->debug("_REQUEST['pbls_ids'] is:");
-	$log->debug($_REQUEST['pbls_ids']);
-	$log->debug("_SESSION['pbls_ids'] is:");
-	$log->debug($_SESSION['pbls_ids']);
 } else {
 	$ids = get_user_array(false);
 	$ids = array_keys($ids);
@@ -105,8 +92,7 @@ if (isPermitted('Potentials', 'index')=='yes') {
 </tr><tr>
 <td valign='top' nowrap><?php echo $current_module_strings['LBL_USERS'];?></td>
 <?php
-$pottabid = getTabid('Potentials');
-if ($is_admin==false && $profileGlobalPermission[2] == 1 && ($defaultOrgSharingPermission[$pottabid] == 3 || $defaultOrgSharingPermission[$pottabid] == 0)) {
+if (!$userprivs->hasGlobalWritePermission() && !$userprivs->hasModuleWriteSharing(getTabid('Potentials'))) {
 ?>
 	<td valign='top'><select name="pbls_ids[]" multiple size='3'><?php
 	$usrarray = get_user_array(false, 'Active', $current_user->id, 'private');

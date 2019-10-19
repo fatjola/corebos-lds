@@ -109,8 +109,20 @@ class WebserviceField {
 			$this->summary = $row['summary'];
 		}
 
-		if (is_array($row) && array_key_exists('defaultvalue', $row)) {
-			$this->setDefault($row['defaultvalue']);
+		if (isset($row['defaultvalue'])) {
+			if ($this->uitype == 5 || $this->uitype == 50) {
+				if ($row['defaultvalue']=='' && $row['generatedtype']==1) {
+					if ($this->uitype == 5) {
+						$this->setDefault(getNewDisplayDate());
+					} else {
+						$this->setDefault(getDisplayDateTimeValue());
+					}
+				} else {
+					$this->setDefault($row['defaultvalue']);
+				}
+			} else {
+				$this->setDefault($row['defaultvalue']);
+			}
 		}
 	}
 
@@ -440,7 +452,9 @@ class WebserviceField {
 			'email_flag' => array(
 				array('label'=>'SAVED','value'=>'SAVED'),
 				array('label'=>'SENT','value' => 'SENT'),
-				array('label'=>'MAILSCANNER','value' => 'MAILSCANNER')
+				array('label'=>'MAILSCANNER','value' => 'MAILSCANNER'),
+				array('label'=>'MailManager','value' => 'MailManager'),
+				array('label'=>'WEBMAIL','value' => 'WEBMAIL'),
 			)
 		);
 		if (in_array(strtolower($this->getFieldName()), $hardCodedPickListNames)) {
@@ -463,7 +477,7 @@ class WebserviceField {
 	}
 
 	public function getPickListOptions() {
-		global $app_strings, $mod_strings, $current_language;
+		global $app_strings, $mod_strings, $current_language, $adb;
 		static $purified_plcache = array();
 		$fieldName = $this->getFieldName();
 
@@ -498,11 +512,10 @@ class WebserviceField {
 			}
 		} else {
 			$user = VTWS_PreserveGlobal::getGlobal('current_user');
-			$details = getPickListValues($fieldName, $user->roleid);
-			$numdetails = count($details);
-			for ($i=0; $i < $numdetails; ++$i) {
+			$details = getAssignedPicklistValues($fieldName, $user->roleid, $adb);
+			foreach ($details as $plval) {
 				$elem = array();
-				$picklistValue = decode_html($details[$i]);
+				$picklistValue = decode_html($plval);
 				$trans_str = (!empty($temp_mod_strings[$picklistValue])) ?
 					$temp_mod_strings[$picklistValue] :
 					((!empty($app_strings[$picklistValue])) ? $app_strings[$picklistValue] : $picklistValue);

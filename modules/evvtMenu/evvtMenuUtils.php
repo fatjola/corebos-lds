@@ -85,7 +85,7 @@ function getMenuJSON2() {
 			$menustructure[] = array(
 				'id' => $menu['evvtmenuid'],
 				'parent' => $menu['mparent'],
-				'text' => $label,
+				'text' => $label.(isset($_REQUEST['menudebug']) ? ' ('.$menu['mseq'].')' : ''),
 				'li_attr' => array('class'=>'jstree-drop',),
 				'a_attr' => array('onclick' => 'getMenuInfo('.$info.');', 'mseq' => $menu['mseq'])
 			);
@@ -115,7 +115,7 @@ function getMenuArray($mparent) {
 		while ($menu = $adb->fetch_array($menurs)) {
 			if (empty($menu['mpermission']) && $menu['mtype']=='module') {
 				// apply vtiger CRM permissions
-				if (isPermitted($menu['mvalue'], 'index')=='no') {
+				if (isPermitted($menu['mvalue'], 'index')=='no' || !vtlib_isModuleActive($menu['mvalue'])) {
 					continue;
 				}
 			} elseif (!empty($menu['mpermission'])) {
@@ -186,7 +186,7 @@ function getAdminevvtMenu() {
 					break;
 				case 'separator':
 				case 'menu':
-					continue;
+					continue 2;
 					break;
 				case 'module':
 					$label = getTranslatedString($menu['mvalue'], $menu['mvalue']);
@@ -203,6 +203,14 @@ function getAdminevvtMenu() {
 
 function checkevvtMenuInstalled() {
 	global $adb, $current_user;
+	$cnmsg = $adb->getColumnNames('com_vtiger_workflows');
+	if (!in_array('purpose', $cnmsg)) {
+		$adb->query('ALTER TABLE `com_vtiger_workflows` ADD `purpose` TEXT NULL;');
+	}
+	$cnmsg = $adb->getColumnNames('vtiger_profile2field');
+	if (!in_array('summary', $cnmsg)) {
+		$adb->query("ALTER TABLE vtiger_profile2field ADD summary enum('T', 'H','B', 'N') DEFAULT 'B' NOT NULL");
+	}
 	if (vtlib_isModuleActive('cbupdater')) {
 		// first we make sure we have Global Variable
 		if (!vtlib_isModuleActive('GlobalVariable')) {
@@ -233,6 +241,20 @@ function checkevvtMenuInstalled() {
 			ob_end_clean();
 			$current_user = $holduser;
 		}
+		if (!vtlib_isModuleActive('cbCompany')) {
+			$holduser = $current_user;
+			ob_start();
+			include 'modules/cbupdater/getupdatescli.php';
+			$rsup = $adb->query("select cbupdaterid from vtiger_cbupdater where classname='addModulecbCompany'");
+			$updid = $adb->query_result($rsup, 0, 0);
+			$argv[0] = 'doworkcli';
+			$argv[1] = 'apply';
+			$argv[2] = $updid;
+			include 'modules/cbupdater/doworkcli.php';
+			vtlib_toggleModuleAccess('cbCompany', true); // in case changeset is applied but module deactivated
+			ob_end_clean();
+			$current_user = $holduser;
+		}
 	}
 }
 
@@ -245,7 +267,7 @@ function i18nMenuLabel($mlabel, $mvalue, $type) {
 			$i18nlabel = getTranslatedString($mlabel, 'evvtMenu');
 			break;
 		case 'module':
-			$i18nlabel = getTranslatedString($mvalue, $mvalue);
+			$i18nlabel = getTranslatedString($mlabel, $mvalue);
 			break;
 		default:
 			$i18nlabel = $mlabel;

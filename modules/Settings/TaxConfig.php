@@ -19,15 +19,20 @@ $sh_tax_details = getAllTaxes('all', 'sh');
 $getlist = false;
 //To save the edited value
 if (isset($_REQUEST['save_tax']) && $_REQUEST['save_tax'] == 'true') {
-	$new_labels = $new_retentions = $new_percentages = array();
+	$new_labels = $new_retentions = $new_percentages = $new_cfields = array();
 	for ($i=0; $i<count($tax_details); $i++) {
 		$new_labels[$tax_details[$i]['taxid']] = vtlib_purify($_REQUEST[bin2hex($tax_details[$i]['taxlabel'])]);
 		$retention = isset($_REQUEST[$tax_details[$i]['taxname'].'retention']) ? vtlib_purify($_REQUEST[$tax_details[$i]['taxname'].'retention']) : '';
 		$retention = ($retention=='on' ? 1 : 0);
 		$new_retentions[$tax_details[$i]['taxid']] = $retention;
 		$new_percentages[$tax_details[$i]['taxid']] = vtlib_purify($_REQUEST[$tax_details[$i]['taxname']]);
+		$new_cfields[$tax_details[$i]['taxid']] = array(
+			isset($_REQUEST[$tax_details[$i]['taxname'].'default']) ? ($_REQUEST[$tax_details[$i]['taxname'].'default']=='on' ? 1 : 0) : 0,
+			isset($_REQUEST[$tax_details[$i]['taxname'].'qcreate']) ? ($_REQUEST[$tax_details[$i]['taxname'].'qcreate']=='on' ? 1 : 0) : '0',
+		);
 	}
 	updateTaxPercentages($new_percentages);
+	updateTaxConfigFields($new_cfields);
 	updateTaxRetentions($new_retentions);
 	echo updateTaxLabels($new_labels);
 	$getlist = true;
@@ -114,7 +119,7 @@ $smarty->display('Settings/TaxConfig.tpl');
  */
 function updateTaxPercentages($new_percentages, $sh = '') {
 	global $adb, $log;
-	$log->debug('Entering into the function updateTaxPercentages');
+	$log->debug('> updateTaxPercentages');
 
 	foreach ($new_percentages as $taxid => $new_val) {
 		if ($new_val != '') {
@@ -127,19 +132,29 @@ function updateTaxPercentages($new_percentages, $sh = '') {
 		}
 	}
 
-	$log->debug('Exiting from the function updateTaxPercentages');
+	$log->debug('< updateTaxPercentages');
 }
 
 function updateTaxRetentions($retentions) {
 	global $adb, $log;
-	$log->debug('Entering into the function updateTaxRetentions');
+	$log->debug('> updateTaxRetentions');
 	$query = 'update vtiger_inventorytaxinfo set retention=? where taxid=?';
 	foreach ($retentions as $taxid => $new_val) {
 		if ($new_val == 0 || $new_val == 1) {
 			$adb->pquery($query, array($new_val, $taxid));
 		}
 	}
-	$log->debug('Exiting from the function updateTaxRetentions');
+	$log->debug('< updateTaxRetentions');
+}
+
+function updateTaxConfigFields($configfields) {
+	global $adb, $log;
+	$log->debug('> updateTaxConfigFields');
+	$query = 'update vtiger_inventorytaxinfo set tdefault=?, qcreate=? where taxid=?';
+	foreach ($configfields as $taxid => $new_val) {
+		$adb->pquery($query, array($new_val[0], $new_val[1], $taxid));
+	}
+	$log->debug('< updateTaxConfigFields');
 }
 
 /**	Function to update the list of Tax Labels for the taxes
@@ -149,7 +164,7 @@ function updateTaxRetentions($retentions) {
  */
 function updateTaxLabels($new_labels, $sh = '') {
 	global $adb, $log, $currentModule;
-	$log->debug("Entering into the function updateTaxPercentages");
+	$log->debug('> updateTaxPercentages');
 
 	$duplicateTaxLabels = 0;
 	foreach ($new_labels as $taxid => $new_val) {
@@ -186,7 +201,7 @@ function updateTaxLabels($new_labels, $sh = '') {
 		return "<font color='red'>".getTranslatedString('LBL_ERR_SOME_TAX_LABELS_ALREADY_EXISTS', $currentModule)."</font>";
 	}
 
-	$log->debug("Exiting from the function updateTaxPercentages");
+	$log->debug('< updateTaxPercentages');
 }
 /**	Function used to add the tax type which will do database alterations
  *	@param string $taxlabel - tax label name to be added
@@ -196,7 +211,7 @@ function updateTaxLabels($new_labels, $sh = '') {
  */
 function addTaxType($taxlabel, $taxvalue, $sh = '', $retention = 0) {
 	global $adb, $log, $currentModule;
-	$log->debug("Entering into function addTaxType($taxlabel, $taxvalue, $sh)");
+	$log->debug("> addTaxType $taxlabel, $taxvalue, $sh");
 
 	//First we will check whether the tax is already available or not
 	if ($sh != '' && $sh == 'sh') {
@@ -213,8 +228,8 @@ function addTaxType($taxlabel, $taxvalue, $sh = '', $retention = 0) {
 	//if the tax is not available then add this tax.
 	//Add this tax as a column in related table
 	if ($sh != '' && $sh == 'sh') {
-		$taxid = $adb->getUniqueID("vtiger_shippingtaxinfo");
-		$taxname = "shtax".$taxid;
+		$taxid = $adb->getUniqueID('vtiger_shippingtaxinfo');
+		$taxname = 'shtax'.$taxid;
 		$query = "alter table vtiger_inventoryshippingrel add column $taxname decimal(7,3) default NULL";
 
 		$event_data = array(
@@ -224,8 +239,8 @@ function addTaxType($taxlabel, $taxvalue, $sh = '', $retention = 0) {
 			'tax_value' => $taxvalue
 		);
 	} else {
-		$taxid = $adb->getUniqueID("vtiger_inventorytaxinfo");
-		$taxname = "tax".$taxid;
+		$taxid = $adb->getUniqueID('vtiger_inventorytaxinfo');
+		$taxname = 'tax'.$taxid;
 		$query = "alter table vtiger_inventoryproductrel add column $taxname decimal(7,3) default NULL";
 
 		$modules = array(
@@ -284,13 +299,17 @@ function addTaxType($taxlabel, $taxvalue, $sh = '', $retention = 0) {
 			$query1 = "insert into vtiger_shippingtaxinfo (taxid,taxname,taxlabel,percentage,deleted) values(?,?,?,?,?)";
 			$params1 = array($taxid, $taxname, $taxlabel, $taxvalue, 0);
 		} else {
-			$query1 = "insert into vtiger_inventorytaxinfo (taxid,taxname,taxlabel,percentage,retention,deleted) values(?,?,?,?,?,?)";
-			$params1 = array($taxid, $taxname, $taxlabel, $taxvalue, $retention, 0);
+			$query1 = 'insert into vtiger_inventorytaxinfo (taxid,taxname,taxlabel,percentage,retention,tdefault,qcreate,deleted) values(?,?,?,?,?,?,?,?)';
+			$retention = ($_REQUEST['addTaxLabelretention']=='on' ? 1 : 0);
+			$taxdefault = ($_REQUEST['addTaxLabeldefault']=='on' ? 1 : 0);
+			$taxqcreate = ($_REQUEST['addTaxLabelqcreate']=='on' ? 1 : 0);
+			$log->fatal($_REQUEST);
+			$params1 = array($taxid, $taxname, $taxlabel, $taxvalue, $retention, $taxdefault, $taxqcreate, 0);
 		}
 		$res1 = $adb->pquery($query1, $params1);
 	}
 
-	$log->debug("Exit from function addTaxType($taxlabel, $taxvalue)");
+	$log->debug('< addTaxType');
 	if ($res1) {
 		return '';
 	} else {
@@ -307,7 +326,7 @@ function addTaxType($taxlabel, $taxvalue, $sh = '', $retention = 0) {
  */
 function changeDeleted($taxname, $deleted, $sh = '') {
 	global $log, $adb;
-	$log->debug("Entering into function changeDeleted($taxname, $deleted, $sh)");
+	$log->debug("> changeDeleted $taxname, $deleted, $sh");
 
 	if ($sh == 'sh') {
 		$adb->pquery("update vtiger_shippingtaxinfo set deleted=? where taxname=?", array($deleted, $taxname));
@@ -320,6 +339,6 @@ function changeDeleted($taxname, $deleted, $sh = '') {
 		'status' => $deleted == 1 ? 'disabled' : 'enabled'
 	);
 	cbEventHandler::do_action('corebos.changestatus.tax', $event_data);
-	$log->debug("Exit from function changeDeleted($taxname, $deleted, $sh)");
+	$log->debug('< changeDeleted');
 }
 ?>

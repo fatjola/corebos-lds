@@ -21,7 +21,6 @@ if (isset($tool_buttons)==false) {
 $smarty = new vtigerCRM_Smarty();
 
 $record = vtlib_purify($_REQUEST['record']);
-$isduplicate = isset($_REQUEST['isDuplicate']) ? vtlib_purify($_REQUEST['isDuplicate']) : '';
 $tabid = getTabid($currentModule);
 $category = getParentTab($currentModule);
 
@@ -29,9 +28,6 @@ if ($record != '') {
 	$focus->id = $record;
 	$focus->retrieve_entity_info($record, $currentModule);
 	$focus->name=$focus->column_fields['notes_title'];
-}
-if ($isduplicate == 'true') {
-	$focus->id = '';
 }
 $errormessageclass = isset($_REQUEST['error_msgclass']) ? vtlib_purify($_REQUEST['error_msgclass']) : '';
 $errormessage = isset($_REQUEST['error_msg']) ? vtlib_purify($_REQUEST['error_msg']) : '';
@@ -102,6 +98,9 @@ if ($flag == 1) {
 if (is_admin($current_user)) {
 	$smarty->assign('CHECK_INTEGRITY_PERMISSION', 'yes');
 	$smarty->assign('ADMIN', 'yes');
+} else {
+	$smarty->assign('CHECK_INTEGRITY_PERMISSION', 'no');
+	$smarty->assign('ADMIN', 'no');
 }
 $smarty->assign('APP', $app_strings);
 $smarty->assign('MOD', $mod_strings);

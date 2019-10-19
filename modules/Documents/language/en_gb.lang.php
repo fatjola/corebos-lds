@@ -31,6 +31,7 @@ $mod_strings = array(
 	'LBL_LIST_FILENAME' => 'File Name',
 	'Template'=>'Template',
 	'Template For' => 'Template For',
+	'Merge Template' => 'Merge Template',
 	'LBL_FILENAME' => 'Attachment:',
 	'LBL_NOTE_INFORMATION' => 'Basic Information',
 	'File Information' => 'File Information',
@@ -116,5 +117,7 @@ $mod_strings = array(
 	'Free' => 'Available Disk Space',
 	'NewSize' => 'New Size',
 	'accept_charge' => 'I accept the license change and the associated charge it may have',
+	'LBL_DOCUMENTS_MASSUPLOAD' => 'Mass Upload Documents',
+	'LBL_MASSUPLOAD_DESCRIPTION' => 'Activate and deactivate the document mass upload widget on each module.',
 );
 ?>

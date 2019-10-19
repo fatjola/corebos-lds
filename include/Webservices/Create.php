@@ -27,6 +27,9 @@ function vtws_create($elementType, $element, $user) {
 
 	if (!empty($element['attachments'])) {
 		foreach ($element['attachments'] as $fieldname => $attachment) {
+			if (empty($attachment['name']) || empty($attachment['content'])) {
+				continue;
+			}
 			$filepath = $root_directory.'cache/'.$attachment['name'];
 			file_put_contents($filepath, base64_decode($attachment['content']));
 			$_FILES[$fieldname] = array(
@@ -118,7 +121,7 @@ function vtws_create($elementType, $element, $user) {
 		VTWS_PreserveGlobal::flush();
 		if (!empty($_FILES)) {
 			foreach ($_FILES as $field => $file) {
-				unlink($file['tmp_name']);
+				@unlink($file['tmp_name']);
 			}
 		}
 		return $entity;

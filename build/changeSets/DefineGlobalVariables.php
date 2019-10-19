@@ -35,6 +35,7 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Debug_Send_AdminLoginIPAuth_Error',
 				'Debug_Send_UserLoginIPAuth_Error',
 				'Debug_Calculate_Response_Time',
+				'Debug_ActivityReminder_Deactivated',
 
 				'Application_Global_Search_SelectedModules',
 				'Application_Global_Search_Binary',
@@ -54,9 +55,9 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Application_TrackerMaxHistory',
 				'Application_Announcement',
 				'Application_Display_World_Clock',
-				'Application_Display_Calculator',
 				'Application_Display_Mini_Calendar',
 				'Application_Use_RTE',
+				'Application_RTESpellcheck',
 				'Application_Default_Action',
 				'Application_Default_Module',
 				'Application_Allow_Exports',
@@ -64,6 +65,8 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Application_ListView_Max_Text_Length',
 				'Application_ListView_PageSize',
 				'Application_ListView_Default_Sort_Order',
+				'Application_ListView_Default_OrderDirection',
+				'Application_ListView_Default_OrderField',
 				'Application_ListView_Record_Change_Indicator',
 				'Application_ListView_Default_Sorting',
 				'Application_ListView_Compute_Page_Count',
@@ -90,6 +93,9 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Application_Permit_Assign_SameRole',
 				'Application_Permit_Assign_AllGroups',
 				'Application_User_SortBy',
+				'Application_SendUserPasswordByEmail',
+				'Application_Pagination_Limit',
+				'Application_Popup_Address_Selection',
 
 				'RelatedList_Activity_DefaultStatusFilter',
 
@@ -121,6 +127,7 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Mobile_UI_Enabled',
 
 				'Webservice_showUserAdvancedBlock',
+				'Webservice_PermitQueryOnInactiveUsers',
 				'Webservice_CORS_Enabled_Domains',
 				'Webservice_Enabled',
 				'WebService_Session_Life_Span',
@@ -134,6 +141,7 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'User_AuthenticationType',
 				'User_2FAAuthentication',
 				'User_2FAAuthentication_SendMethod',
+				'User_MandatoryAuthenticationSQL',
 
 				'Accounts_BlockDuplicateName',
 				'Campaign_CreatePotentialOnAccountRelation',
@@ -151,6 +159,8 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Lead_Convert_ContactSelected',
 				'PBX_Get_Line_Prefix',
 				'PBX_Unknown_CallerID',
+				'PBX_callerNumberField',
+				'PBX_callerNumberSeparator',
 				'Product_Copy_Bundle_OnDuplicate',
 				'Product_Show_Subproducts_Popup',
 				'Product_Permit_Relate_Bundle_Parent',
@@ -158,11 +168,14 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Product_Maximum_Number_Images',
 				'Product_SubProduct_PriceRollUp',
 				'Product_SubProduct_CostRollUp',
+				'PurchaseOrder_TransferCostPrice',
+				'PurchaseOrder_IgnoreTransferDiscount',
 				'Workflow_Send_Email_ToCCBCC',
 				'Workflow_GeoDistance_Country_Default',
 				'Workflow_GeoDistance_ServerIP',
 				'Workflow_GeoDistance_Email',
 				'Workflow_GeoDistance_Nominatim_Server',
+				'Workflow_ListView_PageSize',
 				'ModComments_DefaultCriteria',
 				'ModComments_DefaultBlockStatus',
 				'EMail_OpenTrackingEnabled',
@@ -180,9 +193,13 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'Document_CreateSelectContactFolder',
 				'Document_CreateSelectAccountFolder',
 				'Document_CreateSelectAccountFolderForContact',
+				'Attachment_ShowDownloadName',
 				'HomePage_Widget_Group_Size',
 				'Zero_Bounce_API_KEY',
 				'GenDoc_CopyLabelToClipboard',
+				'CobroPago_Invoice_Status_OnPaid',
+				'CobroPago_PurchaseOrder_Status_OnPaid',
+				'CobroPago_SalesOrder_Status_OnPaid',
 
 				'Report_Send_Scheduled_ifEmpty',
 				'Report_ListView_PageSize',
@@ -193,6 +210,7 @@ class DefineGlobalVariables extends cbupdaterWorker {
 
 				'Inventory_ListPrice_ReadOnly',
 				'Inventory_Show_ShippingHandlingCharges',
+				'Inventory_Check_Invoiced_Lines',
 				'GContacts_Max_Results',
 
 				'CustomerPortal_PDF_Modules',
@@ -201,7 +219,7 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'CustomerPortal_PDFTemplate_SalesOrder',
 				'CustomerPortal_PDFTemplate_Invoice',
 				'CustomerPortal_PDFTemplate_PurchaseOrder',
-				'PBXManager_SearchOnlyOnTheseFields',
+				'Project_Gantt_Type',
 			);
 			$delete_these = array(
 				'preload_prototype',
@@ -210,6 +228,7 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'calendar_display',
 				'world_clock_display',
 				'calculator_display',
+				'Application_Display_Calculator',
 				'history_max_viewed',
 				'default_module',
 				'default_action',
@@ -235,6 +254,7 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				'corebos_app_url',
 				'SOAP_Thunderbird_Enabled',
 				'Home_Display_Empty_Blocks',
+				'Gantt_Type',
 			);
 			$rename_these = array(
 				'Show_Copy_Adress_Header' => array(
@@ -327,6 +347,9 @@ class DefineGlobalVariables extends cbupdaterWorker {
 				),
 				'Application_Search_Panel_Open' => array(
 					'to' => 'Application_ListView_SearchPanel_Open',
+				),
+				'PBXManager_SearchOnlyOnTheseFields' => array(
+					'to' => 'PBX_SearchOnTheseFields',
 				),
 			);
 			$moduleInstance = Vtiger_Module::getInstance('GlobalVariable');

@@ -39,7 +39,7 @@ function getFieldByReportLabel($module, $label) {
 }
 
 function isReferenceUIType($uitype) {
-	static $options = array('101', '117', '26', '357', '51', '52', '53', '57', '66', '73', '76', '77', '78', '80');
+	static $options = array('101', '117', '26', '357', '51', '52', '53', '57', '66', '73', '77', '78');
 	return in_array($uitype, $options);
 }
 
@@ -176,7 +176,7 @@ function getReportFieldValue($report, $picklistArray, $dbField, $valueArray, $fi
 }
 
 function report_getMoreInfoFromRequest($cbreporttype, $pmodule, $smodule, $pivotcolumns) {
-	global $adb;
+	global $adb, $default_charset;
 	if (isset($_REQUEST['cbreporttype']) && $_REQUEST['cbreporttype']=='external') {
 		if (isset($_REQUEST['adduserinfo']) && ($_REQUEST['adduserinfo'] == 'on' || $_REQUEST['adduserinfo'] == 1)) {
 			$aui = 1;
@@ -189,7 +189,7 @@ function report_getMoreInfoFromRequest($cbreporttype, $pmodule, $smodule, $pivot
 		));
 		$cbreporttype = 'external';
 	} elseif (isset($_REQUEST['cbreporttype']) && $_REQUEST['cbreporttype']=='directsql') {
-		$minfo = vtlib_purify($_REQUEST['directsqlcommand']);
+		$minfo = html_entity_decode(vtlib_purify($_REQUEST['directsqlcommand']), ENT_QUOTES, $default_charset);
 		$cbreporttype = 'directsql';
 	} elseif (isset($_REQUEST['cbreporttype']) && $_REQUEST['cbreporttype']=='crosstabsql') {
 		require_once 'include/adodb/pivottable.inc.php';

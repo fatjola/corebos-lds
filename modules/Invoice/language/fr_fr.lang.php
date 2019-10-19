@@ -56,6 +56,7 @@ $mod_strings = array(
 	'LBL_COUNTRY' => 'Pays :',
 	'LBL_DESCRIPTION_INFORMATION' => 'Information description',
 	'LBL_DESCRIPTION' => 'Description :',
+	'LBL_Invoice_FINANCIALINFO' => 'Financial Information',
 	'LBL_TERMS_INFORMATION' => 'Conditions particulières',
 	'NTC_COPY_BILLING_ADDRESS' => 'Utiliser adresse de facturation pour la livraison',
 	'NTC_COPY_SHIPPING_ADDRESS' => 'Utiliser adresse de livraison pour la facturation',
@@ -156,5 +157,9 @@ $mod_strings = array(
 	'Valid Date' => 'Date de validité',
 	'SINGLE_Invoice'=>'Facture',
 	'Invoice ID'=>'Facture ID',
+	'LBL_PARTIAL_PAYMENTS_INFO' => 'Partial Payments Information',
+	'Amount Due'=>'Amount Due',
+	'Amount Paid'=>'Amount Paid',
+	'Total Amount'=>'Total Amount',
 );
 ?>
